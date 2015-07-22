@@ -1,16 +1,11 @@
-#### **项目信息**:
-#### *wiki*:(http://wiki.corp.qunar.com/)<br />
-
 基于jabber.el的emacs qim客户端
 ============================
 
 
-开发分支
-=======
+#### **开发分支**
 qim-emacs
 
-安装方法
-=======
+#### **安装方法**
 Make sure that autoconf and automake are installed and run
 
 "autoreconf -i".
@@ -29,8 +24,7 @@ After installation by either method, add (load "jabber-autoloads") to
 your .emacs file.
 
 
-参考配置
-======
+#### **参考配置**
 
     (add-to-list 'load-path "~/Documents/sources/emacs-jabber")
 
