@@ -8,9 +8,9 @@ qim-emacs
 #### **安装方法**
 Make sure that autoconf and automake are installed and run
 
-"autoreconf -i".
-./configure
-make
+    autoreconf -i
+    ./configure
+    make
 
 You can specify which emacs you want to use:
 ./configure EMACS=emacs-or-xemacs-21.4
