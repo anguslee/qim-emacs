@@ -26,7 +26,7 @@ your .emacs file.
 
 #### **参考配置**
 
-    (add-to-list 'load-path "~/Documents/sources/emacs-jabber")
+    (add-to-list 'load-path "~/Documents/sources/emacs-jabber") ; 本工程目录
 
     (setq qtalk-pubkey-file
         "~/Documents/sources/emacs-jabber/resources/qtalk_pub_key.pem")
