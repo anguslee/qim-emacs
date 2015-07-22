@@ -772,8 +772,9 @@ applied to the node and not to the data itself."
   (replace-regexp-in-string
    "-" 
    ""
-   (if (functionp 'uuid-stringdd)
-       (uuid-string) (shell-command-to-string "echo -n `uuidgen`"))))
+   (if (functionp 'uuid-string)
+       (uuid-string)
+     (shell-command-to-string "echo -n `uuidgen`"))))
 
 (provide 'jabber-util)
 
