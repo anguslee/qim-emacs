@@ -24,6 +24,7 @@
 (require 'jabber-widget)
 (require 'jabber-disco)
 (require 'jabber-muc-nick-coloring)
+(require 'jabber-util)
 
 ;; we need jabber-bookmarks for jabber-muc-autojoin (via
 ;; jabber-get-bookmarks and jabber-parse-conference-bookmark):
@@ -221,11 +222,12 @@ This function is idempotent."
   "Send BODY to MUC room in current buffer."
   ;; There is no need to display the sent message in the buffer, as
   ;; we will get it back from the MUC server.
-  (jabber-send-sexp jc
+  (let ((uuid (jabber-message-uuid)))
+    (jabber-send-sexp jc
 		    `(message
 		      ((to . ,jabber-group)
 		       (type . "groupchat"))
-		      (body () ,body))))
+		      (body ((maType . 0) (msgType . 1) (id . ,uuid)) ,body)))))
 
 (defun jabber-muc-add-groupchat (group nickname)
   "Remember participating in GROUP under NICKNAME."

@@ -767,6 +767,14 @@ applied to the node and not to the data itself."
 	   (setf (cdr prev) (if tail (funcall fn tail) nil))
 	   result)))))
 
+(defun jabber-message-uuid ()
+  (require 'uuid nil 'noerror)
+  (replace-regexp-in-string
+   "-" 
+   ""
+   (if (functionp 'uuid-stringdd)
+       (uuid-string) (shell-command-to-string "echo -n `uuidgen`"))))
+
 (provide 'jabber-util)
 
 ;;; arch-tag: cfbb73ac-e2d7-4652-a08d-dc789bcded8a

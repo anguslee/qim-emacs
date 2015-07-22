@@ -954,6 +954,7 @@ Return an fsm result list if it is."
 
 (defun jabber-send-sexp (jc sexp)
   "Send the xml corresponding to SEXP to connection JC."
+  (message "%s" sexp)
   (condition-case e
       (jabber-log-xml jc "sending" sexp)
     (error

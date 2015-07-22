@@ -13,3 +13,6 @@ jabber-autoloads.el
 jabber-ourversion.el
 jabber.info
 emacs-jabber.schemas
+TAGS
+autom4te.cache
+build-aux

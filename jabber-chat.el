@@ -23,6 +23,7 @@
 (require 'jabber-history)
 (require 'jabber-menu)                  ;we need jabber-jid-chat-menu
 (require 'ewoc)
+(require 'jabber-util)
 (eval-when-compile (require 'cl))
 
 (defgroup jabber-chat nil "chat display options"
@@ -336,7 +337,7 @@ This function is idempotent."
 			   ((to . ,jabber-chatting-with)
 			    (type . "chat")
 			    (id . ,id))
-			   (body () ,body))))
+			   (body ((maType . 0) (msgType . 1) (id . ,(jabber-message-uuid))) ,body))))
     ;; ...add additional elements...
     ;; TODO: Once we require Emacs 24.1, use `run-hook-wrapped' instead.
     ;; That way we don't need to eliminate the "local hook" functionality
