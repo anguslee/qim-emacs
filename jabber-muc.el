@@ -72,6 +72,15 @@ Values are lists of nickname strings.")
 		(string :tag "JID of room")
 		(string :tag "Nickname"))))
 
+(defcustom jabber-domain-default-nicknames nil
+  "Default nickname for specific MUC domains."
+  :group 'jabber-chat
+  :type '(repeat
+	  (cons :format "%v"
+		(string :tag "JID of domain")
+		(string :tag "Nickname"))))
+
+
 (defcustom jabber-muc-autojoin nil
   "List of MUC rooms to automatically join on connection.
 This list is saved in your Emacs customizations.  You can also store
@@ -592,6 +601,8 @@ groupchat buffer."
   (let ((default-nickname (or
 			   (jabber-get-conference-data jc group nil :nick)
 			   (cdr (assoc group jabber-muc-default-nicknames))
+               (cdr (assoc (cadr (split-string group "@"))
+                           jabber-domain-default-nicknames))
 			   (plist-get (fsm-get-state-data jc) :username))))
     (if default
         default-nickname
@@ -755,7 +766,22 @@ group, else it is a JID."
 			,(unless (zerop (length reason))
 			   `(reason nil ,reason)))))))
 
-(add-to-list 'jabber-body-printers 'jabber-muc-print-invite)
+;(add-to-list 'jabber-body-printers 'jabber-muc-print-invite)
+(add-to-list 'jabber-body-printers 'jabber-muc-accept-invite)
+
+(defun jabber-muc-accept-invite (xml-data who mode)
+  "Accept MUC invitation automatically"
+  (dolist (x (jabber-xml-get-children xml-data 'x))
+    (when (string= (jabber-xml-get-attribute x 'xmlns) "http://jabber.org/protocol/muc#user")
+      (let ((invitation (car (jabber-xml-get-children x 'invite))))
+        (when invitation
+          (let ((group (jabber-xml-get-attribute xml-data 'from))
+                (inviter (jabber-xml-get-attribute invitation 'from))
+                (reason (car (jabber-xml-node-children (car (jabber-xml-get-children invitation 'reason))))))
+            (jabber-muc-join jabber-buffer-connection group
+                             (jabber-muc-read-my-nickname 
+                              jabber-buffer-connection group t)))
+          t)))))
 
 (defun jabber-muc-print-invite (xml-data who mode)
   "Print MUC invitation"

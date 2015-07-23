@@ -348,6 +348,7 @@ Useful if the password proved to be wrong."
   (when (fboundp 'password-cache-remove)
     (password-cache-remove (jabber-password-key bare-jid))))
 
+
 (defun jabber-read-account (&optional always-ask contact-hint)
   "Ask for which connected account to use.
 If ALWAYS-ASK is nil and there is only one account, return that
@@ -769,12 +770,13 @@ applied to the node and not to the data itself."
 
 (defun jabber-message-uuid ()
   (require 'uuid nil 'noerror)
-  (replace-regexp-in-string
-   "-" 
-   ""
+  (jabber-replace-in-string
    (if (functionp 'uuid-string)
        (uuid-string)
-     (shell-command-to-string "echo -n `uuidgen`"))))
+     (shell-command-to-string "echo -n `uuidgen`"))
+   "-" 
+   ""))
+
 
 (provide 'jabber-util)
 

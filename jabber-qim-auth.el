@@ -1,5 +1,8 @@
 ;; Auth for qim
 
+;;;###autoload
+(defvar jabber-qim-pubkey-file nil)
+
 ;;;###autoload (autoload 'jabber-qim-password "jabber-qim-auth" "create qim password" t)
 (defun jabber-qim-password (uid pwd)
   (require 'json)
