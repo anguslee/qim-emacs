@@ -27,10 +27,10 @@ your .emacs file.
 
 ## **参考配置**
 
-    (add-to-list 'load-path "~/Documents/sources/emacs-jabber") ; 本工程目录
+    (add-to-list 'load-path "~/Documents/sources/qim-emacs") ; 本工程目录
 
     (setq jabber-qim-pubkey-file
-        "~/Documents/sources/emacs-jabber/resources/qtalk_pub_key.pem") ; 公钥文件路径
+        "~/Documents/sources/qim-emacs/resources/qtalk_pub_key.pem") ; 公钥文件路径
 
     (load "jabber-autoloads")
 
@@ -53,6 +53,11 @@ your .emacs file.
 
     (setq jabber-muc-autojoin
         '("qtalk客户端开发群@conference.ejabhost1"))
+
+    (setq jabber-domain-default-nicknames
+        '(
+            ("conference.ejabhost1" . "昵称")
+        ))
 
     ;; account list
     (setq jabber-account-list
