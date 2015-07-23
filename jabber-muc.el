@@ -894,8 +894,9 @@ include groupchat invites."
      (not (string= type "groupchat"))
      (jabber-muc-sender-p from))))
 
-(add-to-list 'jabber-jid-muc-menu
-	     (cons "Open private chat" 'jabber-muc-private))
+;; Not supported by qim for now (2015-07-23)
+;; (add-to-list 'jabber-jid-muc-menu
+;; 	     (cons "Open private chat" 'jabber-muc-private))
 
 (defun jabber-muc-private (jc group nickname)
   "Open private chat with NICKNAME in GROUP."
