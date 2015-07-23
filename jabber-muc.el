@@ -511,13 +511,25 @@ groupchat buffer."
 
   ;; If the user is already in the room, we don't need as many checks.
   (if (or (assoc group *jabber-active-groupchats*)
-	  ;; Or if the users asked us not to check disco info.
-	  jabber-muc-disable-disco-check)
+          ;; Or if the users asked us not to check disco info.
+          jabber-muc-disable-disco-check)
       (jabber-muc-join-3 jc group nickname nil popup)
     ;; Else, send a disco request to find out what we are connecting
     ;; to.
     (jabber-disco-get-info jc group nil #'jabber-muc-join-2
-			   (list group nickname popup))))
+                           (list group nickname popup)))
+  (jabber-send-iq jc group
+		  "set"
+		  '(query ((xmlns . "http://jabber.org/protocol/muc#register"))
+			  (x ((xmlns . "jabber:x:data") (type . "set"))))
+		  #'jabber-report-success "MUC join register"
+		  #'jabber-report-success "MUC join register")
+  (jabber-send-iq jc group
+		  "set"
+		  '(query ((xmlns . "http://jabber.org/protocol/muc#del_register"))
+			  (x ((xmlns . "jabber:x:data") (type . "set"))))
+		  #'jabber-report-success "MUC leave register"
+		  #'jabber-report-success "MUC leave register"))
 
 (defalias 'jabber-groupchat-join 'jabber-muc-join
   "Deprecated. Use `jabber-muc-join' instead.")
