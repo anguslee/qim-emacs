@@ -522,14 +522,16 @@ groupchat buffer."
 		  "set"
 		  '(query ((xmlns . "http://jabber.org/protocol/muc#register"))
 			  (x ((xmlns . "jabber:x:data") (type . "set"))))
-		  #'jabber-report-success "MUC join register"
-		  #'jabber-report-success "MUC join register")
+		  ; #'jabber-report-success "MUC join register"
+		  ; #'jabber-report-success "MUC join register"
+          )
   (jabber-send-iq jc group
 		  "set"
 		  '(query ((xmlns . "http://jabber.org/protocol/muc#del_register"))
 			  (x ((xmlns . "jabber:x:data") (type . "set"))))
-		  #'jabber-report-success "MUC leave register"
-		  #'jabber-report-success "MUC leave register"))
+		  ;#'jabber-report-success "MUC leave register"
+		  ;#'jabber-report-success "MUC leave register"
+          ))
 
 (defalias 'jabber-groupchat-join 'jabber-muc-join
   "Deprecated. Use `jabber-muc-join' instead.")
@@ -862,18 +864,19 @@ group, else it is a JID."
   (let ((nickname (plist-get (fsm-get-state-data jc) :username)))
     (when (bound-and-true-p jabber-muc-autojoin)
       (dolist (group jabber-muc-autojoin)
-	(jabber-muc-join jc group (or
-					 (cdr (assoc group jabber-muc-default-nicknames))
-					 (plist-get (fsm-get-state-data jc) :username)))))
+        (jabber-muc-join jc group
+                         (jabber-muc-read-my-nickname jc group t))))
     (jabber-get-bookmarks
      jc
      (lambda (jc bookmarks)
        (dolist (bookmark bookmarks)
-	 (setq bookmark (jabber-parse-conference-bookmark bookmark))
-	 (when (and bookmark (plist-get bookmark :autojoin))
-	   (jabber-muc-join jc (plist-get bookmark :jid)
-				  (or (plist-get bookmark :nick)
-				      (plist-get (fsm-get-state-data jc) :username)))))))))
+         (setq bookmark (jabber-parse-conference-bookmark bookmark))
+         (when (and bookmark (plist-get bookmark :autojoin))
+           (jabber-muc-join jc (plist-get bookmark :jid)
+                            (or (plist-get bookmark :nick)
+                                (jabber-muc-read-my-nickname jc
+                                                             (plist-get bookmark :jid)
+                                                             t)))))))))
 
 ;;;###autoload
 (defun jabber-muc-message-p (message)
