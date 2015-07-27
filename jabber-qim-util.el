@@ -32,7 +32,6 @@
 
 
 (defun jabber-qim-api-request-post (callback command data mime-type)
-  (setq *jabber-qim-api-response* nil)
   (web-json-post 
    callback
    :url (format "%s/%s" jabber-qim-api-server command)
@@ -50,7 +49,7 @@
   "Return MUC vcard"
   (and
    (string-prefix-p "conference." (jabber-jid-server muc-jid))
-   (or (gethash muc-jid *jabber-qim-muc-vcard-cache*)
+   (or (gethash (jabber-jid-user muc-jid) *jabber-qim-muc-vcard-cache*)
        (lexical-let ((latch (make-one-time-latch))
                      (ret nil))
          (jabber-qim-api-request-post
@@ -59,11 +58,11 @@
                   (nth 0 (cdr (assoc 'data data))))
             (apply-partially #'nofify latch))
           "getmucvcard"
-          (json-encode (vector `((:muc_name . ,muc-jid)
+          (json-encode (vector `((:muc_name . ,(jabber-jid-user muc-jid))
                                  (:version . 0))))
           'applicaition/json)
          (wait latch 0.5)
-         (puthash muc-jid ret *jabber-qim-muc-vcard-cache*)
+         (puthash (jabber-jid-user muc-jid) ret *jabber-qim-muc-vcard-cache*)
          ret))))
 
 (provide 'jabber-qim-util)

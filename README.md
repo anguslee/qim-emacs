@@ -8,9 +8,11 @@ emacs-web (https://github.com/nicferrier/emacs-web)
 elisp-latch (https://github.com/skeeto/elisp-latch)
 
 ## **开发分支**
+
 qim-emacs
 
 ## **安装方法**
+
 **依赖**： Linux操作系统，GNU Emacs 23.1以上，openssl，autoconf，automake，emacs-uuid(http://www.emacswiki.org/emacs/uuid.el)
 
 Make sure that autoconf and automake are installed and run
