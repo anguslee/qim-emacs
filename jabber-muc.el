@@ -25,6 +25,7 @@
 (require 'jabber-disco)
 (require 'jabber-muc-nick-coloring)
 (require 'jabber-util)
+(require 'jabber-qim-util)
 
 ;; we need jabber-bookmarks for jabber-muc-autojoin (via
 ;; jabber-get-bookmarks and jabber-parse-conference-bookmark):
@@ -184,10 +185,10 @@ This gets prepended to `jabber-chat-printers', which see.")
 Either a string or a buffer is returned, so use `get-buffer' or
 `get-buffer-create'."
   (format-spec jabber-groupchat-buffer-format
-	       (list
-		(cons ?n (jabber-jid-displayname group))
-                (cons ?b (jabber-jid-bookmarkname group))
-		(cons ?j (jabber-jid-user group)))))
+                (list
+                 (cons ?n (jabber-jid-displayname group))
+                 (cons ?b (jabber-jid-bookmarkname group))
+                 (cons ?j (jabber-jid-user group)))))
 
 (defun jabber-muc-create-buffer (jc group)
   "Prepare a buffer for chatroom GROUP.
@@ -522,16 +523,10 @@ groupchat buffer."
 		  "set"
 		  '(query ((xmlns . "http://jabber.org/protocol/muc#register"))
 			  (x ((xmlns . "jabber:x:data") (type . "set"))))
-		  ; #'jabber-report-success "MUC join register"
-		  ; #'jabber-report-success "MUC join register"
+		  #'jabber-report-success "MUC join register"
+		  #'jabber-report-success "MUC join register"
           )
-  (jabber-send-iq jc group
-		  "set"
-		  '(query ((xmlns . "http://jabber.org/protocol/muc#del_register"))
-			  (x ((xmlns . "jabber:x:data") (type . "set"))))
-		  ;#'jabber-report-success "MUC leave register"
-		  ;#'jabber-report-success "MUC leave register"
-          ))
+  )
 
 (defalias 'jabber-groupchat-join 'jabber-muc-join
   "Deprecated. Use `jabber-muc-join' instead.")
@@ -615,7 +610,7 @@ groupchat buffer."
   (let ((default-nickname (or
 			   (jabber-get-conference-data jc group nil :nick)
 			   (cdr (assoc group jabber-muc-default-nicknames))
-               (cdr (assoc (cadr (split-string group "@"))
+               (cdr (assoc (jabber-jid-server group)
                            jabber-domain-default-nicknames))
 			   (plist-get (fsm-get-state-data jc) :username))))
     (if default
@@ -864,6 +859,7 @@ group, else it is a JID."
   (let ((nickname (plist-get (fsm-get-state-data jc) :username)))
     (when (bound-and-true-p jabber-muc-autojoin)
       (dolist (group jabber-muc-autojoin)
+        (jabber-qim-get-muc-vcard group)
         (jabber-muc-join jc group
                          (jabber-muc-read-my-nickname jc group t))))
     (jabber-get-bookmarks

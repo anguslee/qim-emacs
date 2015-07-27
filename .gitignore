@@ -9,6 +9,8 @@ config.log
 config.status
 configure
 elc-stamp
+elc-temp
+cscope*
 *.tar*
 *.zip
 jabber-autoloads.el

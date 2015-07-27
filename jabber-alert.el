@@ -341,12 +341,12 @@ Examples:
 ;; MUC alert hooks
 (defun jabber-muc-default-message (nick group buffer text)
   (when (or jabber-message-alert-same-buffer
-	    (not (memq (selected-window) (get-buffer-window-list buffer))))
+            (not (memq (selected-window) (get-buffer-window-list buffer))))
     (if nick
-	(when (or jabber-muc-alert-self
-		  (not (string= nick (cdr (assoc group *jabber-active-groupchats*)))))
-	  (format "Message from %s in %s" nick (jabber-jid-displayname
-						group)))
+        (when (or jabber-muc-alert-self
+                  (not (string= nick (cdr (assoc group *jabber-active-groupchats*)))))
+          (format "Message from %s in %s" nick (jabber-jid-displayname
+                                                group)))
       (format "Message in %s" (jabber-jid-displayname group)))))
 
 (defun jabber-muc-wave (nick group buffer text title)

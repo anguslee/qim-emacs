@@ -1,18 +1,22 @@
 **基于jabber.el的emacs qim客户端**
 ===============================
 
+**引用代码**
+
+emacs-web (https://github.com/nicferrier/emacs-web)
+elisp-latch (https://github.com/skeeto/elisp-latch)
 
 ## **开发分支**
 qim-emacs
 
 ## **安装方法**
-**依赖**： Linux操作系统，openssl，autoconf，automake，emacs uuid模块
+**依赖**： Linux操作系统，GNU Emacs 23.1以上，openssl，autoconf，automake，emacs-uuid(http://www.emacswiki.org/emacs/uuid.el)
 
 Make sure that autoconf and automake are installed and run
 
     autoreconf -i
     ./configure
-    make
+    make jabber-autoloads.el
 
 You can specify which emacs you want to use:
 ./configure EMACS=emacs-or-xemacs-21.4
