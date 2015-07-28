@@ -18,6 +18,8 @@
 ;; along with this program; if not, write to the Free Software
 ;; Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
+(require 'jabber-qim-util)
+
 (require 'jabber-core)
 (require 'jabber-chatbuffer)
 (require 'jabber-history)
@@ -587,12 +589,46 @@ If DONT-PRINT-NICK-P is true, don't include nickname."
 			       " "
 			       action)
 		       'face 'jabber-chat-prompt-system)))
-	  (insert (jabber-propertize 
-		   body
-		   'face (case who
-			   ((:foreign :muc-foreign) 'jabber-chat-text-foreign)
-			   ((:local :muc-local) 'jabber-chat-text-local))))))
+	  ;; (insert (jabber-propertize 
+	  ;;      body
+	  ;;      'face (case who
+	  ;;   	   ((:foreign :muc-foreign) 'jabber-chat-text-foreign)
+	  ;;   	   ((:local :muc-local) 'jabber-chat-text-local))))
+      (jabber-chat-print-message-body-segments
+       body
+       (case who
+	    	   ((:foreign :muc-foreign) 'jabber-chat-text-foreign)
+	    	   ((:local :muc-local) 'jabber-chat-text-local)))
+      ))
       t)))
+
+
+(defun jabber-chat-print-message-body-segments (body face)
+  (let ((match-start
+         (string-match "\\[obj "
+                       body))
+        (previous-start 0))
+    (while (numberp previous-start)
+      (let ((segment (substring body
+                                previous-start match-start)))
+        (if (numberp (string-match "\\[obj type=\\\".*\\\" value=\\\".*?\\\".*\\]"
+                                   segment))
+            (let* ((object (match-string 0 segment))
+                   (text (substring segment (length object))))
+              (jabber-qim-insert-object object face)
+              (if (> (length text) 0)
+                  (insert (jabber-propertize 
+                           text
+                           'face face))))
+          (insert (jabber-propertize 
+                   segment
+                   'face face))))
+      (setq previous-start match-start)
+      (if (numberp match-start)
+          (setq match-start
+                (string-match "\\[obj "
+                              body
+                              (1+ match-start)))))))
 
 (defun jabber-chat-print-url (xml-data who mode)
   "Print URLs provided in jabber:x:oob namespace."

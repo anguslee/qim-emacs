@@ -4,12 +4,19 @@
 (require 'web)
 (require 'latch)
 (require 'jabber-util)
+(require 'jabber-avatar)
 
 (add-to-list 'web-json-expected-mimetypes-list
              "text/json")
 
 (defvar jabber-qim-api-server
   "https://qtapi.corp.qunar.com")
+
+(defvar jabber-qim-local-emotions-directory
+  (format "%s%s"
+          (file-name-directory
+           (or load-file-name buffer-file-name))
+          "resources/Emotions"))
 
 
 ;;;###autoload (autoload 'jabber-qim-muc-vcard-group-jid "jabber-qim-util" "Return group jid" t)
@@ -61,9 +68,82 @@
           (json-encode (vector `((:muc_name . ,(jabber-jid-user muc-jid))
                                  (:version . 0))))
           'applicaition/json)
-         (wait latch 0.5)
+         (wait latch 0.2)
          (puthash (jabber-jid-user muc-jid) ret *jabber-qim-muc-vcard-cache*)
          ret))))
+
+(defun jabber-qim-parse-object-attribute (text attribute)
+  "Parse object attribute from objects like [obj type=\"emoticon\" value=\"[/guzg]\"]"
+  (string-match (format "%s=\\\".*\\\"" attribute) text)
+  (let ((type-text (match-string 0 text)))
+    (string-match "\\\".*?\\\"" type-text)
+    (replace-regexp-in-string "\\\"" "" (match-string 0 type-text))
+    ))
+
+(defvar *jabber-qim-emotion-map*
+  (make-hash-table :test 'equal))
+
+(defun jabber-qim-get-emotion-by-shortcut (shortcut)
+  (gethash shortcut *jabber-qim-emotion-map*))
+
+(defun jabber-qim-load-emotions-from-dir (dir)
+  "Load emotions from single directory"
+  (let ((resource-xml (xml-parse-file
+                       (format "%s/emotions.xml" dir))))
+    (mapcar (lambda (face-node)
+              (let* ((face-attributes (nth 1 face-node))
+                     (face-shortcut (cdr (assoc 'shortcut face-attributes)))
+                     (file-org (caddr (nth 3 face-node)))
+                     (file-fixed (caddr (nth 5 face-node))))
+                (puthash face-shortcut
+                         (format "%s/%s" dir file-org)
+                         *jabber-qim-emotion-map*)
+                ))
+            (remove-if-not 'listp
+                           (cdddr
+                            (cadddr
+                             (assoc 'FACESETTING
+                                    resource-xml))))))
+  )
+
+(defun jabber-qim-load-emotions (emotion-base-dir)
+  (mapcar 'jabber-qim-load-emotions-from-dir
+          (mapcar #'(lambda (dir)
+                      (expand-file-name dir emotion-base-dir))
+                  (remove-if #'(lambda (dir)
+                                 (or (equal dir ".")
+                                     (equal dir "..")))
+                             (directory-files emotion-base-dir)))))
+
+(jabber-qim-load-emotions (expand-file-name jabber-qim-local-emotions-directory))
+
+(defun jabber-qim-emotion-image (shortcut)
+  (jabber-create-image (jabber-qim-get-emotion-by-shortcut shortcut)))
+
+
+(defun jabber-qim-insert-object (object-text face)
+  "Insert object into chat buffer."
+  (let ((type (intern (jabber-qim-parse-object-attribute object-text "type")))
+        (value (jabber-qim-parse-object-attribute object-text "value")))
+    (case type
+      ('emoticon
+       (let ((image (jabber-qim-emotion-image
+                     (replace-regexp-in-string "\\\]" ""
+                                               (replace-regexp-in-string "\\\[" "" value)))))
+         (if image
+             (insert-image
+              image)
+           (insert (jabber-propertize
+                    value
+                    'face face)))))
+      ('url
+       (insert (jabber-propertize
+                (format " %s " value)
+                'face face)))
+      (t
+       (insert (jabber-propertize
+                object-text
+                'face face))))))
 
 (provide 'jabber-qim-util)
 
