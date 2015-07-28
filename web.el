@@ -426,20 +426,22 @@ Content-Type: %s\r\n\r\n%s"
   "Sentinel for the HTTP POST."
   ;; FIXME I'm sure this needs to be different - but how? it needs to
   ;; communicate to the filter function?
-  (cond
-    ((equal evt "closed\n")
-     (when web-log-info
-       (message "web/http-post-sentinel http client post closed")))
-    ((equal evt "deleted\n")
-     (delete-process con)
-     (when web-log-info
-       (message "web/http-post-sentinel http client post deleted")))
-    ((equal evt "connection broken by peer\n")
-     (when web-log-info
-       (message "web/http-post-sentinel http client broken")))
-    (t
-     (when web-log-info
-       (message "web/http-post-sentinel unexpected evt: %s" evt)))))
+
+  ;; (cond
+  ;;   ((equal evt "closed\n")
+  ;;    (when web-log-info
+  ;;      (message "web/http-post-sentinel http client post closed")))
+  ;;   ((equal evt "deleted\n")
+  ;;    (delete-process con)
+  ;;    (when web-log-info
+  ;;      (message "web/http-post-sentinel http client post deleted")))
+  ;;   ((equal evt "connection broken by peer\n")
+  ;;    (when web-log-info
+  ;;      (message "web/http-post-sentinel http client broken")))
+  ;;   (t
+  ;;    (when web-log-info
+  ;;      (message "web/http-post-sentinel unexpected evt: %s" evt))))
+  )
 
 (defun web/http-post-sentinel-with-logging (con evt logging)
   "Map a logging variable into the sentinel."
