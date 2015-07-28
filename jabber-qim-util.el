@@ -132,7 +132,8 @@
                                                (replace-regexp-in-string "\\\[" "" value)))))
          (if image
              (insert-image
-              image)
+              image
+              value)
            (insert (jabber-propertize
                     value
                     'face face)))))
@@ -146,4 +147,3 @@
                 'face face))))))
 
 (provide 'jabber-qim-util)
-
