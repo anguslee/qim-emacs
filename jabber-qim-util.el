@@ -9,8 +9,34 @@
 (add-to-list 'web-json-expected-mimetypes-list
              "text/json")
 
-(defvar jabber-qim-api-server
+(defvar *jabber-qim-api-server*
   "https://qtapi.corp.qunar.com")
+
+(defvar *jabber-qim-image-server*
+  "https://qtalk.corp.qunar.com")
+
+(defvar jabber-qim-local-file-dir
+  (format "%s.cache"
+          (file-name-directory
+           (or load-file-name buffer-file-name))))
+
+(defun jabber-qim-local-images-cache-dir ()
+  (format "%s/images" jabber-qim-local-file-dir))
+
+(defun jabber-qim-local-received-files-cache-dir ()
+  (format "%s/received-files" jabber-qim-local-file-dir))
+
+(ignore-errors
+  (dired-create-directory jabber-qim-local-file-dir))
+
+(ignore-errors
+  (dired-create-directory
+   (jabber-qim-local-images-cache-dir)))
+
+(ignore-errors
+  (dired-create-directory
+   (jabber-qim-local-received-files-cache-dir)))
+
 
 (defvar jabber-qim-local-emotions-directory
   (format "%s%s"
@@ -41,7 +67,7 @@
 (defun jabber-qim-api-request-post (callback command data mime-type)
   (web-json-post 
    callback
-   :url (format "%s/%s" jabber-qim-api-server command)
+   :url (format "%s/%s" *jabber-qim-api-server* command)
    :data data
    :mime-type mime-type
    :json-object-type 'alist
@@ -137,6 +163,15 @@
            (insert (jabber-propertize
                     value
                     'face face)))))
+      ('image
+       (let ((image (jabber-qim-load-image value)))
+         (if image
+             (insert-image
+              image
+              value)
+           (insert (jabber-propertize
+                    value
+                    'face face)))))
       ('url
        (insert (jabber-propertize
                 (format " %s " value)
@@ -145,5 +180,26 @@
        (insert (jabber-propertize
                 object-text
                 'face face))))))
+
+(defun jabber-qim-load-image (url-path)
+  (lexical-let ((latch (make-one-time-latch))
+                (ret nil))
+    (web-http-get
+     #'(lambda (httpc header body)
+         (let* ((img-fp (md5 body))
+                (file-path (format "%s/%s"
+                                   (jabber-qim-local-images-cache-dir)
+                                   img-fp)))
+           (unless (file-exists-p file-path)
+             (let ((coding-system-for-write 'binary))
+               (with-temp-file file-path
+                 (insert body))))
+           (setq ret file-path))
+         (apply-partially #'nofify latch))
+     :url (format "%s/%s" *jabber-qim-image-server* url-path)
+     )
+    (wait latch 1.5)
+    (create-image ret)
+    ))
 
 (provide 'jabber-qim-util)
