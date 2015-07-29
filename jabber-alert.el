@@ -280,10 +280,13 @@ Examples:
   (when (or jabber-message-alert-same-buffer
 	    (not (memq (selected-window) (get-buffer-window-list buffer))))
     (if (jabber-muc-sender-p from)
-	(format "Private message from %s in %s"
-		(jabber-jid-resource from)
-		(jabber-jid-displayname (jabber-jid-user from)))
-      (format "Message from %s" (jabber-jid-displayname from)))))
+        (format "Private message from %s in %s: %s"
+                (jabber-jid-resource from)
+                (jabber-jid-displayname (jabber-jid-user from))
+                text)
+      (format "Message from %s: %s"
+              (jabber-jid-displayname from)
+              text))))
 
 (defcustom jabber-message-alert-same-buffer t
   "If nil, don't display message alerts for the current buffer."
@@ -345,9 +348,10 @@ Examples:
     (if nick
         (when (or jabber-muc-alert-self
                   (not (string= nick (cdr (assoc group *jabber-active-groupchats*)))))
-          (format "Message from %s in %s" nick (jabber-jid-displayname
-                                                group)))
-      (format "Message in %s" (jabber-jid-displayname group)))))
+          (format "Message from %s in %s: %s" nick
+                  (jabber-jid-user (jabber-jid-displayname group))
+                  text))
+      (format "Message in %s: %s" (jabber-jid-displayname group) text))))
 
 (defun jabber-muc-wave (nick group buffer text title)
   "Play the wave file specified in `jabber-alert-muc-wave'"
