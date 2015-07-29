@@ -766,7 +766,9 @@ group, else it is a JID."
           ;; The current room is _not_ a good default for whom to invite.
           (remq (jabber-jid-symbol jabber-group) (jabber-concat-rosters)))
 	 (jabber-muc-read-completing "To group: ")
-	 (jabber-read-with-input-method "Reason: ")))
+     nil
+	 ; (jabber-read-with-input-method "Reason: ")
+     ))
   (jabber-send-sexp
    jc
    `(message ((to . ,group))
