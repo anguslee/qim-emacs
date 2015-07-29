@@ -1,7 +1,10 @@
 ;; Auth for qim
 
 ;;;###autoload
-(defvar jabber-qim-pubkey-file nil)
+(defvar jabber-qim-pubkey-file
+  (format "%sresources/qtalk_pub_key.pem"
+          (file-name-directory
+           (or load-file-name buffer-file-name))))
 
 ;;;###autoload (autoload 'jabber-qim-password "jabber-qim-auth" "create qim password" t)
 (defun jabber-qim-password (uid pwd)

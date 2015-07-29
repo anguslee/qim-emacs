@@ -157,9 +157,12 @@
                      (replace-regexp-in-string "\\\]" ""
                                                (replace-regexp-in-string "\\\[" "" value)))))
          (if image
-             (insert-image
-              image
-              value)
+             (progn
+               (insert "\n")
+               (insert-image
+                image
+                value)
+               (insert "\n"))
            (insert (jabber-propertize
                     value
                     'face face)))))
@@ -199,7 +202,9 @@
      :url (format "%s/%s" *jabber-qim-image-server* url-path)
      )
     (wait latch 1.5)
-    (create-image ret)
+    (if ret
+        (create-image ret)
+      nil)
     ))
 
 (provide 'jabber-qim-util)
