@@ -209,8 +209,8 @@
 (defun jabber-qim-load-file (file-desc)
   (lexical-let ((file-path (format "%s/%s"
                            (jabber-qim-local-received-files-cache-dir)
-                           (cdr (assoc :FileName file-desc))))
-        (url (format "%s/%s" *jabber-qim-image-server* (cdr (assoc :HttpUrl file-desc)))))
+                           (cdr (assoc 'FileName file-desc))))
+        (url (format "%s/%s" *jabber-qim-image-server* (cdr (assoc 'HttpUrl file-desc)))))
     (web-http-get
      #'(lambda (httpc header body)
          (let ((coding-system-for-write 'binary))
@@ -219,11 +219,20 @@
      :url url
      )
     `((:saved-path . ,file-path)
-      (:filename . ,(cdr (assoc :FileName file-desc)))
+      (:filename . ,(cdr (assoc 'FileName file-desc)))
       (:link . ,url)
-      (:size . ,(cdr (assoc :FileSize file-desc)))
-      (:md5 . ,(cdr (assoc :FILEMD5 file-desc))))
+      (:size . ,(cdr (assoc 'FileSize file-desc)))
+      (:md5 . ,(cdr (assoc 'FILEMD5 file-desc))))
     ))
+
+(defun jabber-qim-body-parse-file (body)
+  (let ((file-desc (ignore-errors
+                     (json-read-from-string body))))
+    (when (and file-desc
+             (cdr (assoc 'FileName file-desc))
+             (cdr (assoc 'HttpUrl file-desc)))
+        file-desc
+        )))
 
 
 (provide 'jabber-qim-util)

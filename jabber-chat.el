@@ -601,11 +601,16 @@ If DONT-PRINT-NICK-P is true, don't include nickname."
 	  ;;      'face (case who
 	  ;;   	   ((:foreign :muc-foreign) 'jabber-chat-text-foreign)
 	  ;;   	   ((:local :muc-local) 'jabber-chat-text-local))))
-      (jabber-chat-print-message-body-segments
-       body
-       (case who
-	    	   ((:foreign :muc-foreign) 'jabber-chat-text-foreign)
-	    	   ((:local :muc-local) 'jabber-chat-text-local)))
+      (let ((file-desc (jabber-qim-body-parse-file body)))
+        (if file-desc
+            (insert (format "[File Received] %s"
+                            (cdr (assoc :saved-path (jabber-qim-load-file file-desc)))))
+          (jabber-chat-print-message-body-segments
+           body
+           (case who
+             ((:foreign :muc-foreign) 'jabber-chat-text-foreign)
+             ((:local :muc-local) 'jabber-chat-text-local)))))
+      
       ))
       t)))
 
