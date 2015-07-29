@@ -157,21 +157,21 @@
                      (replace-regexp-in-string "\\\]" ""
                                                (replace-regexp-in-string "\\\[" "" value)))))
          (if image
-             (progn
-               (insert "\n")
-               (insert-image
+             (insert-image
                 image
                 value)
-               (insert "\n"))
            (insert (jabber-propertize
                     value
                     'face face)))))
       ('image
        (let ((image (jabber-qim-load-image value)))
          (if image
-             (insert-image
-              image
-              value)
+             (progn
+               (insert "\n")
+               (insert-image
+                image
+                value)
+               (insert "\n"))
            (insert (jabber-propertize
                     value
                     'face face)))))
@@ -189,10 +189,9 @@
                 (ret nil))
     (web-http-get
      #'(lambda (httpc header body)
-         (let* ((img-fp (md5 body))
-                (file-path (format "%s/%s"
-                                   (jabber-qim-local-images-cache-dir)
-                                   img-fp)))
+         (let ((file-path (format "%s/%s"
+                                  (jabber-qim-local-images-cache-dir)
+                                  (md5 body))))
            (unless (file-exists-p file-path)
              (let ((coding-system-for-write 'binary))
                (with-temp-file file-path
@@ -206,5 +205,25 @@
         (jabber-create-image ret)
       nil)
     ))
+
+(defun jabber-qim-load-file (file-desc)
+  (lexical-let ((file-path (format "%s/%s"
+                           (jabber-qim-local-received-files-cache-dir)
+                           (cdr (assoc :FileName file-desc))))
+        (url (format "%s/%s" *jabber-qim-image-server* (cdr (assoc :HttpUrl file-desc)))))
+    (web-http-get
+     #'(lambda (httpc header body)
+         (let ((coding-system-for-write 'binary))
+             (with-temp-file file-path
+               (insert body))))
+     :url url
+     )
+    `((:saved-path . ,file-path)
+      (:filename . ,(cdr (assoc :FileName file-desc)))
+      (:link . ,url)
+      (:size . ,(cdr (assoc :FileSize file-desc)))
+      (:md5 . ,(cdr (assoc :FILEMD5 file-desc))))
+    ))
+
 
 (provide 'jabber-qim-util)
