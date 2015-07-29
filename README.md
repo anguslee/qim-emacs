@@ -36,11 +36,11 @@ your .emacs file.
 
     (add-to-list 'load-path "~/Documents/sources/qim-emacs") ; 本工程目录
 
-    (setq jabber-qim-pubkey-file
-        "~/Documents/sources/qim-emacs/resources/qtalk_pub_key.pem") ; 公钥文件路径
+    ; (setq jabber-qim-pubkey-file
+    ;    "~/Documents/sources/qim-emacs/resources/qtalk_pub_key.pem") ; 公钥文件路径，默认为本工程目录下的resources/qtalk_pub_key.pem文件
 
-    (setq jabber-qim-local-file-dir
-        "~/qim-local-files") ; qim保存收到的文件的目录（默认为本工程目录下的.cache目录）
+    ; (setq jabber-qim-local-file-dir
+    ;    "~/qim-local-files") ; qim保存收到的文件的目录（默认为本工程目录下的.cache目录）
 
     (load "jabber-autoloads")
 
