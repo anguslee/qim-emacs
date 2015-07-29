@@ -203,7 +203,7 @@
      )
     (wait latch 1.5)
     (if ret
-        (create-image ret)
+        (jabber-create-image ret)
       nil)
     ))
 

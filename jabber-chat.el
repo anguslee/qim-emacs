@@ -377,8 +377,10 @@ This function is used as an ewoc prettyprinter."
 	       (string= (substring body 0 4) "/me "))))
 
     ;; Print prompt...
-    (let ((delayed (or original-timestamp (plist-get (cddr data) :delayed)))
-	  (prompt-start (point)))
+    (let ((carbon (equal "true" (cdr (assoc 'carbon_message
+                                            (plist-get (cadr data) 'message)))))
+          (delayed (or original-timestamp (plist-get (cddr data) :delayed)))
+          (prompt-start (point)))
       (case (car data)
 	(:local
 	 (jabber-chat-self-prompt (or original-timestamp internal-time)
@@ -388,11 +390,16 @@ This function is used as an ewoc prettyprinter."
 	 (if (and (listp (cadr data))
 		  (jabber-muc-private-message-p (cadr data)))
 	     (jabber-muc-private-print-prompt (cadr data))
-	   ;; For :error and :notice, this might be a string... beware
-	   (jabber-chat-print-prompt (when (listp (cadr data)) (cadr data))
+       (if carbon
+           (jabber-chat-self-prompt (or original-timestamp internal-time)
+				  delayed
+				  /me-p)
+         ;; For :error and :notice, this might be a string... beware
+         (jabber-chat-print-prompt (when (listp (cadr data)) (cadr data))
 				     (or original-timestamp internal-time)
 				     delayed
-				     /me-p)))
+				     /me-p))
+	   ))
 	((:error :notice :subscription-request)
 	 (jabber-chat-system-prompt (or original-timestamp internal-time)))
 	(:muc-local
