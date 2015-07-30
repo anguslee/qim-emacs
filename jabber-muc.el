@@ -788,10 +788,10 @@ group, else it is a JID."
   (interactive)
   (if (find jabber-group *jabber-silenced-groupchats* :test 'equal)
       (progn
-        (message "Message alerts Activated: %s" jabber-group)
+        (message "Message alerts Activated: %s" (jabber-jid-displayname jabber-group))
         (setq *jabber-silenced-groupchats*
               (remove-if #'(lambda (x)
-                             (equal x (jabber-jid-displayname jabber-group)))
+                             (equal x jabber-group))
                          *jabber-silenced-groupchats*)))
     (progn
       (message "Message alerts DEactivated: %s" (jabber-jid-displayname jabber-group))
