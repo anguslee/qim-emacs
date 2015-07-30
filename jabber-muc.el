@@ -39,6 +39,10 @@
 Keys are strings, the bare JID of the room.
 Values are strings.")
 
+;;;###autoload
+(defvar *jabber-silenced-groupchats* nil
+  "List of groupchats that does not show alerts unless being @'ed")
+
 (defvar jabber-pending-groupchats (make-hash-table)
   "Hash table of groupchats and nicknames.
 Keys are JID symbols; values are strings.
@@ -755,7 +759,7 @@ group, else it is a JID."
 		    'jabber-report-success "Affiliation change")))
 
 (add-to-list 'jabber-jid-muc-menu
-	     (cons "Invite someone to chatroom" 'jabber-muc-invite))
+             (cons "Invite someone to chatroom" 'jabber-muc-invite))
 
 (defun jabber-muc-invite (jc jid group reason)
   "Invite JID to GROUP, stating REASON."
@@ -776,6 +780,24 @@ group, else it is a JID."
 		(invite ((to . ,jid))
 			,(unless (zerop (length reason))
 			   `(reason nil ,reason)))))))
+
+(add-to-list 'jabber-jid-muc-menu
+             (cons "Toggle chatroom message alerts" 'jabber-muc-toggle-message-alert))
+
+(defun jabber-muc-toggle-message-alert ()
+  (interactive)
+  (if (find jabber-group *jabber-silenced-groupchats* :test 'equal)
+      (progn
+        (message "Message alerts Activated: %s" jabber-group)
+        (setq *jabber-silenced-groupchats*
+              (remove-if #'(lambda (x)
+                             (equal x (jabber-jid-displayname jabber-group)))
+                         *jabber-silenced-groupchats*)))
+    (progn
+      (message "Message alerts DEactivated: %s" (jabber-jid-displayname jabber-group))
+      (add-to-list '*jabber-silenced-groupchats* jabber-group))
+    ))
+
 
 ;(add-to-list 'jabber-body-printers 'jabber-muc-print-invite)
 (add-to-list 'jabber-body-printers 'jabber-muc-accept-invite)
@@ -1038,12 +1060,16 @@ Return nil if X-MUC is nil."
               (jabber-maybe-print-rare-time
                (ewoc-enter-last jabber-chat-ewoc (list type xml-data :time (current-time))))
 
-              ;; ...except if the message is part of history, in which
+              ;; ...except if the message is part of history, or messages alerts from this group are turned off, in which
               ;; case we don't want an alert.
               (let ((children-namespaces (mapcar (lambda (x) (when (listp x) (jabber-xml-get-attribute x 'xmlns)))
                                                  (jabber-xml-node-children xml-data))))
                 (unless (or (member "urn:xmpp:delay" children-namespaces)
-                            (member "jabber:x:delay" children-namespaces))
+                            (member "jabber:x:delay" children-namespaces)
+                            (and (find group *jabber-silenced-groupchats* :test 'equal) ; Alerts are turned off
+                                 (not (numberp (string-match
+                                                (format "@%s" (cdr (assoc group *jabber-active-groupchats*)))
+                                                body-text))))) ; Not being @'ed
                   (dolist (hook '(jabber-muc-hooks jabber-alert-muc-hooks))
                     (run-hook-with-args hook
                                         nick group (current-buffer) body-text
