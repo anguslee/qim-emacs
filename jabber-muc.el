@@ -877,6 +877,11 @@ group, else it is a JID."
                                                              t)))))))))
 
 ;;;###autoload
+(defun jabber-muc-invite-message-p (message)
+  "Return non-nil if MESSAGE is a groupchat invite message."
+  (jabber-xml-path message '(("http://jabber.org/protocol/muc#user" . "x") invite)))
+
+;;;###autoload
 (defun jabber-muc-message-p (message)
   "Return non-nil if MESSAGE is a groupchat message.
 That does not include private messages in a groupchat, but does
@@ -1023,26 +1028,28 @@ Return nil if X-MUC is nil."
 				 xml-data 'body)))))
 
 	   (printers (append jabber-muc-printers jabber-chat-printers)))
+      (if (or (assoc group *jabber-active-groupchats*)
+              (jabber-muc-invite-message-p xml-data))
+          (with-current-buffer (jabber-muc-create-buffer jc group)
+            (jabber-muc-snarf-topic xml-data)
+            ;; Call alert hooks only when something is output
+            (when (or error-p
+                      (run-hook-with-args-until-success 'printers xml-data type :printp))
+              (jabber-maybe-print-rare-time
+               (ewoc-enter-last jabber-chat-ewoc (list type xml-data :time (current-time))))
 
-      (with-current-buffer (jabber-muc-create-buffer jc group)
-	(jabber-muc-snarf-topic xml-data)
-	;; Call alert hooks only when something is output
-	(when (or error-p
-		  (run-hook-with-args-until-success 'printers xml-data type :printp))
-	  (jabber-maybe-print-rare-time
-	   (ewoc-enter-last jabber-chat-ewoc (list type xml-data :time (current-time))))
-
-	  ;; ...except if the message is part of history, in which
-	  ;; case we don't want an alert.
-	  (let ((children-namespaces (mapcar (lambda (x) (when (listp x) (jabber-xml-get-attribute x 'xmlns)))
-					     (jabber-xml-node-children xml-data))))
-	    (unless (or (member "urn:xmpp:delay" children-namespaces)
-			(member "jabber:x:delay" children-namespaces))
-	      (dolist (hook '(jabber-muc-hooks jabber-alert-muc-hooks))
-		(run-hook-with-args hook
-				    nick group (current-buffer) body-text
-				    (funcall jabber-alert-muc-function
-					     nick group (current-buffer) body-text))))))))))
+              ;; ...except if the message is part of history, in which
+              ;; case we don't want an alert.
+              (let ((children-namespaces (mapcar (lambda (x) (when (listp x) (jabber-xml-get-attribute x 'xmlns)))
+                                                 (jabber-xml-node-children xml-data))))
+                (unless (or (member "urn:xmpp:delay" children-namespaces)
+                            (member "jabber:x:delay" children-namespaces))
+                  (dolist (hook '(jabber-muc-hooks jabber-alert-muc-hooks))
+                    (run-hook-with-args hook
+                                        nick group (current-buffer) body-text
+                                        (funcall jabber-alert-muc-function
+                                                 nick group (current-buffer) body-text))))))))
+      )))
 
 (defun jabber-muc-process-presence (jc presence)
   (let* ((from (jabber-xml-get-attribute presence 'from))

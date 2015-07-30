@@ -84,19 +84,22 @@
    (string-prefix-p "conference." (jabber-jid-server muc-jid))
    (or (gethash (jabber-jid-user muc-jid) *jabber-qim-muc-vcard-cache*)
        (lexical-let ((latch (make-one-time-latch))
-                     (ret nil))
+                     (ret nil)
+                     (vcard nil))
          (jabber-qim-api-request-post
           (lambda (data conn headers)
-            (setq ret
-                  (nth 0 (cdr (assoc 'data data))))
+            (ignore-errors
+              (setq vcard
+                    (nth 0 (cdr (assoc 'data data)))))
+            (setq ret t)
             (apply-partially #'nofify latch))
           "getmucvcard"
           (json-encode (vector `((:muc_name . ,(jabber-jid-user muc-jid))
                                  (:version . 0))))
           'applicaition/json)
          (wait latch 0.2)
-         (puthash (jabber-jid-user muc-jid) ret *jabber-qim-muc-vcard-cache*)
-         ret))))
+         (puthash (jabber-jid-user muc-jid) vcard *jabber-qim-muc-vcard-cache*)
+         vcard))))
 
 (defun jabber-qim-parse-object-attribute (text attribute)
   "Parse object attribute from objects like [obj type=\"emoticon\" value=\"[/guzg]\"]"
@@ -146,6 +149,10 @@
 (defun jabber-qim-emotion-image (shortcut)
   (jabber-create-image (jabber-qim-get-emotion-by-shortcut shortcut)))
 
+(defun jabber-qim-insert-file (file-desc face)
+  "Insert file into chat buffer."
+  )
+
 
 (defun jabber-qim-insert-object (object-text face)
   "Insert object into chat buffer."
@@ -161,7 +168,7 @@
                 image
                 value)
            (insert (jabber-propertize
-                    value
+                    object-text
                     'face face)))))
       ('image
        (let ((image (jabber-qim-load-image value)))
@@ -177,7 +184,7 @@
                     'face face)))))
       ('url
        (insert (jabber-propertize
-                (format " %s " value)
+                value
                 'face face)))
       (t
        (insert (jabber-propertize
@@ -186,24 +193,27 @@
 
 (defun jabber-qim-load-image (url-path)
   (lexical-let ((latch (make-one-time-latch))
+                (image nil)
                 (ret nil))
     (web-http-get
      #'(lambda (httpc header body)
-         (let ((file-path (format "%s/%s"
-                                  (jabber-qim-local-images-cache-dir)
-                                  (md5 body))))
-           (unless (file-exists-p file-path)
-             (let ((coding-system-for-write 'binary))
-               (with-temp-file file-path
-                 (insert body))))
-           (setq ret file-path))
+         (ignore-errors
+           (when (equal "200" (gethash 'status-code header))
+             (let ((file-path (format "%s/%s"
+                                      (jabber-qim-local-images-cache-dir)
+                                      (md5 body))))
+               (unless (file-exists-p file-path)
+                 (let ((coding-system-for-write 'binary))
+                   (with-temp-file file-path
+                     (insert body))))
+               (setq image file-path))))
+         (setq ret t)
          (apply-partially #'nofify latch))
      :url (format "%s/%s" *jabber-qim-image-server* url-path)
      )
     (wait latch 1.5)
-    (if ret
-        (jabber-create-image ret)
-      nil)
+    (when image
+        (jabber-create-image image))
     ))
 
 (defun jabber-qim-load-file (file-desc)
