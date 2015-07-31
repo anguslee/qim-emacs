@@ -1156,26 +1156,27 @@ Return nil if X-MUC is nil."
 				       (jabber-jid-user jid)
 				       ">")))))
 	  (jabber-muc-remove-participant group nickname)
-	  (with-current-buffer (jabber-muc-create-buffer jc group)
-	    (jabber-maybe-print-rare-time
-	     (ewoc-enter-last
-	      jabber-chat-ewoc
-	      (list :muc-notice
-		    (cond
-		     ((member "301" status-codes)
-		      (concat name " has been banned"
-			      (when actor (concat " by " actor))
-			      (when reason (concat " - '" reason "'"))))
-		     ((member "307" status-codes)
-		      (concat name " has been kicked"
-			      (when actor (concat " by " actor))
-			      (when reason (concat " - '" reason "'"))))
-		     ((member "303" status-codes)
-		      (concat name " changes nickname to "
-			      (jabber-xml-get-attribute item 'nick)))
-		     (t
-		      (concat name " has left the chatroom")))
-		    :time (current-time))))))))
+	  (unless jabber-mute-muc-notice
+          (with-current-buffer (jabber-muc-create-buffer jc group)
+            (jabber-maybe-print-rare-time
+             (ewoc-enter-last
+              jabber-chat-ewoc
+              (list :muc-notice
+                    (cond
+                     ((member "301" status-codes)
+                      (concat name " has been banned"
+                              (when actor (concat " by " actor))
+                              (when reason (concat " - '" reason "'"))))
+                     ((member "307" status-codes)
+                      (concat name " has been kicked"
+                              (when actor (concat " by " actor))
+                              (when reason (concat " - '" reason "'"))))
+                     ((member "303" status-codes)
+                      (concat name " changes nickname to "
+                              (jabber-xml-get-attribute item 'nick)))
+                     (t
+                      (concat name " has left the chatroom")))
+                    :time (current-time)))))))))
      (t 
       ;; someone is entering
 
@@ -1205,41 +1206,42 @@ Return nil if X-MUC is nil."
       (let ((old-plist (jabber-muc-participant-plist group nickname))
 	    (new-plist (jabber-muc-parse-affiliation x-muc)))
 	(jabber-muc-modify-participant group nickname new-plist)
-	(let ((report (jabber-muc-report-delta nickname old-plist new-plist
-					       reason actor)))
+	(let ((report (unless jabber-mute-muc-notice
+                    (jabber-muc-report-delta nickname old-plist new-plist
+                                             reason actor))))
 	  (when report
 	    (with-current-buffer (jabber-muc-create-buffer jc group)
 	      (jabber-maybe-print-rare-time
 	       (ewoc-enter-last
-		jabber-chat-ewoc
-		(list :muc-notice report
-		      :time (current-time))))
+            jabber-chat-ewoc
+            (list :muc-notice report
+                  :time (current-time))))
 	      ;; Did the server change our nick?
 	      (when (member "210" status-codes)
-		(ewoc-enter-last
-		 jabber-chat-ewoc
-		 (list :muc-notice
-		       (concat "Your nick was changed to " nickname " by the server")
-		       :time (current-time))))
+            (ewoc-enter-last
+             jabber-chat-ewoc
+             (list :muc-notice
+                   (concat "Your nick was changed to " nickname " by the server")
+                   :time (current-time))))
 	      ;; Was this room just created?  If so, it's a locked
 	      ;; room.  Notify the user.
 	      (when (member "201" status-codes)
-		(ewoc-enter-last
-		 jabber-chat-ewoc
-		 (list :muc-notice
-		       (with-temp-buffer
-			 (insert "This room was just created, and is locked to other participants.\n"
-				 "To unlock it, ")
-			 (insert-text-button
-			  "configure the room"
-			  'action (apply-partially 'call-interactively 'jabber-muc-get-config))
-			 (insert " or ")
-			 (insert-text-button
-			  "accept the default configuration"
-			  'action (apply-partially 'call-interactively 'jabber-muc-instant-config))
-			 (insert ".")
-			 (buffer-string))
-		       :time (current-time))))))))))))
+            (ewoc-enter-last
+             jabber-chat-ewoc
+             (list :muc-notice
+                   (with-temp-buffer
+                     (insert "This room was just created, and is locked to other participants.\n"
+                             "To unlock it, ")
+                     (insert-text-button
+                      "configure the room"
+                      'action (apply-partially 'call-interactively 'jabber-muc-get-config))
+                     (insert " or ")
+                     (insert-text-button
+                      "accept the default configuration"
+                      'action (apply-partially 'call-interactively 'jabber-muc-instant-config))
+                     (insert ".")
+                     (buffer-string))
+                   :time (current-time))))))))))))
 	      
 (provide 'jabber-muc)
 

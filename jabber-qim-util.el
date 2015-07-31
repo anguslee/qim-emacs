@@ -98,8 +98,13 @@
                                  (:version . 0))))
           'applicaition/json)
          (wait latch 0.2)
-         (puthash (jabber-jid-user muc-jid) vcard *jabber-qim-muc-vcard-cache*)
+         (if (null vcard)
+             (puthash (jabber-jid-user muc-jid)
+                      `((SN . ,(jabber-jid-user muc-jid)))
+                      *jabber-qim-muc-vcard-cache*)
+           (puthash (jabber-jid-user muc-jid) vcard *jabber-qim-muc-vcard-cache*))
          vcard))))
+
 
 (defun jabber-qim-parse-object-attribute (text attribute)
   "Parse object attribute from objects like [obj type=\"emoticon\" value=\"[/guzg]\"]"
