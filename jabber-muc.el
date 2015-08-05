@@ -253,11 +253,15 @@ This function is idempotent."
 (defun jabber-muc-remove-groupchat (group)
   "Remove GROUP from internal bookkeeping."
   (let ((whichgroup (assoc group *jabber-active-groupchats*))
-	(whichparticipants (assoc group jabber-muc-participants)))
+        (whichparticipants (assoc group jabber-muc-participants)))
     (setq *jabber-active-groupchats* 
-	  (delq whichgroup *jabber-active-groupchats*))
+          (delq whichgroup *jabber-active-groupchats*))
+    (setq *jabber-silenced-groupchats*
+              (remove-if #'(lambda (x)
+                             (equal x group))
+                         *jabber-silenced-groupchats*))
     (setq jabber-muc-participants
-	  (delq whichparticipants jabber-muc-participants))))
+          (delq whichparticipants jabber-muc-participants))))
 
 (defun jabber-muc-connection-closed (bare-jid)
   "Remove MUC data for BARE-JID.

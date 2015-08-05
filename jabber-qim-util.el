@@ -12,7 +12,7 @@
 (defvar *jabber-qim-api-server*
   "https://qtapi.corp.qunar.com")
 
-(defvar *jabber-qim-image-server*
+(defvar *jabber-qim-file-server*
   "https://qtalk.corp.qunar.com")
 
 (defvar jabber-qim-local-file-dir
@@ -154,9 +154,60 @@
 (defun jabber-qim-emotion-image (shortcut)
   (jabber-create-image (jabber-qim-get-emotion-by-shortcut shortcut)))
 
+
+(defun secure-hash-file (file algorithm)
+  (when (file-exists-p file)
+    (with-temp-buffer
+      (insert-file-contents file)
+      (secure-hash algorithm (current-buffer)))))
+
+(defun jabber-qim-view-file-in-directory (file-path)
+  (find-file (file-name-directory file-path))
+  (revert-buffer t t t)
+  (dired-goto-file file-path))
+
+
 (defun jabber-qim-insert-file (file-desc face)
   "Insert file into chat buffer."
-  )
+  (insert "\n")
+  (insert (jabber-propertize
+           (format "[File Received: %s] "
+                   (cdr (assoc 'FileName
+                               file-desc)))
+           'face face))
+  (insert-button "View In Directory"
+                 :file-desc file-desc
+                 'action #'(lambda (button)
+                             (lexical-let* ((file-name (cdr (assoc 'FileName
+                                                                   (button-get button :file-desc))))
+                                            (file-path (format "%s/%s"
+                                                               (jabber-qim-local-received-files-cache-dir)
+                                                               file-name))
+                                            (file-md5 (cdr (assoc 'FILEMD5
+                                                                  (button-get button :file-desc))))
+                                            (url (format "%s/%s" *jabber-qim-file-server*
+                                                         (cdr (assoc 'HttpUrl
+                                                                     (button-get button :file-desc))))))
+                               (if (and
+                                    (file-exists-p file-path)
+                                    (string= file-md5 (secure-hash-file file-path 'md5)))
+                                   (jabber-qim-view-file-in-directory file-path)
+                                 (web-http-get
+                                  #'(lambda (httpc header body)
+                                      (let ((coding-system-for-write 'binary))
+                                        (with-temp-file file-path
+                                          (insert body))
+                                        (message "File %s downloaded" file-name)
+                                        (jabber-qim-view-file-in-directory file-path)))
+                                  :url url)))))
+  ;; (insert " ")
+  ;; (insert-button "Forward To..."
+  ;;                :file-decs file-desc
+  ;;                'action #'(lambda (button)
+  ;;                            (interactive )
+  ;;                            (lexical-let* ((file-desc (button-get button :file-desc)))
+  ;;                              )))
+  (insert "\n"))
 
 
 (defun jabber-qim-insert-object (object-text face)
@@ -177,16 +228,15 @@
                     'face face)))))
       ('image
        (let ((image (jabber-qim-load-image value)))
+         (insert "\n")
          (if image
-             (progn
-               (insert "\n")
-               (insert-image
+             (insert-image
                 image
                 value)
-               (insert "\n"))
            (insert (jabber-propertize
-                    value
-                    'face face)))))
+                    (format "[Image]<%s%s>" *jabber-qim-file-server* value)
+                    'face face)))
+         (insert "\n")))
       ('url
        (insert (jabber-propertize
                 value
@@ -214,7 +264,7 @@
                (setq image file-path))))
          (setq ret t)
          (apply-partially #'nofify latch))
-     :url (format "%s/%s" *jabber-qim-image-server* url-path)
+     :url (format "%s/%s" *jabber-qim-file-server* url-path)
      )
     (wait latch 1.5)
     (when image
@@ -225,7 +275,7 @@
   (lexical-let ((file-path (format "%s/%s"
                            (jabber-qim-local-received-files-cache-dir)
                            (cdr (assoc 'FileName file-desc))))
-        (url (format "%s/%s" *jabber-qim-image-server* (cdr (assoc 'HttpUrl file-desc)))))
+        (url (format "%s/%s" *jabber-qim-file-server* (cdr (assoc 'HttpUrl file-desc)))))
     (web-http-get
      #'(lambda (httpc header body)
          (let ((coding-system-for-write 'binary))
