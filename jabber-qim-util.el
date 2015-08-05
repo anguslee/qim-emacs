@@ -234,7 +234,7 @@
                 image
                 value)
            (insert (jabber-propertize
-                    (format "[Image]<%s%s>" *jabber-qim-file-server* value)
+                    (format "[Image]<%s/%s>" *jabber-qim-file-server* value)
                     'face face)))
          (insert "\n")))
       ('url
