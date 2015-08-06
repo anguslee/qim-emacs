@@ -57,10 +57,6 @@
   "XML namespace prefixes used for the current connection.")
 (make-variable-buffer-local 'jabber-namespace-prefixes)
 
-;;;###autoload
-(defvar jabber-mute-muc-notice nil
-  "Mute muc notice messages")
-
 (defgroup jabber-core nil "customize core functionality"
   :group 'jabber)
 

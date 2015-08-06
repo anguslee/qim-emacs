@@ -1160,27 +1160,26 @@ Return nil if X-MUC is nil."
 				       (jabber-jid-user jid)
 				       ">")))))
 	  (jabber-muc-remove-participant group nickname)
-	  (unless jabber-mute-muc-notice
-          (with-current-buffer (jabber-muc-create-buffer jc group)
-            (jabber-maybe-print-rare-time
-             (ewoc-enter-last
-              jabber-chat-ewoc
-              (list :muc-notice
-                    (cond
-                     ((member "301" status-codes)
-                      (concat name " has been banned"
-                              (when actor (concat " by " actor))
-                              (when reason (concat " - '" reason "'"))))
-                     ((member "307" status-codes)
-                      (concat name " has been kicked"
-                              (when actor (concat " by " actor))
-                              (when reason (concat " - '" reason "'"))))
-                     ((member "303" status-codes)
-                      (concat name " changes nickname to "
-                              (jabber-xml-get-attribute item 'nick)))
-                     (t
-                      (concat name " has left the chatroom")))
-                    :time (current-time)))))))))
+	  (with-current-buffer (jabber-muc-create-buffer jc group)
+        (jabber-maybe-print-rare-time
+         (ewoc-enter-last
+          jabber-chat-ewoc
+          (list :muc-notice
+                (cond
+                 ((member "301" status-codes)
+                  (concat name " has been banned"
+                          (when actor (concat " by " actor))
+                          (when reason (concat " - '" reason "'"))))
+                 ((member "307" status-codes)
+                  (concat name " has been kicked"
+                          (when actor (concat " by " actor))
+                          (when reason (concat " - '" reason "'"))))
+                 ((member "303" status-codes)
+                  (concat name " changes nickname to "
+                          (jabber-xml-get-attribute item 'nick)))
+                 (t
+                  (concat name " has left the chatroom")))
+                :time (current-time))))))))
      (t 
       ;; someone is entering
 
@@ -1210,9 +1209,8 @@ Return nil if X-MUC is nil."
       (let ((old-plist (jabber-muc-participant-plist group nickname))
 	    (new-plist (jabber-muc-parse-affiliation x-muc)))
 	(jabber-muc-modify-participant group nickname new-plist)
-	(let ((report (unless jabber-mute-muc-notice
-                    (jabber-muc-report-delta nickname old-plist new-plist
-                                             reason actor))))
+	(let ((report (jabber-muc-report-delta nickname old-plist new-plist
+                                           reason actor)))
 	  (when report
 	    (with-current-buffer (jabber-muc-create-buffer jc group)
 	      (jabber-maybe-print-rare-time
