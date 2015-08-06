@@ -227,16 +227,44 @@
                     object-text
                     'face face)))))
       ('image
-       (let ((image (jabber-qim-load-image value)))
-         (insert "\n")
-         (if image
-             (insert-image
-                image
-                value)
-           (insert (jabber-propertize
-                    (format "[Image]<%s/%s>" *jabber-qim-file-server* value)
-                    'face face)))
-         (insert "\n")))
+       (insert "\n\n")
+       (insert (jabber-propertize
+                (format "[Image]<%s/%s> " *jabber-qim-file-server* value)
+                'face face))
+       (insert-button "View Image"
+                      :image-url (format "%s/%s" *jabber-qim-file-server* value)
+                      :image-ext (car (last (split-string value "[.]")))
+                      'action #'(lambda (button)
+                                  (lexical-let ((image-url (button-get button :image-url))
+                                                (image-ext (button-get button :image-ext)))
+                                    (web-http-get
+                                     #'(lambda (httpc header body)
+                                         (ignore-errors
+                                           (when (equal "200" (gethash 'status-code header))
+                                             (let ((file-path (format "%s/%s.%s"
+                                                                      (jabber-qim-local-images-cache-dir)
+                                                                      (md5 body)
+                                                                      image-ext)))
+                                               (unless (file-exists-p file-path)
+                                                 (let ((coding-system-for-write 'binary))
+                                                   (with-temp-file file-path
+                                                     (insert body))))
+                                               (find-file file-path)
+                                               (read-only-mode)
+                                               ))))
+                                     :url image-url))))
+       (insert "\n\n")
+       ;; (let ((image (jabber-qim-load-image value)))
+       ;;   (insert "\n")
+       ;;   (if image
+       ;;       (insert-image
+       ;;          image
+       ;;          value)
+       ;;     (insert (jabber-propertize
+       ;;              (format "[Image]<%s/%s>" *jabber-qim-file-server* value)
+       ;;              'face face)))
+       ;;   (insert "\n"))
+       )
       ('url
        (insert (jabber-propertize
                 value
@@ -246,30 +274,31 @@
                 object-text
                 'face face))))))
 
-(defun jabber-qim-load-image (url-path)
-  (lexical-let ((latch (make-one-time-latch))
-                (image nil)
-                (ret nil))
-    (web-http-get
-     #'(lambda (httpc header body)
-         (ignore-errors
-           (when (equal "200" (gethash 'status-code header))
-             (let ((file-path (format "%s/%s"
-                                      (jabber-qim-local-images-cache-dir)
-                                      (md5 body))))
-               (unless (file-exists-p file-path)
-                 (let ((coding-system-for-write 'binary))
-                   (with-temp-file file-path
-                     (insert body))))
-               (setq image file-path))))
-         (setq ret t)
-         (apply-partially #'nofify latch))
-     :url (format "%s/%s" *jabber-qim-file-server* url-path)
-     )
-    (wait latch 1.5)
-    (when image
-        (jabber-create-image image))
-    ))
+
+;; (defun jabber-qim-load-image (url-path)
+;;   (lexical-let ((latch (make-one-time-latch))
+;;                 (image nil)
+;;                 (ret nil))
+;;     (web-http-get
+;;      #'(lambda (httpc header body)
+;;          (ignore-errors
+;;            (when (equal "200" (gethash 'status-code header))
+;;              (let ((file-path (format "%s/%s"
+;;                                       (jabber-qim-local-images-cache-dir)
+;;                                       (md5 body))))
+;;                (unless (file-exists-p file-path)
+;;                  (let ((coding-system-for-write 'binary))
+;;                    (with-temp-file file-path
+;;                      (insert body))))
+;;                (setq image file-path))))
+;;          (setq ret t)
+;;          (apply-partially #'nofify latch))
+;;      :url (format "%s/%s" *jabber-qim-file-server* url-path)
+;;      )
+;;     (wait latch 1.5)
+;;     (when image
+;;         (jabber-create-image image))
+;;     ))
 
 (defun jabber-qim-load-file (file-desc)
   (lexical-let ((file-path (format "%s/%s"
