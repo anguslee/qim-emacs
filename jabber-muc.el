@@ -942,6 +942,16 @@ include groupchat invites."
 ;; (add-to-list 'jabber-jid-muc-menu
 ;; 	     (cons "Open private chat" 'jabber-muc-private))
 
+(defun jabber-muc-at (jc group nickname)
+  "Open private chat with NICKNAME in GROUP."
+  (interactive
+   (progn
+     (insert "@")
+     (jabber-muc-argument-list
+      (list (jabber-muc-read-nickname jabber-group "Nickname: ")))))
+  (insert (format "%s " nickname)))
+
+
 (defun jabber-muc-private (jc group nickname)
   "Open private chat with NICKNAME in GROUP."
   (interactive

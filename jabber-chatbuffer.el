@@ -93,6 +93,7 @@ window or at `fill-column', whichever is shorter."
   (let ((map (make-sparse-keymap)))
     (set-keymap-parent map jabber-common-keymap)
     (define-key map "\r" 'jabber-chat-buffer-send)
+    (define-key map "@" 'jabber-muc-at)
     map))
 
 (defun jabber-chat-buffer-send ()
