@@ -63,6 +63,24 @@
   (decode-coding-string (cdr (assoc 'MT vcard))
                         'utf-8-emacs-unix))
 
+;;;###autoload (autoload 'jabber-qim-user-vcard-jid "jabber-qim-util" "Return user jid" t)
+(defun jabber-qim-user-vcard-jid (vcard)
+  "Return user jid"
+  (format "%s@ejabhost1" (decode-coding-string (cdr (assoc 'U vcard))
+                                               'utf-8-emacs-unix)))
+
+;;;###autoload (autoload 'jabber-qim-user-vcard-name "jabber-qim-util" "Return user name" t)
+(defun jabber-qim-user-vcard-name (vcard)
+  "Return user name"
+  (decode-coding-string (cdr (assoc 'N vcard))
+                        'utf-8-emacs-unix))
+
+;;;###autoload (autoload 'jabber-qim-user-vcard-position "jabber-qim-util" "Return user position" t)
+(defun jabber-qim-user-vcard-position (vcard)
+  "Return user position"
+  (decode-coding-string (cdr (assoc 'D vcard))
+                        'utf-8-emacs-unix))
+
 
 (defun jabber-qim-api-request-post (callback command data mime-type)
   (web-json-post 
@@ -74,8 +92,58 @@
    :json-array-type 'list))
 
 ;;;###autoload
+(defvar *jabber-qim-user-vcard-cache*
+  (make-hash-table :test 'equal))
+
+(jabber-qim-api-request-post
+ #'(lambda (data conn headers)
+     (mapcar #'(lambda (vcard)
+                 (puthash (jabber-qim-user-vcard-jid vcard)
+                          vcard *jabber-qim-user-vcard-cache*)) data))
+ "getusers"
+ "u="
+ 'applicaion/json)
+
+;;;###autoload (autoload 'jabber-qim-jid-nickname "jabber-qim-util" "Return user nickname" t)
+(defun jabber-qim-jid-nickname (jid)
+  "Return user nickname"
+  (let ((user-vcard (gethash (jabber-jid-user jid)
+                             *jabber-qim-user-vcard-cache*)))
+    (when user-vcard
+      (jabber-qim-user-vcard-name user-vcard))))
+
+
+;;;###autoload
 (defvar *jabber-qim-muc-vcard-cache*
   (make-hash-table :test 'equal))
+
+
+(defun jabber-qim-session-muc-vcards ()
+  (let ((ret '()))
+    (maphash #'(lambda (key value)
+                 (add-to-list 'ret value))
+             *jabber-qim-muc-vcard-cache*)
+    ret))
+
+;; (mapcar #'(lambda (vcard)
+;;             (cons (jabber-qim-muc-vcard-group-display-name vcard)
+;;                   (jabber-qim-muc-vcard-group-jid vcard)))
+;;         (jabber-qim-session-muc-vcards))
+
+;; (defun jabber-qim-set-muc-vcard (muc-jid nickname title desc pic-url)
+;;   (json-encode (vector `((:muc_name . ,muc-jid)
+;;                          (:nick . ,nickname)
+;;                          (:title . ,title)
+;;                          (:desc . ,desc)
+;;                          (:version . 0)))))
+
+;; (jabber-qim-api-request-post
+;;  (lambda (data conn headers)
+;;    (message "%s" headers)
+;;    (message "%s" data))
+;;  "setmucvcard"
+;;  (jabber-qim-set-muc-vcard "test22323-angus@conference.ejabhost1" "hahaha" "ddd" "desc" nil)
+;;  'application/json)
 
 ;;;###autoload (autoload 'jabber-qim-get-muc-vcard "jabber-qim-util" "Return MUC vcard" t)
 (defun jabber-qim-get-muc-vcard (muc-jid)
@@ -100,7 +168,8 @@
          (wait latch 0.2)
          (if (null vcard)
              (puthash (jabber-jid-user muc-jid)
-                      `((SN . ,(jabber-jid-user muc-jid)))
+                      `((SN . ,(jabber-jid-user muc-jid))
+                        (MN . ,muc-jid))
                       *jabber-qim-muc-vcard-cache*)
            (puthash (jabber-jid-user muc-jid) vcard *jabber-qim-muc-vcard-cache*))
          vcard))))

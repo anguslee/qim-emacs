@@ -31,7 +31,7 @@
 (defgroup jabber-chat nil "chat display options"
   :group 'jabber)
 
-(defcustom jabber-chat-buffer-format "*-jabber-chat-%n-*"
+(defcustom jabber-chat-buffer-format "*-jabber-chat-%j/%n-*"
   "The format specification for the name of chat buffers.
 
 These fields are available (all are about the person you are chatting
@@ -483,22 +483,22 @@ If DELAYED is true, print long timestamp
 `jabber-chat-time-format').
 If DONT-PRINT-NICK-P is true, don't include nickname."
   (let ((from (jabber-xml-get-attribute xml-data 'from))
-	(timestamp (or timestamp (jabber-message-timestamp xml-data))))
+        (timestamp (or timestamp (jabber-message-timestamp xml-data))))
     (insert (jabber-propertize 
-	     (format-spec jabber-chat-foreign-prompt-format
-			  (list
-			   (cons ?t (format-time-string 
-				     (if delayed
-					 jabber-chat-delayed-time-format
-				       jabber-chat-time-format)
-				     timestamp))
-			   (cons ?n (if dont-print-nick-p "" (jabber-jid-displayname from)))
-			   (cons ?u (or (jabber-jid-username from) from))
-			   (cons ?r (jabber-jid-resource from))
-			   (cons ?j (jabber-jid-user from))))
-	     'face 'jabber-chat-prompt-foreign
-	     'help-echo
-	     (concat (format-time-string "On %Y-%m-%d %H:%M:%S" timestamp) " from " from)))))
+             (format-spec jabber-chat-foreign-prompt-format
+                          (list
+                           (cons ?t (format-time-string 
+                                     (if delayed
+                                         jabber-chat-delayed-time-format
+                                       jabber-chat-time-format)
+                                     timestamp))
+                           (cons ?n (if dont-print-nick-p "" (jabber-jid-displayname from)))
+                           (cons ?u (or (jabber-jid-username from) from))
+                           (cons ?r (jabber-jid-resource from))
+                           (cons ?j (jabber-jid-user from))))
+             'face 'jabber-chat-prompt-foreign
+             'help-echo
+             (concat (format-time-string "On %Y-%m-%d %H:%M:%S" timestamp) " from " from)))))
 
 (defun jabber-chat-system-prompt (timestamp)
   (insert (jabber-propertize 

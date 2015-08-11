@@ -186,11 +186,13 @@ Return nil if none found."
   "return the name of the user, if given in roster, else nil"
   (let ((user (jabber-jid-symbol string)))
     (if (> (length (get user 'name)) 0)
-	(get user 'name))))
+        (get user 'name))))
+
 
 (defun jabber-jid-displayname (string)
   "return the name of the user, if given in roster or displayname in muc vcard, else username@server"
   (or (jabber-jid-rostername string)
+      (jabber-qim-jid-nickname string)
       (let ((muc-vcard (jabber-qim-get-muc-vcard string)))
         (if muc-vcard
             (format "%s@%s/%s" (jabber-qim-muc-vcard-group-display-name muc-vcard)

@@ -1081,9 +1081,13 @@ Return nil if X-MUC is nil."
                 (unless (or (member "urn:xmpp:delay" children-namespaces)
                             (member "jabber:x:delay" children-namespaces)
                             (and (find group *jabber-silenced-groupchats* :test 'equal) ; Alerts are turned off
-                                 (not (numberp (string-match
-                                                (format "@%s" (cdr (assoc group *jabber-active-groupchats*)))
-                                                body-text))))) ; Not being @'ed
+                                 (not (or
+                                       (numberp (string-match
+                                                 (format "@%s" (cdr (assoc group *jabber-active-groupchats*)))
+                                                 body-text))
+                                       (numberp (string-match
+                                                 "@all"
+                                                 body-text)))))) ; Not being @'ed
                   (dolist (hook '(jabber-muc-hooks jabber-alert-muc-hooks))
                     (run-hook-with-args hook
                                         nick group (current-buffer) body-text
