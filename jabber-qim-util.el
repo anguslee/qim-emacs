@@ -251,15 +251,35 @@
   (revert-buffer t t t)
   (dired-goto-file file-path))
 
+(defun jabber-qim-forward-object-action (button)
+  (let* ((session-muc-alist (jabber-qim-session-muc-vcard-alist))
+         (jid (jabber-read-jid-completing "Forward to:"
+                                          (append (mapcar #'car session-muc-alist)
+                                                  *jabber-qim-user-jid-cache*)))
+         (jc (jabber-read-account))
+         (muc-jid (cdr (assoc (intern jid)
+                              session-muc-alist)))
+         (send-function (if muc-jid
+                            'jabber-muc-send
+                          'jabber-chat-send))
+         (buffer (if muc-jid
+                     (jabber-muc-create-buffer jc muc-jid)
+                   (jabber-chat-create-buffer jc jid))))
+    (switch-to-buffer buffer)
+    (funcall send-function
+             jc
+             (button-get button :object-text))
+    ))
 
-(defun jabber-qim-insert-file (file-desc face)
+(defun jabber-qim-insert-file (file-desc body-text face)
   "Insert file into chat buffer."
-  (insert "\n")
+  (insert "\n\n")
   (insert (jabber-propertize
            (format "[File Received: %s] "
                    (cdr (assoc 'FileName
                                file-desc)))
            'face face))
+  (insert "\n")
   (insert-button "View In Directory"
                  :file-desc file-desc
                  'action #'(lambda (button)
@@ -285,13 +305,10 @@
                                         (message "File %s downloaded" file-name)
                                         (jabber-qim-view-file-in-directory file-path)))
                                   :url url)))))
-  ;; (insert " ")
-  ;; (insert-button "Forward To..."
-  ;;                :file-decs file-desc
-  ;;                'action #'(lambda (button)
-  ;;                            (interactive )
-  ;;                            (lexical-let* ((file-desc (button-get button :file-desc)))
-  ;;                              )))
+  (insert "\t")
+  (insert-button "Forward File To..."
+                 :object-text body-text
+                 'action #'jabber-qim-forward-object-action)
   (insert "\n"))
 
 
@@ -362,25 +379,8 @@
              )))
        (insert "\t")
        (insert-button "Forward Image To..."
-                      :image-object object-text
-                      'action #'(lambda (button)
-                                  (let* ((session-muc-alist (jabber-qim-session-muc-vcard-alist))
-                                         (jid (jabber-read-jid-completing "Forward to:"
-                                                                          (append (mapcar #'car session-muc-alist) *jabber-qim-user-jid-cache*)))
-                                         (jc (jabber-read-account))
-                                         (muc-jid (cdr (assoc (intern jid)
-                                                              session-muc-alist)))
-                                         (send-function (if muc-jid
-                                                            'jabber-muc-send
-                                                          'jabber-chat-send))
-                                         (buffer (if muc-jid
-                                                     (jabber-muc-create-buffer jc muc-jid)
-                                                   (jabber-chat-create-buffer jc jid))))
-                                    (switch-to-buffer buffer)
-                                    (funcall send-function
-                                             jc
-                                             (button-get button :image-object))
-                                    )))
+                      :object-text object-text
+                      'action #'jabber-qim-forward-object-action)
        (insert "\n\n"))
       ('url
        (insert (jabber-propertize
@@ -444,6 +444,11 @@
              (cdr (assoc 'HttpUrl file-desc)))
         file-desc
         )))
+
+(defun jabber-qim-msg-type (body)
+  (if (jabber-qim-body-parse-file body)
+      5
+    1))
 
 
 (provide 'jabber-qim-util)

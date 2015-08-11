@@ -339,7 +339,7 @@ This function is idempotent."
 			   ((to . ,jabber-chatting-with)
 			    (type . "chat")
 			    (id . ,id))
-			   (body ((maType . 0) (msgType . 1) (id . ,(jabber-message-uuid))) ,body))))
+			   (body ((maType . 0) (msgType . ,(jabber-qim-msg-type body)) (id . ,(jabber-message-uuid))) ,body))))
     ;; ...add additional elements...
     ;; TODO: Once we require Emacs 24.1, use `run-hook-wrapped' instead.
     ;; That way we don't need to eliminate the "local hook" functionality
@@ -601,7 +601,7 @@ If DONT-PRINT-NICK-P is true, don't include nickname."
                     ((:foreign :muc-foreign) 'jabber-chat-text-foreign)
                     ((:local :muc-local) 'jabber-chat-text-local))))
         (if file-desc
-            (jabber-qim-insert-file file-desc face)
+            (jabber-qim-insert-file file-desc body face)
           (jabber-chat-print-message-body-segments
            body
            face)))

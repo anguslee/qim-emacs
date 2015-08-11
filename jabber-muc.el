@@ -241,7 +241,7 @@ This function is idempotent."
 		    `(message
 		      ((to . ,jabber-group)
 		       (type . "groupchat"))
-		      (body ((maType . 0) (msgType . 1) (id . ,uuid)) ,body)))))
+		      (body ((maType . 0) (msgType . ,(jabber-qim-msg-type body)) (id . ,uuid)) ,body)))))
 
 (defun jabber-muc-add-groupchat (group nickname)
   "Remember participating in GROUP under NICKNAME."
