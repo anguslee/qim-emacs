@@ -111,7 +111,7 @@
  #'(lambda (data conn headers)
      (mapcar #'(lambda (vcard)
                  (add-to-list '*jabber-qim-user-jid-cache*
-                              (intern (jabber-qim-user-vcard-jid vcard)))
+                              (jabber-jid-symbol (jabber-qim-user-vcard-jid vcard)))
                  (puthash (jabber-qim-user-vcard-jid vcard)
                           vcard *jabber-qim-user-vcard-cache*)) data))
  "getusers"
@@ -139,10 +139,12 @@
              *jabber-qim-muc-vcard-cache*)
     ret))
 
-;; (mapcar #'(lambda (vcard)
-;;             (cons (jabber-qim-muc-vcard-group-display-name vcard)
-;;                   (jabber-qim-muc-vcard-group-jid vcard)))
-;;         (jabber-qim-session-muc-vcards))
+(defun jabber-qim-session-muc-vcard-alist ()
+  (mapcar #'(lambda (vcard)
+              (cons (intern (jabber-qim-muc-vcard-group-display-name vcard))
+                    (jabber-qim-muc-vcard-group-jid vcard)))
+          (jabber-qim-session-muc-vcards)))
+
 
 ;; (defun jabber-qim-set-muc-vcard (muc-jid nickname title desc pic-url)
 ;;   (json-encode (vector `((:muc_name . ,muc-jid)
@@ -358,6 +360,27 @@
                                                ))))
                                      :url image-url))))
              )))
+       (insert "\t")
+       (insert-button "Forward Image To..."
+                      :image-object object-text
+                      'action #'(lambda (button)
+                                  (let* ((session-muc-alist (jabber-qim-session-muc-vcard-alist))
+                                         (jid (jabber-read-jid-completing "Forward to:"
+                                                                          (append (mapcar #'car session-muc-alist) *jabber-qim-user-jid-cache*)))
+                                         (jc (jabber-read-account))
+                                         (muc-jid (cdr (assoc (intern jid)
+                                                              session-muc-alist)))
+                                         (send-function (if muc-jid
+                                                            'jabber-muc-send
+                                                          'jabber-chat-send))
+                                         (buffer (if muc-jid
+                                                     (jabber-muc-create-buffer jc muc-jid)
+                                                   (jabber-chat-create-buffer jc jid))))
+                                    (switch-to-buffer buffer)
+                                    (funcall send-function
+                                             jc
+                                             (button-get button :image-object))
+                                    )))
        (insert "\n\n"))
       ('url
        (insert (jabber-propertize
