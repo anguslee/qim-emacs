@@ -311,11 +311,26 @@
                     'face face)))))
       ('image
        (insert "\n\n")
-       (let ((image (jabber-qim-load-image value)))
+       (let* ((image-ret (jabber-qim-load-image value))
+              (image (cadr image-ret))
+              (image-md5 (car image-ret)))
          (if image
-             (insert-image
+             (progn
+               (insert-image
                 image
                 value)
+               (insert "\n\n")
+               (insert-button "View Image"
+                      :image-md5 image-md5
+                      :image-ext (car (last (split-string value "[.]")))
+                      'action #'(lambda (button)
+                                  (let ((file-path (format "%s/%s.%s"
+                                                           (jabber-qim-local-images-cache-dir)
+                                                           (button-get button :image-md5)
+                                                           (button-get button :image-ext))))
+                                    (when (file-exists-p file-path)
+                                      (find-file file-path)
+                                      (read-only-mode))))))
            (progn
              (insert (jabber-propertize
                 (format "[Image]<%s/%s> " *jabber-qim-file-server* value)
@@ -371,14 +386,13 @@
                    (with-temp-file file-path
                      (insert body))))
                (setq image file-path))))
-         (setq ret t)
+         (setq ret (md5 body))
          (apply-partially #'nofify latch))
      :url (format "%s/%s" *jabber-qim-file-server* url-path)
      )
     (wait latch 0.5)
     (when image
-        (jabber-create-image image))
-    ))
+      (list ret (jabber-create-image image)))))
 
 (defun jabber-qim-load-file (file-desc)
   (lexical-let ((file-path (format "%s/%s"
