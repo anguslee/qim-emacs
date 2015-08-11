@@ -44,6 +44,15 @@
            (or load-file-name buffer-file-name))
           "resources/Emotions"))
 
+(defun jabber-qim-api-request-post (callback command data mime-type)
+  (web-json-post 
+   callback
+   :url (format "%s/%s" *jabber-qim-api-server* command)
+   :data data
+   :mime-type mime-type
+   :json-object-type 'alist
+   :json-array-type 'list))
+
 
 ;;;###autoload (autoload 'jabber-qim-muc-vcard-group-jid "jabber-qim-util" "Return group jid" t)
 (defun jabber-qim-muc-vcard-group-jid (vcard)
@@ -82,22 +91,27 @@
                         'utf-8-emacs-unix))
 
 
-(defun jabber-qim-api-request-post (callback command data mime-type)
-  (web-json-post 
-   callback
-   :url (format "%s/%s" *jabber-qim-api-server* command)
-   :data data
-   :mime-type mime-type
-   :json-object-type 'alist
-   :json-array-type 'list))
-
 ;;;###autoload
 (defvar *jabber-qim-user-vcard-cache*
   (make-hash-table :test 'equal))
 
+;;;###autoload
+(defvar *jabber-qim-user-jid-cache*
+  '())
+
+(defun jabber-qim-session-user-vcards ()
+  (let ((ret '()))
+    (maphash #'(lambda (key value)
+                 (add-to-list 'ret value))
+             *jabber-qim-user-vcard-cache*)
+    ret))
+
+
 (jabber-qim-api-request-post
  #'(lambda (data conn headers)
      (mapcar #'(lambda (vcard)
+                 (add-to-list '*jabber-qim-user-jid-cache*
+                              (intern (jabber-qim-user-vcard-jid vcard)))
                  (puthash (jabber-qim-user-vcard-jid vcard)
                           vcard *jabber-qim-user-vcard-cache*)) data))
  "getusers"
