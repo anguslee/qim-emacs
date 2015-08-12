@@ -25,7 +25,7 @@
 (require 'jabber-disco)
 (require 'jabber-muc-nick-coloring)
 (require 'jabber-util)
-(require 'jabber-qim-util)
+(require 'jabber-qim-extension)
 
 ;; we need jabber-bookmarks for jabber-muc-autojoin (via
 ;; jabber-get-bookmarks and jabber-parse-conference-bookmark):

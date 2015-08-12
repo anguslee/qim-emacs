@@ -54,37 +54,37 @@
    :json-array-type 'list))
 
 
-;;;###autoload (autoload 'jabber-qim-muc-vcard-group-jid "jabber-qim-util" "Return group jid" t)
+;;;###autoload (autoload 'jabber-qim-muc-vcard-group-jid "jabber-qim-extension" "Return group jid" t)
 (defun jabber-qim-muc-vcard-group-jid (vcard)
   "Return group jid"
   (decode-coding-string (cdr (assoc 'MN vcard))
                         'utf-8-emacs-unix))
 
-;;;###autoload (autoload 'jabber-qim-muc-vcard-group-display-name "jabber-qim-util" "Return group display name" t)
+;;;###autoload (autoload 'jabber-qim-muc-vcard-group-display-name "jabber-qim-extension" "Return group display name" t)
 (defun jabber-qim-muc-vcard-group-display-name (vcard)
   "Return group display name"
   (decode-coding-string (cdr (assoc 'SN vcard))
                         'utf-8-emacs-unix))
 
-;;;###autoload (autoload 'jabber-qim-muc-vcard-group-topic "jabber-qim-util" "Return group topic" t)
+;;;###autoload (autoload 'jabber-qim-muc-vcard-group-topic "jabber-qim-extension" "Return group topic" t)
 (defun jabber-qim-muc-vcard-group-topic (vcard)
   "Return group topic"
   (decode-coding-string (cdr (assoc 'MT vcard))
                         'utf-8-emacs-unix))
 
-;;;###autoload (autoload 'jabber-qim-user-vcard-jid "jabber-qim-util" "Return user jid" t)
+;;;###autoload (autoload 'jabber-qim-user-vcard-jid "jabber-qim-extension" "Return user jid" t)
 (defun jabber-qim-user-vcard-jid (vcard)
   "Return user jid"
   (format "%s@ejabhost1" (decode-coding-string (cdr (assoc 'U vcard))
                                                'utf-8-emacs-unix)))
 
-;;;###autoload (autoload 'jabber-qim-user-vcard-name "jabber-qim-util" "Return user name" t)
+;;;###autoload (autoload 'jabber-qim-user-vcard-name "jabber-qim-extension" "Return user name" t)
 (defun jabber-qim-user-vcard-name (vcard)
   "Return user name"
   (decode-coding-string (cdr (assoc 'N vcard))
                         'utf-8-emacs-unix))
 
-;;;###autoload (autoload 'jabber-qim-user-vcard-position "jabber-qim-util" "Return user position" t)
+;;;###autoload (autoload 'jabber-qim-user-vcard-position "jabber-qim-extension" "Return user position" t)
 (defun jabber-qim-user-vcard-position (vcard)
   "Return user position"
   (decode-coding-string (cdr (assoc 'D vcard))
@@ -118,7 +118,7 @@
  "u="
  'applicaion/json)
 
-;;;###autoload (autoload 'jabber-qim-jid-nickname "jabber-qim-util" "Return user nickname" t)
+;;;###autoload (autoload 'jabber-qim-jid-nickname "jabber-qim-extension" "Return user nickname" t)
 (defun jabber-qim-jid-nickname (jid)
   "Return user nickname"
   (let ((user-vcard (gethash (jabber-jid-user jid)
@@ -161,7 +161,7 @@
 ;;  (jabber-qim-set-muc-vcard "test22323-angus@conference.ejabhost1" "hahaha" "ddd" "desc" nil)
 ;;  'application/json)
 
-;;;###autoload (autoload 'jabber-qim-get-muc-vcard "jabber-qim-util" "Return MUC vcard" t)
+;;;###autoload (autoload 'jabber-qim-get-muc-vcard "jabber-qim-extension" "Return MUC vcard" t)
 (defun jabber-qim-get-muc-vcard (muc-jid)
   "Return MUC vcard"
   (and
@@ -451,4 +451,4 @@
     1))
 
 
-(provide 'jabber-qim-util)
+(provide 'jabber-qim-extension)
