@@ -64,16 +64,11 @@ your .emacs file.
     (setq jabber-muc-autojoin
         '("qtalk客户端开发群@conference.ejabhost1"))
 
-    ; 为聊天域设置默认昵称
-    (setq jabber-domain-default-nicknames
-        '(
-            ("conference.ejabhost1" . "昵称（最好设置成RTX上显示的名字）")
-        ))
 
     ;; account list
     (setq jabber-account-list
     `(
-        ("geng.li@ejabhost1"
+        ("域用户名@ejabhost1" ; 例如：geng.li@ejabhost1
         (:network-server . "qt.corp.qunar.com")
         (:port . "5222")
         (:password . ,(jabber-qim-password "域用户名" "域密码")))))

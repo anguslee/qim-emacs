@@ -618,11 +618,13 @@ groupchat buffer."
 (defun jabber-muc-read-my-nickname (jc group &optional default)
   "Read nickname for joining GROUP. If DEFAULT is non-nil, return default nick without prompting."
   (let ((default-nickname (or
-			   (jabber-get-conference-data jc group nil :nick)
-			   (cdr (assoc group jabber-muc-default-nicknames))
-               (cdr (assoc (jabber-jid-server group)
-                           jabber-domain-default-nicknames))
-			   (plist-get (fsm-get-state-data jc) :username))))
+                           (jabber-get-conference-data jc group nil :nick)
+                           (cdr (assoc group jabber-muc-default-nicknames))
+                           (cdr (assoc (jabber-jid-server group)
+                                       jabber-domain-default-nicknames))
+                           (jabber-qim-jid-nickname
+                            (plist-get (fsm-get-state-data jc) :original-jid))
+                           (plist-get (fsm-get-state-data jc) :username))))
     (if default
         default-nickname
         (jabber-read-with-input-method (format "Nickname: (default %s) "
