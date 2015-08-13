@@ -168,14 +168,13 @@
    (string-prefix-p "conference." (jabber-jid-server muc-jid))
    (or (gethash (jabber-jid-user muc-jid) *jabber-qim-muc-vcard-cache*)
        (lexical-let ((latch (make-one-time-latch))
-                     (ret nil)
                      (vcard nil))
          (jabber-qim-api-request-post
           (lambda (data conn headers)
             (ignore-errors
               (setq vcard
-                    (nth 0 (cdr (assoc 'data data)))))
-            (setq ret t)
+                    (nth 0 (cdr (assoc 'data data))))
+              )
             (apply-partially #'nofify latch))
           "getmucvcard"
           (json-encode (vector `((:muc_name . ,(jabber-jid-user muc-jid))
@@ -185,7 +184,7 @@
          (if (null vcard)
              (puthash (jabber-jid-user muc-jid)
                       `((SN . ,(jabber-jid-user muc-jid))
-                        (MN . ,muc-jid))
+                        (MN . ,(jabber-jid-user muc-jid)))
                       *jabber-qim-muc-vcard-cache*)
            (puthash (jabber-jid-user muc-jid) vcard *jabber-qim-muc-vcard-cache*))
          vcard))))
