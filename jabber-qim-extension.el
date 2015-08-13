@@ -253,7 +253,7 @@
 
 (defun jabber-qim-forward-object-action (button)
   (let* ((session-muc-alist (jabber-qim-session-muc-vcard-alist))
-         (jid (jabber-read-jid-completing "Forward to:"
+         (jid (jabber-read-jid-completing "Forward to: "
                                           (append (mapcar #'car session-muc-alist)
                                                   *jabber-qim-user-jid-cache*)))
          (jc (jabber-read-account))
@@ -268,7 +268,8 @@
     (switch-to-buffer buffer)
     (funcall send-function
              jc
-             (button-get button :object-text))
+             (button-get button :object-text)
+             (button-get button :msg-type))
     ))
 
 (defun jabber-qim-insert-file (file-desc body-text face)
@@ -308,6 +309,7 @@
   (insert "\t")
   (insert-button "Forward File To..."
                  :object-text body-text
+                 :msg-type jabber-qim-msg-type-file
                  'action #'jabber-qim-forward-object-action)
   (insert "\n"))
 
@@ -380,6 +382,7 @@
        (insert "\t")
        (insert-button "Forward Image To..."
                       :object-text object-text
+                      :msg-type jabber-qim-msg-type-default
                       'action #'jabber-qim-forward-object-action)
        (insert "\n\n"))
       ('url
@@ -440,15 +443,16 @@
   (let ((file-desc (ignore-errors
                      (json-read-from-string body))))
     (when (and file-desc
-             (cdr (assoc 'FileName file-desc))
-             (cdr (assoc 'HttpUrl file-desc)))
-        file-desc
-        )))
+               (cdr (assoc 'FileName file-desc))
+               (cdr (assoc 'HttpUrl file-desc)))
+      file-desc
+      )))
 
-(defun jabber-qim-msg-type (body)
-  (if (jabber-qim-body-parse-file body)
-      5
-    1))
+(defconst jabber-qim-msg-type-file "5"
+  "Message is a file")
+
+(defconst jabber-qim-msg-type-default "1"
+  "Normal messages")
 
 
 (provide 'jabber-qim-extension)

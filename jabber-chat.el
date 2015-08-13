@@ -331,7 +331,7 @@ This function is idempotent."
 				(funcall jabber-alert-message-function 
 					 from (current-buffer) body-text))))))))
 
-(defun jabber-chat-send (jc body)
+(defun jabber-chat-send (jc body &optional msg-type)
   "Send BODY through connection JC, and display it in chat buffer."
   ;; Build the stanza...
   (let* ((id (apply 'format "emacs-msg-%d.%d.%d" (current-time)))
@@ -339,7 +339,9 @@ This function is idempotent."
 			   ((to . ,jabber-chatting-with)
 			    (type . "chat")
 			    (id . ,id))
-			   (body ((maType . 0) (msgType . ,(jabber-qim-msg-type body)) (id . ,(jabber-message-uuid))) ,body))))
+			   (body ((maType . 0) (msgType . ,(if msg-type
+                                                   msg-type
+                                                 jabber-qim-msg-type-default)) (id . ,(jabber-message-uuid))) ,body))))
     ;; ...add additional elements...
     ;; TODO: Once we require Emacs 24.1, use `run-hook-wrapped' instead.
     ;; That way we don't need to eliminate the "local hook" functionality
@@ -377,8 +379,8 @@ This function is used as an ewoc prettyprinter."
 	       (string= (substring body 0 4) "/me "))))
 
     ;; Print prompt...
-    (let ((carbon (equal "true" (cdr (assoc 'carbon_message
-                                            (plist-get (cadr data) 'message)))))
+    (let ((carbon (string= 'true (cdr (assoc 'carbon_message
+                                             (plist-get (cadr data) 'message)))))
           (delayed (or original-timestamp (plist-get (cddr data) :delayed)))
           (prompt-start (point)))
       (case (car data)
@@ -568,44 +570,50 @@ If DONT-PRINT-NICK-P is true, don't include nickname."
 		  'face 'jabber-chat-text-foreign)
 		 "\n"))))))
 
+
 (defun jabber-chat-print-body (xml-data who mode)
   (run-hook-with-args-until-success 'jabber-body-printers xml-data who mode))
 
 (defun jabber-chat-normal-body (xml-data who mode)
   "Print body for received message in XML-DATA."
   (let ((body (car
-	       (jabber-xml-node-children
-		(car
-		 (jabber-xml-get-children xml-data 'body))))))
+               (jabber-xml-node-children
+                (car
+                 (jabber-xml-get-children xml-data 'body)))))
+        (msg-type (cdr (assoc 'msgType (jabber-xml-node-attributes
+                                                       (car
+                                                        (jabber-xml-get-children xml-data 'body)))))))
     (when body
-
       (when (eql mode :insert)
-	(if (and (> (length body) 4)
-		 (string= (substring body 0 4) "/me "))
-	    (let ((action (substring body 4))
-		  (nick (cond
-			 ((eq who :local)
-			  (plist-get (fsm-get-state-data jabber-buffer-connection) :username))
-			 ((or (jabber-muc-message-p xml-data)
-			      (jabber-muc-private-message-p xml-data))
-			  (jabber-jid-resource (jabber-xml-get-attribute xml-data 'from)))
-			 (t
-			  (jabber-jid-displayname (jabber-xml-get-attribute xml-data 'from))))))
-	      (insert (jabber-propertize
-		       (concat nick
-			       " "
-			       action)
-		       'face 'jabber-chat-prompt-system)))
-      (let ((file-desc (jabber-qim-body-parse-file body))
-            (face (case who
-                    ((:foreign :muc-foreign) 'jabber-chat-text-foreign)
-                    ((:local :muc-local) 'jabber-chat-text-local))))
-        (if file-desc
-            (jabber-qim-insert-file file-desc body face)
-          (jabber-chat-print-message-body-segments
-           body
-           face)))
-      ))
+        (if (and (> (length body) 4)
+                 (string= (substring body 0 4) "/me "))
+            (let ((action (substring body 4))
+                  (nick (cond
+                         ((eq who :local)
+                          (plist-get (fsm-get-state-data jabber-buffer-connection) :username))
+                         ((or (jabber-muc-message-p xml-data)
+                              (jabber-muc-private-message-p xml-data))
+                          (jabber-jid-resource (jabber-xml-get-attribute xml-data 'from)))
+                         (t
+                          (jabber-jid-displayname (jabber-xml-get-attribute xml-data 'from))))))
+              (insert (jabber-propertize
+                       (concat nick
+                               " "
+                               action)
+                       'face 'jabber-chat-prompt-system)))
+          (let ((file-desc
+                 (and
+                  (equal msg-type jabber-qim-msg-type-file)
+                  (jabber-qim-body-parse-file body)))
+                (face (case who
+                        ((:foreign :muc-foreign) 'jabber-chat-text-foreign)
+                        ((:local :muc-local) 'jabber-chat-text-local))))
+            (if file-desc
+                (jabber-qim-insert-file file-desc body face)
+              (jabber-chat-print-message-body-segments
+               body
+               face)))
+          ))
       t)))
 
 
