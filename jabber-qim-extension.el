@@ -1,4 +1,4 @@
-;; Util functions for qim
+;;; Extensions for qim -*- lexical-binding: t -*-
 
 (require 'json)
 (require 'web)
@@ -19,6 +19,13 @@
   (format "%s.cache"
           (file-name-directory
            (or load-file-name buffer-file-name))))
+
+(defvar *jabber-qim-hostname*
+  "ejabhost1")
+
+(defvar *jabber-qim-muc-sub-hostname*
+  "conference")
+
 
 (defun jabber-qim-local-images-cache-dir ()
   (format "%s/images" jabber-qim-local-file-dir))
@@ -75,8 +82,9 @@
 ;;;###autoload (autoload 'jabber-qim-user-vcard-jid "jabber-qim-extension" "Return user jid" t)
 (defun jabber-qim-user-vcard-jid (vcard)
   "Return user jid"
-  (format "%s@ejabhost1" (decode-coding-string (cdr (assoc 'U vcard))
-                                               'utf-8-emacs-unix)))
+  (format "%s@%s" (decode-coding-string (cdr (assoc 'U vcard))
+                                        'utf-8-emacs-unix)
+          *jabber-qim-hostname*))
 
 ;;;###autoload (autoload 'jabber-qim-user-vcard-name "jabber-qim-extension" "Return user name" t)
 (defun jabber-qim-user-vcard-name (vcard)
@@ -161,11 +169,83 @@
 ;;  (jabber-qim-set-muc-vcard "test22323-angus@conference.ejabhost1" "hahaha" "ddd" "desc" nil)
 ;;  'application/json)
 
+;;;###autoload
+(defcustom jabber-qim-muc-autojoin nil
+  "List of QIM MUC rooms to automatically join on connection.
+This list is saved in your Emacs customizations.  You can also store
+such a list on the Jabber server, where it is available to every
+client; see `jabber-edit-bookmarks'."
+  :group 'jabber-chat
+  :type '(repeat (string :tag "JID of QIM chatroom")))
+
+(defun jabber-qim-muc-autojoin (jc)
+  "Join rooms specified in account bookmarks and global `jabber-muc-autojoin'."
+  (interactive (list (jabber-read-account)))
+  (when (bound-and-true-p jabber-qim-muc-autojoin)
+    (dolist (group jabber-qim-muc-autojoin)
+      (let ((muc-jid (car group))
+            (muc-properties (cdr group)))
+        (jabber-qim-muc-join jc muc-jid)
+        (when (cdr (assoc :silence muc-properties))
+          (unless (find muc-jid *jabber-silenced-groupchats* :test 'equal)
+            (add-to-list '*jabber-silenced-groupchats*
+                         muc-jid)))))))
+
+(add-to-list 'jabber-post-connect-hooks 'jabber-qim-muc-autojoin)
+
+;;;###autoload (autoload 'jabber-qim-muc-join "jabber-qim-extension" "Join a qim MUC chatroom" t)
+(cl-defun jabber-qim-muc-join (jc muc-jid &optional popup)
+  "Join a qim MUC chatroom"
+  (interactive
+   (list (jabber-read-account)
+         (jabber-read-jid-completing "group: ")
+         t))
+  (if (string-prefix-p (format "%s." *jabber-qim-muc-sub-hostname*)
+                       (jabber-jid-server muc-jid))
+      (jabber-qim-api-request-post
+       #'(lambda (data conn headers)
+           (unless (gethash (jabber-jid-user muc-jid)
+                            *jabber-qim-muc-vcard-cache*)
+             (puthash (jabber-jid-user muc-jid)
+                      (if (and (equal "200" (gethash 'status-code headers))
+                               (ignore-errors
+                                 (nth 0 (cdr (assoc 'data data)))))
+                          (nth 0 (cdr (assoc 'data data)))
+                        `((SN . ,(jabber-jid-user muc-jid))
+                          (MN . ,(jabber-jid-user muc-jid))))
+                      *jabber-qim-muc-vcard-cache*))
+           (jabber-muc-join jc
+                            muc-jid
+                            (jabber-muc-read-my-nickname jc muc-jid t)
+                            popup))
+       "getmucvcard"
+       (json-encode (vector `((:muc_name . ,(jabber-jid-user muc-jid))
+                              (:version . 0))))
+       'applicaition/json)
+    ;; Fallback
+    (jabber-muc-join jc muc-jid
+                     (jabber-muc-read-my-nickname jc muc-jid)
+                     popup)))
+
+(defun jabber-qim-muc-accept-invite (xml-data who mode)
+  "Accept QIM MUC invitation automatically"
+  (dolist (x (jabber-xml-get-children xml-data 'x))
+    (when (string= (jabber-xml-get-attribute x 'xmlns) "http://jabber.org/protocol/muc#user")
+      (let ((invitation (car (jabber-xml-get-children x 'invite)))
+            (group (jabber-xml-get-attribute xml-data 'from)))
+        (when (and invitation
+                   (string-prefix-p (format "%s." *jabber-qim-muc-sub-hostname*)
+                                    (jabber-jid-server group)))
+          (jabber-qim-muc-join jabber-buffer-connection group)
+          (return t))))))
+
+
 ;;;###autoload (autoload 'jabber-qim-get-muc-vcard "jabber-qim-extension" "Return MUC vcard" t)
 (defun jabber-qim-get-muc-vcard (muc-jid)
   "Return MUC vcard"
   (and
-   (string-prefix-p "conference." (jabber-jid-server muc-jid))
+   (string-prefix-p (format "%s." *jabber-qim-muc-sub-hostname*)
+                    (jabber-jid-server muc-jid))
    (or (gethash (jabber-jid-user muc-jid) *jabber-qim-muc-vcard-cache*)
        (lexical-let ((latch (make-one-time-latch))
                      (vcard nil))
@@ -275,8 +355,10 @@
   "Insert file into chat buffer."
   (insert "\n\n")
   (insert (jabber-propertize
-           (format "[File Received: %s] "
+           (format "[File Received: %s; Size: %s] "
                    (cdr (assoc 'FileName
+                               file-desc))
+                   (cdr (assoc 'FileSize
                                file-desc)))
            'face face))
   (insert "\n")

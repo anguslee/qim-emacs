@@ -61,9 +61,9 @@ your .emacs file.
         nil))
 
 
-    (setq jabber-muc-autojoin
-        '("qtalk客户端开发群@conference.ejabhost1"))
-
+    (setq jabber-qim-muc-autojoin
+        '(("去哪儿度假bu@conference.ejabhost1"
+            (:silence . t)))) ; :silence表示默认不提示消息，除非被@
 
     ;; account list
     (setq jabber-account-list

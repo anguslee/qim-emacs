@@ -509,7 +509,7 @@ enter it."
   "Deprecated. See `jabber-muc-cancel-config' instead.")
 
 (add-to-list 'jabber-jid-muc-menu
-	     (cons "Join groupchat" 'jabber-muc-join))
+	     (cons "Join groupchat" 'jabber-qim-muc-join))
 
 (defun jabber-muc-join (jc group nickname &optional popup)
   "join a groupchat, or change nick.
@@ -809,22 +809,22 @@ group, else it is a JID."
     ))
 
 
-;(add-to-list 'jabber-body-printers 'jabber-muc-print-invite)
-(add-to-list 'jabber-body-printers 'jabber-muc-accept-invite)
+(add-to-list 'jabber-body-printers 'jabber-muc-print-invite)
+(add-to-list 'jabber-body-printers 'jabber-qim-muc-accept-invite)
 
-(defun jabber-muc-accept-invite (xml-data who mode)
-  "Accept MUC invitation automatically"
-  (dolist (x (jabber-xml-get-children xml-data 'x))
-    (when (string= (jabber-xml-get-attribute x 'xmlns) "http://jabber.org/protocol/muc#user")
-      (let ((invitation (car (jabber-xml-get-children x 'invite))))
-        (when invitation
-          (let ((group (jabber-xml-get-attribute xml-data 'from))
-                (inviter (jabber-xml-get-attribute invitation 'from))
-                (reason (car (jabber-xml-node-children (car (jabber-xml-get-children invitation 'reason))))))
-            (jabber-muc-join jabber-buffer-connection group
-                             (jabber-muc-read-my-nickname 
-                              jabber-buffer-connection group t)))
-          t)))))
+;; (defun jabber-muc-accept-invite (xml-data who mode)
+;;   "Accept QIM MUC invitation automatically"
+;;   (dolist (x (jabber-xml-get-children xml-data 'x))
+;;     (when (string= (jabber-xml-get-attribute x 'xmlns) "http://jabber.org/protocol/muc#user")
+;;       (let ((invitation (car (jabber-xml-get-children x 'invite))))
+;;         (when invitation
+;;           (let ((group (jabber-xml-get-attribute xml-data 'from))
+;;                 (inviter (jabber-xml-get-attribute invitation 'from))
+;;                 (reason (car (jabber-xml-node-children (car (jabber-xml-get-children invitation 'reason))))))
+;;             (jabber-muc-join jabber-buffer-connection group
+;;                              (jabber-muc-read-my-nickname 
+;;                               jabber-buffer-connection group t)))
+;;           t)))))
 
 (defun jabber-muc-print-invite (xml-data who mode)
   "Print MUC invitation"
@@ -893,7 +893,6 @@ group, else it is a JID."
   (let ((nickname (plist-get (fsm-get-state-data jc) :username)))
     (when (bound-and-true-p jabber-muc-autojoin)
       (dolist (group jabber-muc-autojoin)
-        (jabber-qim-get-muc-vcard group)
         (jabber-muc-join jc group
                          (jabber-muc-read-my-nickname jc group t))))
     (jabber-get-bookmarks

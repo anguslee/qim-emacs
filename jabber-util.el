@@ -188,7 +188,6 @@ Return nil if none found."
     (if (> (length (get user 'name)) 0)
         (get user 'name))))
 
-
 (defun jabber-jid-displayname (string)
   "return the name of the user, if given in roster or displayname in muc vcard, else username@server"
   (or (jabber-jid-rostername string)
@@ -200,8 +199,8 @@ Return nil if none found."
                     (jabber-jid-username string))
           nil))
       (jabber-jid-user (if (symbolp string)
-			   (symbol-name string)
-			 string))))
+                           (symbol-name string)
+                         string))))
 
 (defun jabber-jid-bookmarkname (string)
   "Return the conference name from boomarks or displayname from roster, or JID if none set"
