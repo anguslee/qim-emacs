@@ -1,6 +1,8 @@
 **基于jabber.el的emacs qim客户端**
 ===============================
 
+**注意**：加入qtalk群需要执行jabber-qim-muc-join命令，原jabber-muc-join命令仅用于加入非qtalk群组
+
 ## **暂时不支持的Feature**
 
 * 建群
