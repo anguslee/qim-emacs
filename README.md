@@ -8,7 +8,7 @@
 
 ## **安装方法**
 
-**依赖**： Linux操作系统，GNU Emacs 23.1以上，openssl，autoconf，automake，emacs-uuid(http://www.emacswiki.org/emacs/uuid.el)
+**依赖**： Linux操作系统，GNU Emacs 23.1以上（推荐用24+, 其他版本没测试过)，openssl，autoconf，automake，emacs-uuid(http://www.emacswiki.org/emacs/uuid.el)
 
 Make sure that autoconf and automake are installed and run
 
