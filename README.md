@@ -10,22 +10,17 @@
 
 **依赖**： Linux操作系统，GNU Emacs 23.1以上（推荐用24+, 其他版本没测试过)，openssl，autoconf，automake，emacs-uuid(http://www.emacswiki.org/emacs/uuid.el)
 
-Make sure that autoconf and automake are installed and run
+运行：
 
     autoreconf -i
     ./configure
     make jabber-autoloads.el
 
-You can specify which emacs you want to use:
-./configure EMACS=emacs-or-xemacs-21.4
+然后，添加
 
-You can also install jabber.el by hand.  Put all .el files somewhere
-in your load-path, or have your load-path include the directory
-they're in.
+    (load "jabber-autoloads")
 
-After installation by either method, add (load "jabber-autoloads") to
-your .emacs file.
-
+到.emacs配置文件
 
 ## **参考配置**
 
