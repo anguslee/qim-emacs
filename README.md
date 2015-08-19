@@ -13,7 +13,8 @@
 **依赖**： Linux操作系统，GNU Emacs 23.1以上（推荐用24+, 其他版本没测试过)，openssl，autoconf，automake，emacs-uuid(http://www.emacswiki.org/emacs/uuid.el)
 
 运行：
-
+    git clone git@gitlab.corp.qunar.com:geng.li/qim-emacs.git
+    cd qim-emacs
     autoreconf -i
     ./configure
     make jabber-autoloads.el
