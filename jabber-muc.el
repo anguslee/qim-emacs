@@ -424,7 +424,7 @@ JID; only provide completion as a guide."
   (interactive
    (jabber-muc-argument-list
     (list (jabber-muc-read-nickname jabber-group "Nickname: "))))
-    (let ((muc-name (format "%s/%s" group nickname)))
+  (let ((muc-name (format "%s/%s" group nickname)))
 	(jabber-vcard-get jc muc-name)))
 
 (defun jabber-muc-instant-config (jc group)

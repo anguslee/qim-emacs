@@ -1,15 +1,10 @@
 **基于jabber.el的emacs qim客户端**
 ===============================
 
-## **引用代码**
+## **暂时不支持的Feature**
 
-emacs-web (https://github.com/nicferrier/emacs-web)
-
-elisp-latch (https://github.com/skeeto/elisp-latch)
-
-## **开发分支**
-
-qim-emacs
+* 建群
+* 发送图片/文件/表情
 
 ## **安装方法**
 
@@ -63,7 +58,7 @@ your .emacs file.
 
     (setq jabber-qim-muc-autojoin
         '(("去哪儿度假bu@conference.ejabhost1"
-            (:silence . t)))) ; :silence表示默认不提示消息，除非被@
+            (:silence . t)))) ; :silence表示默认不在message框里提示消息，除非被@。需要提示的话就去掉这项设置
 
     ;; account list
     (setq jabber-account-list
@@ -76,5 +71,12 @@ your .emacs file.
     (jabber-connect-all)
 
 
+## **引用代码**
 
+emacs-web (https://github.com/nicferrier/emacs-web)
 
+elisp-latch (https://github.com/skeeto/elisp-latch)
+
+## **开发分支**
+
+qim-emacs
