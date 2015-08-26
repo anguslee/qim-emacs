@@ -562,7 +562,7 @@ client; see `jabber-edit-bookmarks'."
 (defun jabber-qim-muc-send-file (jc group filename)
   (interactive
    (jabber-muc-argument-list
-    (list (read-file-name "File: "))))
+    (list (read-file-name "Send File: "))))
   (if (<= (nth 7 (file-attributes filename))
           jabber-qim-max-send-file-size)
       (jabber-qim-send-file jc group filename 'jabber-muc-send)
