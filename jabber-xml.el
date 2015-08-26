@@ -145,11 +145,12 @@ The list can be nil."
 (defsubst jabber-xml-node-children (node)
   "Return the list of children of NODE.
 This is a list of nodes, and it can be nil."
-  (let ((children (cddr node)))
-    ;; Work around a bug in early versions of xml.el
-    (if (equal children '(("")))
-	nil
-      children)))
+  (when (listp node)
+    (let ((children (cddr node)))
+      ;; Work around a bug in early versions of xml.el
+      (if (equal children '(("")))
+          nil
+        children))))
 
 (defun jabber-xml-get-children (node child-name)
   "Return the children of NODE whose tag is CHILD-NAME.

@@ -5,6 +5,8 @@
 (require 'latch)
 (require 'jabber-util)
 (require 'jabber-avatar)
+(require 'subr-x)
+
 
 (add-to-list 'web-json-expected-mimetypes-list
              "text/json")
@@ -325,6 +327,7 @@ client; see `jabber-edit-bookmarks'."
       (insert-file-contents file)
       (secure-hash algorithm (current-buffer)))))
 
+
 (defun jabber-qim-view-file-in-directory (file-path)
   (find-file (file-name-directory file-path))
   (revert-buffer t t t)
@@ -355,10 +358,12 @@ client; see `jabber-edit-bookmarks'."
   "Insert file into chat buffer."
   (insert "\n\n")
   (insert (jabber-propertize
-           (format "[File Received: %s; Size: %s] "
+           (format "[File Received: %s; Size: %s; MD5 Checksum: %s] "
                    (cdr (assoc 'FileName
                                file-desc))
                    (cdr (assoc 'FileSize
+                               file-desc))
+                   (cdr (assoc 'FILEMD5
                                file-desc)))
            'face face))
   (insert "\n")
@@ -520,6 +525,65 @@ client; see `jabber-edit-bookmarks'."
       (:md5 . ,(cdr (assoc 'FILEMD5 file-desc))))
     ))
 
+(defconst jabber-qim-msg-type-file "5"
+  "Message is a file")
+
+(defconst jabber-qim-msg-type-default "1"
+  "Normal messages")
+
+(defconst jabber-qim-max-send-file-size (* 10 1024 1024)
+  "Max send file size set to 10MB")
+
+
+(cl-defun jabber-qim-send-file (jc jid filename send-function &optional chat-buffer)
+  (if (<= (nth 7 (file-attributes filename))
+          jabber-qim-max-send-file-size)
+      (let ((file-buffer (find-file-noselect filename t t)))
+        (web-http-post
+         #'(lambda (httpc headers body)
+             (let ((jabber-group jid)
+                   (jabber-chatting-with jid))
+               (when chat-buffer
+                 (switch-to-buffer chat-buffer))
+               (funcall send-function jc
+                        (json-encode `((:HttpUrl . ,(string-trim (url-unhex-string body)))
+                                       (:FileName . ,(file-name-nondirectory filename))
+                                       (:FILEID . ,(jabber-message-uuid))
+                                       (:FILEMD5 . ,(secure-hash-file filename 'md5))
+                                       (:FileSize . ,(file-size-human-readable
+                                                      (nth 7 (file-attributes filename))))))
+                        jabber-qim-msg-type-file)))
+         :url (format "%s/cgi-bin/file_upload.pl" *jabber-qim-file-server*)
+         :mime-type 'multipart/form-data
+         :data `(("file" . ,file-buffer)))
+        (kill-buffer file-buffer))
+    ))
+
+(defun jabber-qim-muc-send-file (jc group filename)
+  (interactive
+   (jabber-muc-argument-list
+    (list (read-file-name "File: "))))
+  (if (<= (nth 7 (file-attributes filename))
+          jabber-qim-max-send-file-size)
+      (jabber-qim-send-file jc group filename 'jabber-muc-send)
+    (error "File size exceeds maximum: %s"
+           (file-size-human-readable jabber-qim-max-send-file-size))))
+
+(defun jabber-qim-chat-send-file (jc chat-with filename &optional chat-buffer)
+  (interactive
+   (list (jabber-read-account)
+         jabber-chatting-with
+         (read-file-name "File: ")
+         (current-buffer)))
+  (if chat-with
+      (if (<= (nth 7 (file-attributes filename))
+              jabber-qim-max-send-file-size)
+          (jabber-qim-send-file jc chat-with filename 'jabber-chat-send chat-buffer)
+        (error "File size exceeds maximum: %s"
+           (file-size-human-readable jabber-qim-max-send-file-size)))
+    (error "Not in CHAT buffer")))
+
+
 (defun jabber-qim-body-parse-file (body)
   (let ((file-desc (ignore-errors
                      (json-read-from-string body))))
@@ -528,12 +592,5 @@ client; see `jabber-edit-bookmarks'."
                (cdr (assoc 'HttpUrl file-desc)))
       file-desc
       )))
-
-(defconst jabber-qim-msg-type-file "5"
-  "Message is a file")
-
-(defconst jabber-qim-msg-type-default "1"
-  "Normal messages")
-
 
 (provide 'jabber-qim-extension)

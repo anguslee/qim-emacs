@@ -3,10 +3,13 @@
 
 **注意**：加入qtalk群需要执行jabber-qim-muc-join命令，原jabber-muc-join命令仅用于加入非qtalk群组
 
+Bug反馈：geng.li@qunar.com
+
 ## **暂时不支持的Feature**
 
 * 建群
-* 发送图片/文件/表情
+* 发送图片/表情
+* 发送文件大小不能超过10MB
 
 ## **安装方法**
 

@@ -335,13 +335,13 @@ This function is idempotent."
   "Send BODY through connection JC, and display it in chat buffer."
   ;; Build the stanza...
   (let* ((id (apply 'format "emacs-msg-%d.%d.%d" (current-time)))
-	 (stanza-to-send `(message 
-			   ((to . ,jabber-chatting-with)
-			    (type . "chat")
-			    (id . ,id))
-			   (body ((maType . 0) (msgType . ,(if msg-type
-                                                   msg-type
-                                                 jabber-qim-msg-type-default)) (id . ,(jabber-message-uuid))) ,body))))
+         (stanza-to-send `(message 
+                           ((to . ,jabber-chatting-with)
+                            (type . "chat")
+                            (id . ,id))
+                           (body ((maType . 0) (msgType . ,(if msg-type
+                                                               msg-type
+                                                             jabber-qim-msg-type-default)) (id . ,(jabber-message-uuid))) ,body))))
     ;; ...add additional elements...
     ;; TODO: Once we require Emacs 24.1, use `run-hook-wrapped' instead.
     ;; That way we don't need to eliminate the "local hook" functionality
@@ -463,18 +463,18 @@ This function is used as an ewoc prettyprinter."
 (defun jabber-maybe-print-rare-time (node)
   "Print rare time before NODE, if appropriate."
   (let* ((prev (ewoc-prev jabber-chat-ewoc node))
-	 (data (ewoc-data node))
-	 (prev-data (when prev (ewoc-data prev))))
+         (data (ewoc-data node))
+         (prev-data (when prev (ewoc-data prev))))
     (flet ((entry-time (entry)
-		       (or (when (listp (cadr entry))
-			     (jabber-message-timestamp (cadr entry))
-			     (plist-get (cddr entry) :time)))))
+                       (or (when (listp (cadr entry))
+                             (jabber-message-timestamp (cadr entry))
+                             (plist-get (cddr entry) :time)))))
       (when (and jabber-print-rare-time
-		 (or (null prev)
-		     (jabber-rare-time-needed (entry-time prev-data)
-					      (entry-time data))))
-	(ewoc-enter-before jabber-chat-ewoc node
-			   (list :rare-time (entry-time data)))))))
+                 (or (null prev)
+                     (jabber-rare-time-needed (entry-time prev-data)
+                                              (entry-time data))))
+        (ewoc-enter-before jabber-chat-ewoc node
+                           (list :rare-time (entry-time data)))))))
 
 (defun jabber-chat-print-prompt (xml-data timestamp delayed dont-print-nick-p)
   "Print prompt for received message in XML-DATA.
@@ -716,6 +716,9 @@ Returns the chat buffer."
     (if other-window
         (switch-to-buffer-other-window buffer)
       (switch-to-buffer buffer))))
+
+(add-to-list 'jabber-jid-chat-menu
+	     (cons "Send file" 'jabber-qim-chat-send-file))
 
 (defun jabber-chat-with-jid-at-point (&optional other-window)
   "Start chat with JID at point.

@@ -401,16 +401,16 @@ Content-Disposition: form-data; name=\"%s\"\r\n\r\n%s"
                                      (mm-default-file-encoding filename)
                                      "text/plain")))
                      (format "--%s\r
-Content-Transfer-Encoding: BASE64\r
 Content-Disposition: form-data; name=\"%s\"; filename=\"%s\"\r
 Content-Type: %s\r\n\r\n%s"
-                             boundary name (file-name-nondirectory filename) mime-enc
-                             ;; FIXME - We should base64 the content when appropriate
-                             (base64-encode-string
-                              (apply
+                             boundary name
+                             (encode-coding-string (file-name-nondirectory filename)
+                                                   'utf-8-emacs-unix)
+                             "application/octet-stream"
+                             (apply
                                'encode-coding-string
                                (with-current-buffer buffer
-                                 (list (buffer-string) buffer-file-coding-system)))))))
+                                 (list (buffer-string) buffer-file-coding-system))))))
                  (-filter 'web/is-file data) "\r\n")))
     (propertize
      (format "%s%s--%s--\r\n" 

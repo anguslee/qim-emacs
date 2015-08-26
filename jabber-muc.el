@@ -631,8 +631,12 @@ groupchat buffer."
 					   default-nickname) 
 				   nil nil default-nickname))))
 
-(add-to-list 'jabber-jid-muc-menu
-	     (cons "Change nickname" 'jabber-muc-nick))
+;; (add-to-list 'jabber-jid-muc-menu
+;; 	     (cons "Change nickname" 'jabber-muc-nick))
+
+(when (functionp 'jabber-qim-muc-send-file)
+  (add-to-list 'jabber-jid-muc-menu
+               (cons "Send file" 'jabber-qim-muc-send-file)))
 
 (defalias 'jabber-muc-nick 'jabber-muc-join)
 
@@ -948,7 +952,7 @@ include groupchat invites."
 ;; 	     (cons "Open private chat" 'jabber-muc-private))
 
 (defun jabber-muc-at (jc group nickname)
-  "Open private chat with NICKNAME in GROUP."
+  "@ NICKNAME in GROUP."
   (interactive
    (progn
      (insert "@")
