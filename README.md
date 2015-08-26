@@ -29,6 +29,10 @@ Bug反馈：geng.li@qunar.com
 
 到.emacs配置文件
 
+每次更新代码需要重新运行上面的：
+
+    make jabber-autoloads.el
+
 ## **参考配置**
 
     (add-to-list 'load-path "~/Documents/sources/qim-emacs") ; 本工程目录
