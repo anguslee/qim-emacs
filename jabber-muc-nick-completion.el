@@ -168,7 +168,7 @@ OLD is last tried nickname."
 	  (he-substitute-string subst)
 	(jabber-muc-completion-delete-last-tried)
 	(progn
-          (insert subst)
+          (insert (format "@%s" subst))
           (if (looking-back (concat "^" (regexp-quote (car he-expand-list))))
               (unless (looking-back (concat "^" (regexp-quote (car he-expand-list)) jabber-muc-completion-delimiter))
                 (insert jabber-muc-completion-delimiter)))
