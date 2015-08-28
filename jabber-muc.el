@@ -266,6 +266,12 @@ This function is idempotent."
               (remove-if #'(lambda (x)
                              (equal x group))
                          *jabber-silenced-groupchats*))
+    (when (listp *jabber-qim-user-muc-room-jid-list*)
+      (setq *jabber-qim-user-muc-room-jid-list*
+            (remove-if #'(lambda (x)
+                           (string= (cdr x)
+                                    group))
+                       *jabber-qim-user-muc-room-jid-list*)))
     (setq jabber-muc-participants
           (delq whichparticipants jabber-muc-participants))))
 
