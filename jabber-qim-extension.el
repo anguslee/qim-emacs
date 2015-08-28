@@ -561,17 +561,27 @@ client; see `jabber-edit-bookmarks'."
         (web-http-post
          #'(lambda (httpc headers body)
              (let ((jabber-group jid)
-                   (jabber-chatting-with jid))
+                   (jabber-chatting-with jid)
+                   (image (ignore-errors
+                            (create-image filename))))
                (when chat-buffer
                  (switch-to-buffer chat-buffer))
                (funcall send-function jc
-                        (json-encode `((:HttpUrl . ,(string-trim (url-unhex-string body)))
-                                       (:FileName . ,(file-name-nondirectory filename))
-                                       (:FILEID . ,(jabber-message-uuid))
-                                       (:FILEMD5 . ,(secure-hash-file filename 'md5))
-                                       (:FileSize . ,(file-size-human-readable
-                                                      (nth 7 (file-attributes filename))))))
-                        jabber-qim-msg-type-file)))
+                        (if image
+                            (let ((size (image-size image)))
+                              (format "[obj type=\"image\" value=\"%s\" width=%s height=%s]"
+                                      (string-trim (url-unhex-string body))
+                                      (car size)
+                                      (cdr size)))
+                          (json-encode `((:HttpUrl . ,(string-trim (url-unhex-string body)))
+                                         (:FileName . ,(file-name-nondirectory filename))
+                                         (:FILEID . ,(jabber-message-uuid))
+                                         (:FILEMD5 . ,(secure-hash-file filename 'md5))
+                                         (:FileSize . ,(file-size-human-readable
+                                                        (nth 7 (file-attributes filename)))))))
+                        (if image
+                            jabber-qim-msg-type-default
+                          jabber-qim-msg-type-file))))
          :url (format "%s/cgi-bin/file_upload.pl" *jabber-qim-file-server*)
          :mime-type 'multipart/form-data
          :data `(("file" . ,file-buffer)))
@@ -621,7 +631,7 @@ client; see `jabber-edit-bookmarks'."
 (defun jabber-qim-muc-send-file (jc group filename)
   (interactive
    (jabber-muc-argument-list
-    (list (read-file-name "Send File: "))))
+    (list (read-file-name "Send File or Image: "))))
   (if (<= (nth 7 (file-attributes filename))
           jabber-qim-max-send-file-size)
       (jabber-qim-send-file jc group filename 'jabber-muc-send)
@@ -632,7 +642,7 @@ client; see `jabber-edit-bookmarks'."
   (interactive
    (list (jabber-read-account)
          jabber-chatting-with
-         (read-file-name "File: ")
+         (read-file-name "Send File or Image: ")
          (current-buffer)))
   (if chat-with
       (if (<= (nth 7 (file-attributes filename))

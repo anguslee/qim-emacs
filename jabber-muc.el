@@ -638,10 +638,6 @@ groupchat buffer."
 ;; (add-to-list 'jabber-jid-muc-menu
 ;; 	     (cons "Change nickname" 'jabber-muc-nick))
 
-(when (functionp 'jabber-qim-muc-send-file)
-  (add-to-list 'jabber-jid-muc-menu
-               (cons "Send file" 'jabber-qim-muc-send-file)))
-
 (defalias 'jabber-muc-nick 'jabber-muc-join)
 
 (add-to-list 'jabber-jid-muc-menu
@@ -815,6 +811,10 @@ group, else it is a JID."
       (message "Message alerts DEactivated: %s" (jabber-jid-displayname jabber-group))
       (add-to-list '*jabber-silenced-groupchats* jabber-group))
     ))
+
+(when (functionp 'jabber-qim-muc-send-file)
+  (add-to-list 'jabber-jid-muc-menu
+               (cons "Send file/image" 'jabber-qim-muc-send-file)))
 
 
 (add-to-list 'jabber-body-printers 'jabber-muc-print-invite)

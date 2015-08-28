@@ -717,8 +717,9 @@ Returns the chat buffer."
         (switch-to-buffer-other-window buffer)
       (switch-to-buffer buffer))))
 
-(add-to-list 'jabber-jid-chat-menu
-	     (cons "Send file" 'jabber-qim-chat-send-file))
+(when (functionp 'jabber-qim-chat-send-file)
+  (add-to-list 'jabber-jid-chat-menu
+               (cons "Send file/image" 'jabber-qim-chat-send-file)))
 
 (defun jabber-chat-with-jid-at-point (&optional other-window)
   "Start chat with JID at point.
