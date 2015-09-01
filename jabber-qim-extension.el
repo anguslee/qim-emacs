@@ -147,6 +147,9 @@
 (defvar *jabber-qim-muc-vcard-cache*
   (make-hash-table :test 'equal))
 
+(defvar *jabber-qim-muc-initial-members*
+  (make-hash-table :test 'equal))
+
 
 (defun jabber-qim-session-muc-vcards ()
   (let ((ret '()))
@@ -609,8 +612,8 @@ client; see `jabber-edit-bookmarks'."
                                                                (ignore-errors
                                                                  (nth 0 (cdr (assoc 'data data)))))
                                                           (nth 0 (cdr (assoc 'data data)))
-                                                        `((SN . ,(jabber-jid-user muc-jid))
-                                                          (MN . ,(jabber-jid-user muc-jid))))))
+                                                          `((SN . ,(jabber-jid-user muc-jid))
+                                                            (MN . ,(jabber-jid-user muc-jid))))))
                                            (add-to-list '*jabber-qim-user-muc-room-jid-list*
                                                         (cons (intern (jabber-qim-muc-vcard-group-display-name muc-vcard))
                                                               (jabber-qim-muc-vcard-group-jid muc-vcard)))))
@@ -653,13 +656,54 @@ client; see `jabber-edit-bookmarks'."
     (error "Not in CHAT buffer")))
 
 
+(defun jabber-qim-chat-start-groupchat (jc chat-with invited-members groupchat-name)
+  (interactive
+   (list (jabber-read-account)
+         jabber-chatting-with
+         (let ((initial-members (list jabber-chatting-with))
+               (invited nil))
+           (while (> (length (setq invited
+                                 (completing-read "Invite (leave blank for end of input): "
+                                                  *jabber-qim-user-jid-cache*)))
+                     0)
+             (add-to-list 'initial-members invited))
+           initial-members)
+         (read-string "New Group Name: "
+                      (format "%s,%s"
+                              (jabber-qim-jid-nickname (plist-get (fsm-get-state-data jabber-buffer-connection) :original-jid))
+                              (jabber-qim-jid-nickname jabber-chatting-with))
+                      nil nil t)))
+  (let* ((my-jid (plist-get (fsm-get-state-data jabber-buffer-connection) :original-jid))
+         (muc-jid (format "%s@%s.%s"
+                          (secure-hash 'md5 (format "%s,%s,%s,%s"
+                                                    my-jid
+                                                    groupchat-name
+                                                    chat-with
+                                                    (format-time-string "%s")))
+                          *jabber-qim-muc-sub-hostname*
+                          *jabber-qim-hostname*)))
+    (when invited-members
+           (puthash muc-jid invited-members
+                    *jabber-qim-muc-initial-members*))
+    (jabber-qim-api-request-post
+     (lambda (data conn headers)
+       (when (equal "200" (gethash 'status-code headers))
+         (puthash (jabber-jid-user muc-jid)
+                  `((SN . ,groupchat-name)
+                    (MN . ,(jabber-jid-user muc-jid)))
+                  *jabber-qim-muc-vcard-cache*)
+         (jabber-qim-muc-join jc muc-jid t)))
+     "setmucvcard"
+     (json-encode (vector `((:muc_name . ,(jabber-jid-user muc-jid))
+                            (:nick . ,groupchat-name))))
+     'applicaition/json)))
+
 (defun jabber-qim-body-parse-file (body)
   (let ((file-desc (ignore-errors
                      (json-read-from-string body))))
     (when (and file-desc
                (cdr (assoc 'FileName file-desc))
                (cdr (assoc 'HttpUrl file-desc)))
-      file-desc
-      )))
+      file-desc)))
 
 (provide 'jabber-qim-extension)

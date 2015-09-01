@@ -560,19 +560,21 @@ groupchat buffer."
 	  (condition (when (eq identities 'error) (jabber-error-condition result))))
       (cond
        ;; Maybe the room doesn't exist yet.
-       ((eq condition 'item-not-found)
-	(unless (or jabber-silent-mode
-                    (y-or-n-p (format "%s doesn't exist.  Create it? "
-                                      (jabber-jid-displayname group))))
-	  (error "Non-existent groupchat")))
+       ;; ((eq condition 'item-not-found)
+       ;;  (unless (or jabber-silent-mode
+       ;;              (bound-and-true-p jabber-qim-muc-create-mode)
+       ;;              (y-or-n-p (format "%s doesn't exist.  Create it? "
+       ;;                                (jabber-jid-displayname group)))
+       ;;              )
+       ;;    (error "Non-existent groupchat")))
 
        ;; Maybe the room doesn't support disco.
        ((eq condition 'feature-not-implemented)
-	t				;whatever... we will ignore it later
-	)
+        t				;whatever... we will ignore it later
+        )
        ;; Maybe another error occurred. Report it to user
        (condition
-	(message "Couldn't query groupchat: %s" (jabber-parse-error result)))
+        (message "Couldn't query groupchat: %s" (jabber-parse-error result)))
 
        ;; Bad stanza? Without NS, for example
        ((and (eq identities 'error) (not condition))
@@ -1243,16 +1245,15 @@ Return nil if X-MUC is nil."
       (let ((old-plist (jabber-muc-participant-plist group nickname))
 	    (new-plist (jabber-muc-parse-affiliation x-muc)))
 	(jabber-muc-modify-participant group nickname new-plist)
-	(let ((report (unless jabber-mute-muc-notice
-                    (jabber-muc-report-delta nickname old-plist new-plist
-                                             reason actor))))
+	(let ((report (jabber-muc-report-delta nickname old-plist new-plist
+                                             reason actor)))
 	  (when report
 	    (with-current-buffer (jabber-muc-create-buffer jc group)
-	      (jabber-maybe-print-rare-time
-	       (ewoc-enter-last
-            jabber-chat-ewoc
-            (list :muc-notice report
-                  :time (current-time))))
+	      ;; (jabber-maybe-print-rare-time
+	      ;;  (ewoc-enter-last
+          ;;   jabber-chat-ewoc
+          ;;   (list :muc-notice report
+          ;;         :time (current-time))))
 	      ;; Did the server change our nick?
 	      (when (member "210" status-codes)
             (ewoc-enter-last
@@ -1263,23 +1264,36 @@ Return nil if X-MUC is nil."
 	      ;; Was this room just created?  If so, it's a locked
 	      ;; room.  Notify the user.
 	      (when (member "201" status-codes)
+            (jabber-muc-instant-config jc group)
+            (jabber-send-iq jc group
+                            "set"
+                            '(query ((xmlns . "http://jabber.org/protocol/muc#register"))
+                                    (x ((xmlns . "jabber:x:data") (type . "set"))))
+                            #'jabber-report-success "MUC join created register"
+                            #'jabber-report-success "MUC join created register"
+                            )
+            (mapcar #'(lambda (initial-member)
+                        (jabber-muc-invite (jabber-read-account)
+                                           initial-member group nil))
+                    (gethash group *jabber-qim-muc-initial-members*))
             (ewoc-enter-last
              jabber-chat-ewoc
              (list :muc-notice
                    (with-temp-buffer
-                     (insert "This room was just created, and is locked to other participants.\n"
-                             "To unlock it, ")
+                     (insert "This room was just created. You may: \n")
                      (insert-text-button
                       "configure the room"
                       'action (apply-partially 'call-interactively 'jabber-muc-get-config))
-                     (insert " or ")
-                     (insert-text-button
-                      "accept the default configuration"
-                      'action (apply-partially 'call-interactively 'jabber-muc-instant-config))
+                     ;; (insert " or ")
+                     ;; (insert-text-button
+                     ;;  "accept the default configuration"
+                     ;;  'action (apply-partially 'call-interactively 'jabber-muc-instant-config))
                      (insert ".")
                      (buffer-string))
-                   :time (current-time))))))))))))
-	      
+                   :time (current-time)))
+            )))))))))
+
+
 (provide 'jabber-muc)
 
 ;;; arch-tag: 1ff7ab35-1717-46ae-b803-6f5b3fb2cd7d

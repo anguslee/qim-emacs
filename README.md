@@ -5,15 +5,14 @@
 
 Bug反馈：geng.li@qunar.com
 
-## **暂时不支持的Feature**
+## **受限Feature**
 
-* 建群
-* 发送表情
-* 发送文件大小不能超过10MB
+* 不能发送表情
+* 发送文件和图片的大小不能超过10MB
 
 ## **安装方法**
 
-**依赖**： Linux操作系统，GNU Emacs 23.1以上（推荐用24+, 其他版本没测试过)，openssl，autoconf，automake，emacs-uuid(http://www.emacswiki.org/emacs/uuid.el)
+**依赖**： Linux操作系统，GNU Emacs推荐用v24+, 其他版本没测试过，openssl，autoconf，automake，emacs-uuid(http://www.emacswiki.org/emacs/uuid.el)
 
 运行：
 

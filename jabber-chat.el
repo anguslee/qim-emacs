@@ -717,6 +717,10 @@ Returns the chat buffer."
         (switch-to-buffer-other-window buffer)
       (switch-to-buffer buffer))))
 
+(when (functionp 'jabber-qim-chat-start-groupchat)
+  (add-to-list 'jabber-jid-chat-menu
+               (cons "Start group chat" 'jabber-qim-chat-start-groupchat)))
+
 (when (functionp 'jabber-qim-chat-send-file)
   (add-to-list 'jabber-jid-chat-menu
                (cons "Send file/image" 'jabber-qim-chat-send-file)))
