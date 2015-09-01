@@ -664,30 +664,33 @@ client; see `jabber-edit-bookmarks'."
    (list (jabber-read-account)
          (when (bound-and-true-p jabber-chatting-with)
            jabber-chatting-with)
-         (let ((initial-members '())
+         (let ((initial-invites '())
                (invited nil))
            (while (> (length (setq invited
                                    (completing-read "Invite (leave blank for end of input): "
                                                     *jabber-qim-user-jid-cache*)))
                      0)
-             (add-to-list 'initial-members invited))
-           initial-members)
+             (add-to-list 'initial-invites invited))
+           initial-invites)
          ))
-  (let* ((groupchat-name
+  (let* ((chatroom-members
+          (-filter #'(lambda (x)
+                       x)
+                   (append (list (jabber-qim-jid-nickname (plist-get
+                                                           (fsm-get-state-data jabber-buffer-connection)
+                                                           :original-jid))
+                                 (jabber-qim-jid-nickname jabber-chatting-with))
+                           (mapcar #'jabber-qim-jid-nickname invited-members))))
+         (groupchat-name
           (or default-groupchat-name
               (read-string "New Group Name: "
                            (string-join
-                            (-filter #'(lambda (x)
-                                         x)
-                                     (subseq
-                                      (-filter #'(lambda (x)
-                                                   x)
-                                               (append (list (jabber-qim-jid-nickname (plist-get
-                                                                                       (fsm-get-state-data jabber-buffer-connection)
-                                                                                       :original-jid))
-                                                             (jabber-qim-jid-nickname jabber-chatting-with))
-                                                       (mapcar #'jabber-qim-jid-nickname invited-members)))
-                                      0 4))
+                            (if (> (length chatroom-members) 4)
+                                (append (subseq
+                                         chatroom-members
+                                         0 4)
+                                        (list "..."))
+                              chatroom-members)
                             ","            
                             )                      
                            nil nil t)))
