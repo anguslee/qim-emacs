@@ -137,10 +137,11 @@
 ;;;###autoload (autoload 'jabber-qim-jid-nickname "jabber-qim-extension" "Return user nickname" t)
 (defun jabber-qim-jid-nickname (jid)
   "Return user nickname"
-  (let ((user-vcard (gethash (jabber-jid-user jid)
-                             *jabber-qim-user-vcard-cache*)))
-    (when user-vcard
-      (jabber-qim-user-vcard-name user-vcard))))
+  (when jid
+    (let ((user-vcard (gethash (jabber-jid-user jid)
+                               *jabber-qim-user-vcard-cache*)))
+      (when user-vcard
+        (jabber-qim-user-vcard-name user-vcard)))))
 
 
 ;;;###autoload
@@ -655,8 +656,10 @@ client; see `jabber-edit-bookmarks'."
            (file-size-human-readable jabber-qim-max-send-file-size)))
     (error "Not in CHAT buffer")))
 
-
-(defun jabber-qim-chat-start-groupchat (jc chat-with invited-members groupchat-name)
+(defun jabber-qim-chat-start-groupchat (jc
+                                        chat-with
+                                        invited-members
+                                        &optional default-groupchat-name)
   (interactive
    (list (jabber-read-account)
          (when (bound-and-true-p jabber-chatting-with)
@@ -669,13 +672,26 @@ client; see `jabber-edit-bookmarks'."
                      0)
              (add-to-list 'initial-members invited))
            initial-members)
-         (read-string "New Group Name: "
-                      (ignore-errors
-                        (format "%s,%s"
-                                (jabber-qim-jid-nickname (plist-get (fsm-get-state-data jabber-buffer-connection) :original-jid))
-                                (jabber-qim-jid-nickname jabber-chatting-with)))
-                      nil nil t)))
-  (let* ((my-jid (plist-get (fsm-get-state-data jabber-buffer-connection) :original-jid))
+         ))
+  (let* ((groupchat-name
+          (or default-groupchat-name
+              (read-string "New Group Name: "
+                           (string-join
+                            (-filter #'(lambda (x)
+                                         x)
+                                     (subseq
+                                      (-filter #'(lambda (x)
+                                                   x)
+                                               (append (list (jabber-qim-jid-nickname (plist-get
+                                                                                       (fsm-get-state-data jabber-buffer-connection)
+                                                                                       :original-jid))
+                                                             (jabber-qim-jid-nickname jabber-chatting-with))
+                                                       (mapcar #'jabber-qim-jid-nickname invited-members)))
+                                      0 4))
+                            ","            
+                            )                      
+                           nil nil t)))
+         (my-jid (plist-get (fsm-get-state-data jabber-buffer-connection) :original-jid))
          (muc-jid (format "%s@%s.%s"
                           (secure-hash 'md5 (format "%s,%s,%s,%s"
                                                     my-jid
