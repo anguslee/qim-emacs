@@ -38,6 +38,7 @@ Bug反馈：geng.li@qunar.com
 
 * 不能发送表情
 * 发送文件和图片的大小不能超过10MB
+* buffer里不能播放gif动图
 
 ## **安装方法**
 
