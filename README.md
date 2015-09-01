@@ -22,11 +22,13 @@ Bug反馈：geng.li@qunar.com
 4. 发送文件：
 
     M-x jabber-qim-muc-send-file （要求当前buffer是群聊）
+
     M-x jabber-qim-chat-send-file （要求当前buffer是点对点聊天）
 
 5. 聊天状态下打开功能菜单：
 
     C-c C-c （点对点聊天菜单）
+
     C-c [return] （群聊菜单）
 
 需要输入群组ID或者用户ID的时候，都可以用TAB在minibuffer里做补全。用户ID只能用域用户名的方式做前缀检索。
