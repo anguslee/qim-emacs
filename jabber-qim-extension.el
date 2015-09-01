@@ -659,19 +659,21 @@ client; see `jabber-edit-bookmarks'."
 (defun jabber-qim-chat-start-groupchat (jc chat-with invited-members groupchat-name)
   (interactive
    (list (jabber-read-account)
-         jabber-chatting-with
-         (let ((initial-members (list jabber-chatting-with))
+         (when (bound-and-true-p jabber-chatting-with)
+           jabber-chatting-with)
+         (let ((initial-members '())
                (invited nil))
            (while (> (length (setq invited
-                                 (completing-read "Invite (leave blank for end of input): "
-                                                  *jabber-qim-user-jid-cache*)))
+                                   (completing-read "Invite (leave blank for end of input): "
+                                                    *jabber-qim-user-jid-cache*)))
                      0)
              (add-to-list 'initial-members invited))
            initial-members)
          (read-string "New Group Name: "
-                      (format "%s,%s"
-                              (jabber-qim-jid-nickname (plist-get (fsm-get-state-data jabber-buffer-connection) :original-jid))
-                              (jabber-qim-jid-nickname jabber-chatting-with))
+                      (ignore-errors
+                        (format "%s,%s"
+                                (jabber-qim-jid-nickname (plist-get (fsm-get-state-data jabber-buffer-connection) :original-jid))
+                                (jabber-qim-jid-nickname jabber-chatting-with)))
                       nil nil t)))
   (let* ((my-jid (plist-get (fsm-get-state-data jabber-buffer-connection) :original-jid))
          (muc-jid (format "%s@%s.%s"
@@ -682,9 +684,13 @@ client; see `jabber-edit-bookmarks'."
                                                     (format-time-string "%s")))
                           *jabber-qim-muc-sub-hostname*
                           *jabber-qim-hostname*)))
-    (when invited-members
-           (puthash muc-jid invited-members
-                    *jabber-qim-muc-initial-members*))
+    (when (or invited-members
+              chat-with)
+      (puthash muc-jid
+               (append (when (not (null chat-with))
+                         (list chat-with))
+                       invited-members)
+               *jabber-qim-muc-initial-members*))
     (jabber-qim-api-request-post
      (lambda (data conn headers)
        (when (equal "200" (gethash 'status-code headers))
@@ -707,3 +713,4 @@ client; see `jabber-edit-bookmarks'."
       file-desc)))
 
 (provide 'jabber-qim-extension)
+

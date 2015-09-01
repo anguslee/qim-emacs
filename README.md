@@ -5,6 +5,33 @@
 
 Bug反馈：geng.li@qunar.com
 
+## **常用功能**
+
+1. 开启点对点聊天：
+
+        M-x jabber-chat-with
+
+2. 加入群组：
+
+        M-x jabber-qim-muc-join
+
+3. 创建群组：
+
+        M-x jabber-qim-chat-start-groupchat
+
+4. 发送文件：
+
+        M-x jabber-qim-muc-send-file （要求当前buffer是群聊）
+        M-x jabber-qim-chat-send-file （要求当前buffer是点对点聊天）
+
+5. 聊天状态下打开功能菜单：
+
+        C-c C-c （点对点聊天菜单）
+        C-c [return] （群聊菜单）
+
+需要输入群组ID或者用户ID的时候，都可以用TAB在minibuffer里做补全。用户ID只能用域用户名的方式做前缀检索。
+
+
 ## **受限Feature**
 
 * 不能发送表情
