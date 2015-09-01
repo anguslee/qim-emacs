@@ -674,13 +674,14 @@ client; see `jabber-edit-bookmarks'."
            initial-invites)
          ))
   (let* ((chatroom-members
-          (-filter #'(lambda (x)
-                       x)
-                   (append (list (jabber-qim-jid-nickname (plist-get
-                                                           (fsm-get-state-data jabber-buffer-connection)
-                                                           :original-jid))
-                                 (jabber-qim-jid-nickname jabber-chatting-with))
-                           (mapcar #'jabber-qim-jid-nickname invited-members))))
+          (delete-dups
+           (-filter #'(lambda (x)
+                        x)
+                    (append (list (jabber-qim-jid-nickname (plist-get
+                                                            (fsm-get-state-data jabber-buffer-connection)
+                                                            :original-jid))
+                                  (jabber-qim-jid-nickname jabber-chatting-with))
+                            (mapcar #'jabber-qim-jid-nickname invited-members)))))
          (groupchat-name
           (or default-groupchat-name
               (read-string "New Group Name: "
