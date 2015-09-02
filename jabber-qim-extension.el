@@ -724,6 +724,11 @@ client; see `jabber-edit-bookmarks'."
                             (:nick . ,groupchat-name))))
      'applicaition/json)))
 
+(defun jabber-qim-message-type (message)
+  (cdr (assoc 'msgType (jabber-xml-node-attributes
+                        (car
+                         (jabber-xml-get-children message 'body))))))
+
 (defun jabber-qim-body-parse-file (body)
   (let ((file-desc (ignore-errors
                      (json-read-from-string body))))

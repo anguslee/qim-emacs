@@ -74,7 +74,7 @@ This variable might not take effect if you have changed
   :type 'boolean
   :group 'jabber-chat)
 
-(defcustom jabber-chat-time-format "%H:%M"
+(defcustom jabber-chat-time-format "%Y-%m-%d %H:%M"
   "The format specification for instant messages in the chat buffer.
 See also `jabber-chat-delayed-time-format'.
 
@@ -278,7 +278,7 @@ This function is idempotent."
 	(ewoc-enter-first jabber-chat-ewoc (list :rare-time message-time))))))
 
 (add-to-list 'jabber-jid-chat-menu
-	     (cons "Display more context" 'jabber-chat-display-more-backlog))
+	     (cons "Display history messages" 'jabber-chat-display-more-backlog))
 
 (defun jabber-chat-display-more-backlog (how-many)
   "Display more context. HOW-MANY is number of messages. Specify 0 to display all messages."
@@ -580,9 +580,7 @@ If DONT-PRINT-NICK-P is true, don't include nickname."
                (jabber-xml-node-children
                 (car
                  (jabber-xml-get-children xml-data 'body)))))
-        (msg-type (cdr (assoc 'msgType (jabber-xml-node-attributes
-                                                       (car
-                                                        (jabber-xml-get-children xml-data 'body)))))))
+        (msg-type (jabber-qim-message-type xml-data)))
     (when body
       (when (eql mode :insert)
         (if (and (> (length body) 4)

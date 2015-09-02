@@ -426,7 +426,26 @@ JID; only provide completion as a guide."
     (completing-read prompt nicknames nil t nil 'jabber-muc-nickname-history)))
 
 (add-to-list 'jabber-jid-muc-menu
-             (cons "Request vcard" 'jabber-muc-vcard-get))
+             (cons "Display history messages" 'jabber-muc-display-more-backlog))
+
+(defun jabber-muc-display-more-backlog (how-many)
+  "Display more context. HOW-MANY is number of messages. Specify 0 to display all messages."
+  (interactive "nHow many more messages (Specify 0 to display all)? ")
+  (let* ((inhibit-read-only t)
+         (jabber-backlog-days nil)
+         (jabber-backlog-number (if (= how-many 0) t how-many))
+         (backlog-entries (jabber-history-backlog
+                           jabber-group jabber-chat-earliest-backlog)))
+    (when backlog-entries
+      (setq jabber-chat-earliest-backlog 
+            (jabber-float-time (jabber-parse-time
+                                (aref (car backlog-entries) 0))))
+      (save-excursion
+        (goto-char (point-min))
+        (mapc 'jabber-chat-insert-backlog-entry (nreverse backlog-entries))))))
+
+;; (add-to-list 'jabber-jid-muc-menu
+;;              (cons "Request vcard" 'jabber-muc-vcard-get))
 
 ;;;###autoload
 (defun jabber-muc-vcard-get (jc group nickname)
