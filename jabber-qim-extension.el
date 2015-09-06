@@ -194,7 +194,8 @@ client; see `jabber-edit-bookmarks'."
   "~/.qim-autojoin.el")
 
 (when (file-exists-p *qim-autojoin-settings-file*)
-  (load-file *qim-autojoin-settings-file*))
+  (ignore-errors
+    (load-file *qim-autojoin-settings-file*)))
 
 (defun jabber-qim-muc-toggle-autojoin ()
   (interactive)
