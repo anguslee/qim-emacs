@@ -444,6 +444,11 @@ JID; only provide completion as a guide."
         (goto-char (point-min))
         (mapc 'jabber-chat-insert-backlog-entry (nreverse backlog-entries))))))
 
+(when (functionp 'jabber-qim-muc-toggle-autojoin)
+  (add-to-list 'jabber-jid-muc-menu
+               (cons "Add to/Remove from autojoin" 'jabber-qim-muc-toggle-autojoin)))
+
+
 ;; (add-to-list 'jabber-jid-muc-menu
 ;;              (cons "Request vcard" 'jabber-muc-vcard-get))
 

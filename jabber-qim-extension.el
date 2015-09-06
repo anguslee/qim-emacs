@@ -190,6 +190,37 @@ client; see `jabber-edit-bookmarks'."
   :group 'jabber-chat
   :type '(repeat (string :tag "JID of QIM chatroom")))
 
+(defconst *qim-autojoin-settings-file*
+  "~/.qim-autojoin.el")
+
+(when (file-exists-p *qim-autojoin-settings-file*)
+  (load-file *qim-autojoin-settings-file*))
+
+(defun jabber-qim-muc-toggle-autojoin ()
+  (interactive)
+  (when jabber-group
+    (if (find-if #'(lambda (x)
+                     (string=  jabber-group (car x)))
+                 jabber-qim-muc-autojoin)
+        (when (y-or-n-p (format "Remove %s from autojoin list?"
+                                (jabber-jid-displayname jabber-group)))
+          (setq jabber-qim-muc-autojoin
+                (remove-if #'(lambda (x)
+                               (string= (car x) jabber-group))
+                           jabber-qim-muc-autojoin))
+          (let ((coding-system-for-write 'no-conversion))
+            (with-temp-file *qim-autojoin-settings-file*
+              (insert (format "(setq jabber-qim-muc-autojoin '%s)"
+                              (prin1-to-string jabber-qim-muc-autojoin))))))
+      (when (y-or-n-p (format "Add %s to autojoin list?"
+                              (jabber-jid-displayname jabber-group)))
+        (add-to-list 'jabber-qim-muc-autojoin (list jabber-group
+                                                    (cons :silence (not (y-or-n-p "Enable message alerts?")))))
+        (let ((coding-system-for-write 'no-conversion))
+          (with-temp-file *qim-autojoin-settings-file*
+            (insert (format "(setq jabber-qim-muc-autojoin '%s)"
+                            (prin1-to-string jabber-qim-muc-autojoin)))))))))
+
 (defun jabber-qim-muc-autojoin (jc)
   "Join rooms specified in account bookmarks and global `jabber-muc-autojoin'."
   (interactive (list (jabber-read-account)))
@@ -737,5 +768,7 @@ client; see `jabber-edit-bookmarks'."
                (cdr (assoc 'HttpUrl file-desc)))
       file-desc)))
 
-(provide 'jabber-qim-extension)
 
+
+
+(provide 'jabber-qim-extension)
