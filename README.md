@@ -44,6 +44,7 @@ Bug反馈：geng.li@qunar.com
 ## **受限Feature**
 
 * 不能发送表情
+* 不能截屏
 * 发送文件和图片的大小不能超过10MB
 * buffer里不能播放gif动图
 
