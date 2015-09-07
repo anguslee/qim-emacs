@@ -31,7 +31,7 @@ Bug反馈：geng.li@qunar.com
 
     *C-c [return]* （群聊菜单）
 
-6. 设置自动加入的群组，在.qim-autojoin.el文件里设置变量：
+6. 设置自动加入的群组，在~/.qim-autojoin.el文件里设置变量：
 
         (setq jabber-qim-muc-autojoin
             '(("去哪儿度假bu@conference.ejabhost1" ; 群ID
