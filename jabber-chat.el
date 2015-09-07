@@ -704,7 +704,7 @@ If DONT-PRINT-NICK-P is true, don't include nickname."
 With a prefix argument, open buffer in other window.
 Returns the chat buffer."
   (interactive (let* ((jid
-                       (jabber-read-jid-completing "chat with:"
+                       (jabber-read-jid-completing "Chat with: "
                                                    *jabber-qim-user-jid-cache*))
                       (account
                        (jabber-read-account nil jid)))

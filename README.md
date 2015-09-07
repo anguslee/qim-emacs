@@ -13,11 +13,11 @@ Bug反馈：geng.li@qunar.com
 
 2. 加入群组：
 
-    *M-x jabber-qim-muc-join*
+    *M-x jabber-qim-muc-join* （快捷键：*C-x C-j C-m*）
 
 3. 创建群组：
 
-    *M-x jabber-qim-chat-start-groupchat*
+    *M-x jabber-qim-chat-start-groupchat* （快捷键：*C-x C-j C-g*）
 
 4. 发送文件：
 

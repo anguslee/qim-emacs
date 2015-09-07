@@ -244,7 +244,7 @@ client; see `jabber-edit-bookmarks'."
   (interactive
    (list (jabber-read-account)
          (let ((muc-name
-                (jabber-read-jid-completing "group: "
+                (jabber-read-jid-completing "Join group: "
                                             (mapcar #'car
                                                     (-filter #'(lambda (muc)
                                                                  (not (find (cdr muc)
@@ -283,6 +283,8 @@ client; see `jabber-edit-bookmarks'."
     (jabber-muc-join jc muc-jid
                      (jabber-muc-read-my-nickname jc muc-jid)
                      popup)))
+
+(define-key jabber-global-keymap "\C-m" 'jabber-qim-muc-join)
 
 (defun jabber-qim-muc-accept-invite (xml-data who mode)
   "Accept QIM MUC invitation automatically"
@@ -755,6 +757,8 @@ client; see `jabber-edit-bookmarks'."
      (json-encode (vector `((:muc_name . ,(jabber-jid-user muc-jid))
                             (:nick . ,groupchat-name))))
      'applicaition/json)))
+
+(define-key jabber-global-keymap "\C-g" 'jabber-qim-chat-start-groupchat)
 
 (defun jabber-qim-message-type (message)
   (cdr (assoc 'msgType (jabber-xml-node-attributes
