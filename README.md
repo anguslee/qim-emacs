@@ -9,15 +9,15 @@ Bug反馈：geng.li@qunar.com
 
 1. 开启点对点聊天：
 
-    *M-x jabber-chat-with*
+    *M-x jabber-chat-with (C-x C-j C-j)*
 
 2. 加入群组：
 
-    *M-x jabber-qim-muc-join* (*C-x C-j C-m*)
+    *M-x jabber-qim-muc-join (C-x C-j C-m)*
 
 3. 创建群组：
 
-    *M-x jabber-qim-chat-start-groupchat* (*C-x C-j C-g*)
+    *M-x jabber-qim-chat-start-groupchat (C-x C-j C-g)*
 
 4. 发送文件：
 
