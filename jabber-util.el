@@ -233,7 +233,7 @@ Also return non-nil if JID matches JC, modulo resource."
 	  (jabber-connection-bare-jid jc))
    (member (jabber-jid-user jid) (mapcar (lambda (x) (jabber-jid-user (car x))) jabber-account-list))))
 
-(defun jabber-read-jid-completing (prompt &optional subset require-match default resource fulljids)
+(defun jabber-read-jid-completing (prompt &optional subset require-match default resource fulljids inherit-input-method)
   "read a jid out of the current roster from the minibuffer.
 If SUBSET is non-nil, it should be a list of symbols from which
 the JID is to be selected, instead of using the entire roster.
@@ -276,10 +276,11 @@ If FULLJIDS is non-nil, complete jids with resources."
 	(setq jid-at-point nil))
     (let ((input
 	   (completing-read (concat prompt
-				    (if jid-at-point
-					(format "(default %s) " jid-at-point)))
-			    jid-completion-table
-			    nil require-match nil 'jabber-jid-history jid-at-point)))
+                                (if jid-at-point
+                                    (format "(default %s) " jid-at-point)))
+                        jid-completion-table
+                        nil require-match nil 'jabber-jid-history jid-at-point
+                        inherit-input-method)))
       (setq chosen
 	    (if (and input (assoc-ignore-case input jid-completion-table))
 		(symbol-name (cdr (assoc-ignore-case input jid-completion-table)))

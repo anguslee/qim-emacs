@@ -286,6 +286,7 @@ client; see `jabber-edit-bookmarks'."
 
 (define-key jabber-global-keymap "\C-m" 'jabber-qim-muc-join)
 
+
 (defun jabber-qim-muc-accept-invite (xml-data who mode)
   "Accept QIM MUC invitation automatically"
   (dolist (x (jabber-xml-get-children xml-data 'x))
@@ -394,7 +395,12 @@ client; see `jabber-edit-bookmarks'."
   (let* ((session-muc-alist (jabber-qim-session-muc-vcard-alist))
          (jid (jabber-read-jid-completing "Forward to: "
                                           (append (mapcar #'car session-muc-alist)
-                                                  *jabber-qim-user-jid-cache*)))
+                                                  *jabber-qim-user-jid-cache*)
+                                          nil
+                                          nil
+                                          nil
+                                          nil
+                                          t))
          (jc (jabber-read-account))
          (muc-jid (cdr (assoc (intern jid)
                               session-muc-alist)))
