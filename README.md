@@ -25,13 +25,17 @@ Bug反馈：geng.li@qunar.com
 
     *M-x jabber-qim-chat-send-file* （要求当前buffer是点对点聊天）
 
-5. 聊天状态下打开功能菜单：
+3. 邀请入群组：
+
+    *M-x jabber-muc-invite (C-x C-j C-i)*
+
+6. 聊天状态下打开功能菜单：
 
     *C-c C-c* （点对点聊天菜单）
 
     *C-c [return]* （群聊菜单）
 
-6. 设置自动加入的群组，在~/.qim-autojoin.el文件里设置变量：
+7. 设置自动加入的群组，在~/.qim-autojoin.el文件里设置变量：
 
         (setq jabber-qim-muc-autojoin
             '(("去哪儿度假bu@conference.ejabhost1" ; 群ID
