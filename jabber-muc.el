@@ -848,6 +848,10 @@ group, else it is a JID."
   (add-to-list 'jabber-jid-muc-menu
                (cons "Send file/image" 'jabber-qim-muc-send-file)))
 
+(when (functionp 'jabber-qim-muc-send-screenshot)
+  (add-to-list 'jabber-jid-muc-menu
+               (cons "Take a screenshot" 'jabber-qim-muc-send-screenshot)))
+
 
 (add-to-list 'jabber-body-printers 'jabber-muc-print-invite)
 (add-to-list 'jabber-body-printers 'jabber-qim-muc-accept-invite)

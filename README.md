@@ -25,17 +25,24 @@ Bug反馈：geng.li@qunar.com
 
     *M-x jabber-qim-chat-send-file* （要求当前buffer是点对点聊天）
 
-3. 邀请入群组：
+5. 截屏：
+
+    *M-x jabber-qim-muc-send-screenshot* （要求当前buffer是群聊）
+
+    *M-x jabber-qim-chat-send-screenshot* （要求当前buffer是点对点聊天）
+
+
+6. 邀请入群组：
 
     *M-x jabber-muc-invite (C-x C-j C-i)*
 
-6. 聊天状态下打开功能菜单：
+7. 聊天状态下打开功能菜单：
 
     *C-c C-c* （点对点聊天菜单）
 
     *C-c [return]* （群聊菜单）
 
-7. 设置自动加入的群组，在~/.qim-autojoin.el文件里设置变量：
+8. 设置自动加入的群组，在~/.qim-autojoin.el文件里设置变量：
 
         (setq jabber-qim-muc-autojoin
             '(("去哪儿度假bu@conference.ejabhost1" ; 群ID
@@ -48,13 +55,12 @@ Bug反馈：geng.li@qunar.com
 ## **受限Feature**
 
 * 不能发送表情
-* 不能截屏
 * 发送文件和图片的大小不能超过10MB
 * buffer里不能播放gif动图
 
 ## **安装方法**
 
-**依赖**： Linux操作系统，GNU Emacs推荐用v24+, 其他版本没测试过，openssl，autoconf，automake，emacs-uuid(http://www.emacswiki.org/emacs/uuid.el)
+**依赖**： Linux操作系统，GNU Emacs推荐用v24+, 其他版本没测试过，openssl，autoconf，automake，emacs-uuid(http://www.emacswiki.org/emacs/uuid.el), ImageMagick(http://www.emacswiki.org/emacs/ImageMagick 截屏功能依赖此)
 
 运行：
 
@@ -119,6 +125,8 @@ Bug反馈：geng.li@qunar.com
 emacs-web (https://github.com/nicferrier/emacs-web)
 
 elisp-latch (https://github.com/skeeto/elisp-latch)
+
+screenshot (http://www.emacswiki.org/emacs/ScreenShot)
 
 ## **开发分支**
 

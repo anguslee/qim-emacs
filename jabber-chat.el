@@ -723,6 +723,11 @@ Returns the chat buffer."
   (add-to-list 'jabber-jid-chat-menu
                (cons "Send file/image" 'jabber-qim-chat-send-file)))
 
+(when (functionp 'jabber-qim-chat-send-screenshot)
+  (add-to-list 'jabber-jid-chat-menu
+               (cons "Take a screenshot" 'jabber-qim-chat-send-screenshot)))
+
+
 (defun jabber-chat-with-jid-at-point (&optional other-window)
   "Start chat with JID at point.
 Signal an error if there is no JID at point.

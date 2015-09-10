@@ -7,6 +7,8 @@
 (require 'jabber-avatar)
 (require 'subr-x)
 
+(require 'screenshot)
+
 
 (add-to-list 'web-json-expected-mimetypes-list
              "text/json")
@@ -35,6 +37,10 @@
 (defun jabber-qim-local-received-files-cache-dir ()
   (format "%s/received-files" jabber-qim-local-file-dir))
 
+(defun jabber-qim-local-screenshots-dir ()
+  (format "%s/screenshots" jabber-qim-local-file-dir))
+
+
 (ignore-errors
   (dired-create-directory jabber-qim-local-file-dir))
 
@@ -45,6 +51,9 @@
 (ignore-errors
   (dired-create-directory
    (jabber-qim-local-received-files-cache-dir)))
+
+(ignore-errors
+  (dired-create-directory (jabber-qim-local-screenshots-dir)))
 
 
 (defvar jabber-qim-local-emotions-directory
@@ -670,6 +679,27 @@ client; see `jabber-edit-bookmarks'."
 
 
 (add-to-list 'jabber-post-connect-hooks 'jabber-qim-user-muc-preload)
+
+(defun jabber-qim-send-screenshot (jc jid send-function &optional chat-buffer)
+  (let ((image-file (format "%s/%s.png"
+                            (jabber-qim-local-screenshots-dir)
+                            (jabber-message-uuid))))
+    (when (zerop (screenshot-do-import image-file))
+      (jabber-qim-send-file jc jid image-file send-function chat-buffer))))
+
+(defun jabber-qim-muc-send-screenshot (jc group)
+  (interactive
+   (jabber-muc-argument-list))
+  (jabber-qim-send-screenshot jc group 'jabber-muc-send))
+
+(defun jabber-qim-chat-send-screenshot (jc chat-with &optional chat-buffer)
+  (interactive
+   (list (jabber-read-account)
+         jabber-chatting-with
+         (current-buffer)))
+  (if chat-with
+      (jabber-qim-send-screenshot jc chat-with 'jabber-chat-send chat-buffer)
+    (error "Not in CHAT buffer")))
 
 
 (defun jabber-qim-muc-send-file (jc group filename)
