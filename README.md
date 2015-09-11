@@ -60,9 +60,16 @@ Bug反馈：geng.li@qunar.com
 
 ## **安装方法**
 
-**依赖**： Linux操作系统，GNU Emacs推荐用v24+, 其他版本没测试过，openssl，autoconf，automake，emacs-uuid(http://www.emacswiki.org/emacs/uuid.el), ImageMagick(http://www.emacswiki.org/emacs/ImageMagick 截屏功能依赖此)
+**依赖**：
 
-运行：
+* Linux操作系统安装v24+ GNU Emacs, 其他组合没测试过
+* openssl
+* autoconf
+* automake
+* emacs-uuid(http://www.emacswiki.org/emacs/uuid.el)或者uuidgen
+* ImageMagick(http://www.emacswiki.org/emacs/ImageMagick 截屏功能依赖此)
+
+**安装运行**：
 
     git clone git@gitlab.corp.qunar.com:geng.li/qim-emacs.git
     cd qim-emacs
@@ -125,8 +132,6 @@ Bug反馈：geng.li@qunar.com
 emacs-web (https://github.com/nicferrier/emacs-web)
 
 elisp-latch (https://github.com/skeeto/elisp-latch)
-
-screenshot (http://www.emacswiki.org/emacs/ScreenShot)
 
 ## **开发分支**
 

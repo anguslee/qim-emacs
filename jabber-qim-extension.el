@@ -7,8 +7,6 @@
 (require 'jabber-avatar)
 (require 'subr-x)
 
-(require 'screenshot)
-
 
 (add-to-list 'web-json-expected-mimetypes-list
              "text/json")
@@ -684,8 +682,11 @@ client; see `jabber-edit-bookmarks'."
   (let ((image-file (format "%s/%s.png"
                             (jabber-qim-local-screenshots-dir)
                             (jabber-message-uuid))))
-    (when (zerop (screenshot-do-import image-file))
-      (jabber-qim-send-file jc jid image-file send-function chat-buffer))))
+    (if (equal 0 (ignore-errors
+                   (call-process "import" nil nil nil image-file)))
+        (jabber-qim-send-file jc jid image-file send-function chat-buffer)
+      (error "Screen capture failed."))))
+
 
 (defun jabber-qim-muc-send-screenshot (jc group)
   (interactive
