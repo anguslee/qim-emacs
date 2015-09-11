@@ -67,7 +67,7 @@ Bug反馈：geng.li@qunar.com
 * autoconf
 * automake
 * emacs-uuid(http://www.emacswiki.org/emacs/uuid.el), 或者uuidgen命令
-* ImageMagick(http://www.emacswiki.org/emacs/ImageMagick 截屏功能依赖此)
+* ImageMagick(http://www.emacswiki.org/emacs/ImageMagick), 截屏功能依赖此
 
 **安装运行**：
 
