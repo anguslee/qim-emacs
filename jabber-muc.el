@@ -423,7 +423,7 @@ JID; only provide completion as a guide."
   (let ((nicknames (cdr (assoc group jabber-muc-participants))))
     (unless nicknames
       (error "Unknown group: %s" group))
-    (completing-read prompt nicknames nil t nil 'jabber-muc-nickname-history)))
+    (completing-read prompt nicknames nil t nil 'jabber-muc-nickname-history nil t)))
 
 (add-to-list 'jabber-jid-muc-menu
              (cons "Display history messages" 'jabber-muc-display-more-backlog))
@@ -997,7 +997,7 @@ include groupchat invites."
    (progn
      (insert "@")
      (jabber-muc-argument-list
-      (list (jabber-muc-read-nickname jabber-group "Nickname: ")))))
+      (list (jabber-muc-read-nickname jabber-group "@: ")))))
   (insert (format "%s " nickname)))
 
 
