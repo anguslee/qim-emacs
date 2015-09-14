@@ -683,7 +683,7 @@ client; see `jabber-edit-bookmarks'."
                             (jabber-qim-local-screenshots-dir)
                             (jabber-message-uuid))))
     (if (equal 0 (ignore-errors
-                   (call-process "import" nil nil nil image-file)))
+                   (call-process (executable-find "import") nil nil nil image-file)))
         (jabber-qim-send-file jc jid image-file send-function chat-buffer)
       (error "Screen capture failed."))))
 
