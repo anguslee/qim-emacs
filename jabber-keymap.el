@@ -51,7 +51,7 @@
     (define-key map "\C-o" 'jabber-send-default-presence)
     (define-key map "\C-x" 'jabber-send-xa-presence)
     (define-key map "\C-p" 'jabber-send-presence)
-    (define-key map "\C-i" 'jabber-muc-invite)
+    (define-key map "\C-v" 'jabber-muc-invite)
     map)
   "Global Jabber keymap (usually under C-x C-j)")
 

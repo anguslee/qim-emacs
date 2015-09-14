@@ -34,7 +34,7 @@ Bug反馈：geng.li@qunar.com
 
 6. 邀请入群组：
 
-    *M-x jabber-muc-invite (C-x C-j C-i)*
+    *M-x jabber-muc-invite (C-x C-j C-v)*
 
 7. 聊天状态下打开功能菜单：
 
