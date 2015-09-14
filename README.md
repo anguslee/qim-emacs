@@ -49,7 +49,7 @@ Bug反馈：geng.li@qunar.com
                 (:silence . t)))) ; :silence表示默认不在message框里提示消息，除非被@。需要提示的话就去掉这项设置
 
 
-需要输入群组ID或者用户ID的时候，都可以用TAB在minibuffer里做补全。用户ID只能用域用户名的方式做前缀检索。
+需要输入群组ID或者用户ID的时候，都可以用TAB在minibuffer里做补全。用户ID可以用域用户名或者姓名的方式做前缀检索。
 
 
 ## **受限Feature**

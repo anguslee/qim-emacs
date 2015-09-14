@@ -122,6 +122,11 @@
 (defvar *jabber-qim-user-jid-cache*
   '())
 
+;;;###autoload
+(defvar *jabber-qim-username-to-jid-cache*
+  '())
+
+
 (defun jabber-qim-session-user-vcards ()
   (let ((ret '()))
     (maphash #'(lambda (key value)
@@ -136,7 +141,12 @@
                  (add-to-list '*jabber-qim-user-jid-cache*
                               (jabber-jid-symbol (jabber-qim-user-vcard-jid vcard)))
                  (puthash (jabber-qim-user-vcard-jid vcard)
-                          vcard *jabber-qim-user-vcard-cache*)) data))
+                          vcard *jabber-qim-user-vcard-cache*)
+                 (add-to-list '*jabber-qim-username-to-jid-cache*
+                              (cons (intern (format "%s - %s"
+                                                    (jabber-qim-user-vcard-name vcard)
+                                                    (jabber-qim-user-vcard-position vcard)))
+                                    (jabber-qim-user-vcard-jid vcard)))) data))
  "getusers"
  "u="
  'applicaion/json)

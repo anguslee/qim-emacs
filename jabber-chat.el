@@ -703,9 +703,17 @@ If DONT-PRINT-NICK-P is true, don't include nickname."
   "Open an empty chat window for chatting with JID.
 With a prefix argument, open buffer in other window.
 Returns the chat buffer."
-  (interactive (let* ((jid
+  (interactive (let* ((jid-or-username
                        (jabber-read-jid-completing "Chat with: "
-                                                   *jabber-qim-user-jid-cache*))
+                                                   (append (mapcar #'car
+                                                                   *jabber-qim-username-to-jid-cache*)
+                                                           *jabber-qim-user-jid-cache*)
+                                                   nil nil nil nil t))
+                      (jid (if (assoc-string jid-or-username
+                                             *jabber-qim-username-to-jid-cache*)
+                               (cdr (assoc-string jid-or-username
+                                             *jabber-qim-username-to-jid-cache*))
+                             jid-or-username))
                       (account
                        (jabber-read-account nil jid)))
                  (list 
@@ -714,6 +722,7 @@ Returns the chat buffer."
     (if other-window
         (switch-to-buffer-other-window buffer)
       (switch-to-buffer buffer))))
+
 
 (when (functionp 'jabber-qim-chat-start-groupchat)
   (add-to-list 'jabber-jid-chat-menu
