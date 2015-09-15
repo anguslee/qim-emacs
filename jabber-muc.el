@@ -809,12 +809,15 @@ group, else it is a JID."
   "Invite JID to GROUP, stating REASON."
   (interactive
    (list (jabber-read-account)
-         (jabber-read-jid-completing
-          "Invite whom: "
-          ;; The current room is _not_ a good default for whom to invite.
-          *jabber-qim-user-jid-cache*
-          ;(remq (jabber-jid-symbol jabber-group) (jabber-concat-rosters))
-          )
+         (jabber-qim-user-jid-by-completion
+          (jabber-read-jid-completing
+           "Invite whom: "
+           (jabber-qim-user-jid-completion-list)
+           nil nil nil nil t
+           ;; The current room is _not_ a good default for whom to invite.
+                                        ; *jabber-qim-user-jid-cache*
+                                        ;(remq (jabber-jid-symbol jabber-group) (jabber-concat-rosters))
+           ))
          (jabber-muc-read-completing "To group: ")
          nil
                                         ; (jabber-read-with-input-method "Reason: ")

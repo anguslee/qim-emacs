@@ -126,6 +126,17 @@
 (defvar *jabber-qim-username-to-jid-cache*
   '())
 
+(defun jabber-qim-user-jid-by-completion (completion)
+  (if (assoc-string completion
+                    *jabber-qim-username-to-jid-cache*)
+      (cdr (assoc-string completion
+                         *jabber-qim-username-to-jid-cache*))
+    completion))
+
+(defun jabber-qim-user-jid-completion-list ()
+  (append (mapcar #'car
+                  *jabber-qim-username-to-jid-cache*)
+          *jabber-qim-user-jid-cache*))
 
 (defun jabber-qim-session-user-vcards ()
   (let ((ret '()))
@@ -410,14 +421,15 @@ client; see `jabber-edit-bookmarks'."
 
 (defun jabber-qim-forward-object-action (button)
   (let* ((session-muc-alist (jabber-qim-session-muc-vcard-alist))
-         (jid (jabber-read-jid-completing "Forward to: "
-                                          (append (mapcar #'car session-muc-alist)
-                                                  *jabber-qim-user-jid-cache*)
-                                          nil
-                                          nil
-                                          nil
-                                          nil
-                                          t))
+         (jid (jabber-qim-user-jid-by-completion
+               (jabber-read-jid-completing "Forward to: "
+                                           (append (mapcar #'car session-muc-alist)
+                                                   (jabber-qim-user-jid-completion-list))
+                                           nil
+                                           nil
+                                           nil
+                                           nil
+                                           t)))
          (jc (jabber-read-account))
          (muc-jid (cdr (assoc (intern jid)
                               session-muc-alist)))

@@ -705,15 +705,9 @@ With a prefix argument, open buffer in other window.
 Returns the chat buffer."
   (interactive (let* ((jid-or-username
                        (jabber-read-jid-completing "Chat with: "
-                                                   (append (mapcar #'car
-                                                                   *jabber-qim-username-to-jid-cache*)
-                                                           *jabber-qim-user-jid-cache*)
+                                                   (jabber-qim-user-jid-completion-list)
                                                    nil nil nil nil t))
-                      (jid (if (assoc-string jid-or-username
-                                             *jabber-qim-username-to-jid-cache*)
-                               (cdr (assoc-string jid-or-username
-                                             *jabber-qim-username-to-jid-cache*))
-                             jid-or-username))
+                      (jid (jabber-qim-user-jid-by-completion jid-or-username))
                       (account
                        (jabber-read-account nil jid)))
                  (list 
