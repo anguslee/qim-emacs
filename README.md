@@ -133,6 +133,7 @@ emacs-web (https://github.com/nicferrier/emacs-web)
 
 elisp-latch (https://github.com/skeeto/elisp-latch)
 
-## **开发分支**
+## **分支说明**
 
-qim-emacs
+* 开发分支：qim-emacs
+* 发布分支：master
