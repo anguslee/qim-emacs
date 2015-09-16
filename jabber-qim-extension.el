@@ -278,7 +278,8 @@ client; see `jabber-edit-bookmarks'."
                                                                  (not (find (cdr muc)
                                                                             (mapcar #'car *jabber-active-groupchats*)
                                                                             :test 'string=)))
-                                                             *jabber-qim-user-muc-room-jid-list*)))))
+                                                             *jabber-qim-user-muc-room-jid-list*))
+                                            nil nil nil nil t)))
            (if (assoc-string muc-name
                              *jabber-qim-user-muc-room-jid-list*)
                (cdr (assoc-string muc-name
@@ -486,11 +487,16 @@ client; see `jabber-edit-bookmarks'."
                                    (jabber-qim-view-file-in-directory file-path)
                                  (web-http-get
                                   #'(lambda (httpc header body)
-                                      (let ((coding-system-for-write 'binary))
-                                        (with-temp-file file-path
-                                          (insert body))
-                                        (message "File %s downloaded" file-name)
-                                        (jabber-qim-view-file-in-directory file-path)))
+                                      (if (equal "200" (gethash 'status-code header))
+                                          (let ((coding-system-for-write 'binary))
+                                            (with-temp-file file-path
+                                              (insert body))
+                                            (message "File %s downloaded" file-name)
+                                            (jabber-qim-view-file-in-directory file-path))
+                                        (message "ERROR Downloading %s: %s %s"
+                                                 file-name
+                                                 (gethash 'status-code header)
+                                                 (gethash 'status-string header))))
                                   :url url)))))
   (insert "\t")
   (insert-button "Forward File To..."
@@ -551,18 +557,20 @@ client; see `jabber-edit-bookmarks'."
                                     (web-http-get
                                      #'(lambda (httpc header body)
                                          (ignore-errors
-                                           (when (equal "200" (gethash 'status-code header))
-                                             (let ((file-path (format "%s/%s.%s"
-                                                                      (jabber-qim-local-images-cache-dir)
-                                                                      (md5 body)
-                                                                      image-ext)))
-                                               (unless (file-exists-p file-path)
-                                                 (let ((coding-system-for-write 'binary))
-                                                   (with-temp-file file-path
-                                                     (insert body))))
-                                               (find-file file-path)
-                                               (read-only-mode)
-                                               ))))
+                                           (if (equal "200" (gethash 'status-code header))
+                                               (let ((file-path (format "%s/%s.%s"
+                                                                        (jabber-qim-local-images-cache-dir)
+                                                                        (md5 body)
+                                                                        image-ext)))
+                                                 (unless (file-exists-p file-path)
+                                                   (let ((coding-system-for-write 'binary))
+                                                     (with-temp-file file-path
+                                                       (insert body))))
+                                                 (find-file file-path)
+                                                 (read-only-mode))
+                                             (message "ERROR Downloading Image: %s %s"
+                                                      (gethash 'status-code header)
+                                                      (gethash 'status-string header)))))
                                      :url image-url))))
              )))
        (insert "\t")
