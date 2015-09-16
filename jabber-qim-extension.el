@@ -419,10 +419,13 @@ client; see `jabber-edit-bookmarks'."
   (revert-buffer t t t)
   (dired-goto-file file-path))
 
-(defun jabber-qim-forward-object-action (button)
+(defun jabber-qim-send-to-chat (data &optional prompt msg-type)
+  "Send data to selected (active) chat buffer"
   (let* ((session-muc-alist (jabber-qim-session-muc-vcard-alist))
          (jid (jabber-qim-user-jid-by-completion
-               (jabber-read-jid-completing "Forward to: "
+               (jabber-read-jid-completing (if (stringp prompt)
+                                               prompt
+                                             "Select chat buffer: ")
                                            (append (mapcar #'car session-muc-alist)
                                                    (jabber-qim-user-jid-completion-list))
                                            nil
@@ -442,9 +445,14 @@ client; see `jabber-edit-bookmarks'."
     (switch-to-buffer buffer)
     (funcall send-function
              jc
-             (button-get button :object-text)
-             (button-get button :msg-type))
-    ))
+             data
+             msg-type)))
+
+(defun jabber-qim-forward-object-action (button)
+  (jabber-qim-send-to-chat
+   (button-get button :object-text)
+   "Forward to: "
+   (button-get button :msg-type)))
 
 (defun jabber-qim-insert-file (file-desc body-text face)
   "Insert file into chat buffer."
@@ -831,8 +839,5 @@ client; see `jabber-edit-bookmarks'."
                (cdr (assoc 'FileName file-desc))
                (cdr (assoc 'HttpUrl file-desc)))
       file-desc)))
-
-
-
 
 (provide 'jabber-qim-extension)
