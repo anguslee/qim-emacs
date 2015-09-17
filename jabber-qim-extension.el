@@ -848,4 +848,7 @@ client; see `jabber-edit-bookmarks'."
                (cdr (assoc 'HttpUrl file-desc)))
       file-desc)))
 
+(defun jabber-qim-readmark-message-p (message)
+  (string= "readmark" (jabber-xml-get-attribute message 'type)))
+
 (provide 'jabber-qim-extension)
