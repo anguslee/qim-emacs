@@ -136,4 +136,4 @@ elisp-latch (https://github.com/skeeto/elisp-latch)
 ## **分支说明**
 
 * 开发分支：qim-emacs
-* 发布分支：master
+
