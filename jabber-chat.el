@@ -19,6 +19,7 @@
 ;; Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 (require 'jabber-qim-extension)
+(require 'subr-x)
 
 (require 'jabber-core)
 (require 'jabber-chatbuffer)
@@ -629,13 +630,19 @@ If DONT-PRINT-NICK-P is true, don't include nickname."
             (let* ((object (match-string 0 segment))
                    (text (substring segment (length object))))
               (jabber-qim-insert-object object face)
-              (if (> (length text) 0)
-                  (insert (jabber-propertize 
-                           text
-                           'face face))))
-          (insert (jabber-propertize 
-                   segment
-                   'face face))))
+              (when (> (length text) 0)
+                (insert (jabber-propertize 
+                         text
+                         'face face))))
+          (progn
+            (when (and (find ?\n (string-trim segment))
+                       (not (string-prefix-p "\n" segment)))
+              (insert (jabber-propertize 
+                       "\n"
+                       'face face)))
+            (insert (jabber-propertize 
+                     segment
+                     'face face)))))
       (setq previous-start match-start)
       (if (numberp match-start)
           (setq match-start
