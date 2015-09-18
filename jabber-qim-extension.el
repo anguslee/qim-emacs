@@ -333,6 +333,7 @@ client; see `jabber-edit-bookmarks'."
 (defun jabber-qim-get-muc-vcard (muc-jid)
   "Return MUC vcard"
   (and
+   muc-jid
    (string-prefix-p (format "%s." *jabber-qim-muc-sub-hostname*)
                     (jabber-jid-server muc-jid))
    (or (gethash (jabber-jid-user muc-jid) *jabber-qim-muc-vcard-cache*)
@@ -596,7 +597,8 @@ client; see `jabber-edit-bookmarks'."
     (web-http-get
      #'(lambda (httpc header body)
          (ignore-errors
-           (when (equal "200" (gethash 'status-code header))
+           (when (and body
+                      (equal "200" (gethash 'status-code header)))
              (let ((file-path (format "%s/%s.%s"
                                       (jabber-qim-local-images-cache-dir)
                                       (md5 body)
@@ -605,8 +607,8 @@ client; see `jabber-edit-bookmarks'."
                  (let ((coding-system-for-write 'binary))
                    (with-temp-file file-path
                      (insert body))))
-               (setq image file-path))))
-         (setq ret (md5 body))
+               (setq image file-path)
+               (setq ret (md5 body)))))
          (apply-partially #'nofify latch))
      :url (format "%s/%s" *jabber-qim-file-server* url-path)
      )
