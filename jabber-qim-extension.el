@@ -776,8 +776,10 @@ client; see `jabber-edit-bookmarks'."
          (let ((initial-invites '())
                (invited nil))
            (while (> (length (setq invited
-                                   (completing-read "Invite (leave blank for end of input): "
-                                                    *jabber-qim-user-jid-cache*)))
+                                   (jabber-qim-user-jid-by-completion
+                                    (jabber-read-jid-completing "Invite (leave blank for end of input): "
+                                                                (jabber-qim-user-jid-completion-list)
+                                                                nil nil nil nil t))))
                      0)
              (add-to-list 'initial-invites invited))
            initial-invites)
@@ -816,7 +818,7 @@ client; see `jabber-edit-bookmarks'."
     (when (or invited-members
               chat-with)
       (puthash muc-jid
-               (append (when (not (null chat-with))
+               (append (when chat-with
                          (list chat-with))
                        invited-members)
                *jabber-qim-muc-initial-members*))
