@@ -1309,6 +1309,7 @@ Return nil if X-MUC is nil."
                         (jabber-muc-invite (jabber-read-account)
                                            initial-member group nil))
                     (gethash group *jabber-qim-muc-initial-members*))
+            (remhash group *jabber-qim-muc-initial-members*)
             (ewoc-enter-last
              jabber-chat-ewoc
              (list :muc-notice
