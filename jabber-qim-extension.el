@@ -225,6 +225,20 @@ client; see `jabber-edit-bookmarks'."
   (ignore-errors
     (load-file *qim-autojoin-settings-file*)))
 
+(defun jabber-qim-save-qim-muc-autojoin-settings ()
+  (let ((coding-system-for-write 'no-conversion))
+    (with-temp-file *qim-autojoin-settings-file*
+      (insert (format "(setq jabber-qim-muc-autojoin '%s)"
+                      (prin1-to-string jabber-qim-muc-autojoin)))))
+  t)
+
+(add-hook 'jabber-post-disconnect-hook
+          'jabber-qim-save-qim-muc-autojoin-settings)
+
+(add-to-list 'kill-emacs-query-functions
+		     'jabber-qim-save-qim-muc-autojoin-settings)
+
+
 (defun jabber-qim-muc-toggle-autojoin ()
   (interactive)
   (when jabber-group
@@ -236,19 +250,11 @@ client; see `jabber-edit-bookmarks'."
           (setq jabber-qim-muc-autojoin
                 (remove-if #'(lambda (x)
                                (string= (car x) jabber-group))
-                           jabber-qim-muc-autojoin))
-          (let ((coding-system-for-write 'no-conversion))
-            (with-temp-file *qim-autojoin-settings-file*
-              (insert (format "(setq jabber-qim-muc-autojoin '%s)"
-                              (prin1-to-string jabber-qim-muc-autojoin))))))
+                           jabber-qim-muc-autojoin)))
       (when (y-or-n-p (format "Add %s to autojoin list?"
                               (jabber-jid-displayname jabber-group)))
         (add-to-list 'jabber-qim-muc-autojoin (list jabber-group
-                                                    (cons :silence (not (y-or-n-p "Enable message alerts?")))))
-        (let ((coding-system-for-write 'no-conversion))
-          (with-temp-file *qim-autojoin-settings-file*
-            (insert (format "(setq jabber-qim-muc-autojoin '%s)"
-                            (prin1-to-string jabber-qim-muc-autojoin)))))))))
+                                                    (cons :silence (not (y-or-n-p "Enable message alerts?")))))))))
 
 (defun jabber-qim-muc-autojoin (jc)
   "Join rooms specified in account bookmarks and global `jabber-muc-autojoin'."
@@ -326,6 +332,8 @@ client; see `jabber-edit-bookmarks'."
                    (string-prefix-p (format "%s." *jabber-qim-muc-sub-hostname*)
                                     (jabber-jid-server group)))
           (jabber-qim-muc-join jabber-buffer-connection group)
+          (add-to-list 'jabber-qim-muc-autojoin (list group
+                                                      (cons :silence t)))
           (return t))))))
 
 
@@ -781,7 +789,7 @@ client; see `jabber-edit-bookmarks'."
                                    (jabber-qim-user-jid-by-completion
                                     (jabber-read-jid-completing "Invite (leave blank for end of input): "
                                                                 (jabber-qim-user-jid-completion-list)
-                                                                nil nil nil nil t))))
+                                                                nil nil nil nil t t))))
                      0)
              (add-to-list 'initial-invites invited))
            initial-invites)

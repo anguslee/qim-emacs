@@ -681,8 +681,19 @@ groupchat buffer."
   (let ((whichgroup (assoc group *jabber-active-groupchats*)))
     ;; send unavailable presence to our own nick in room
     (jabber-send-sexp jc
-		      `(presence ((to . ,(format "%s/%s" group (cdr whichgroup)))
-				  (type . "unavailable"))))))
+                      `(presence ((to . ,(format "%s/%s" group (cdr whichgroup)))
+                                  (type . "unavailable"))))
+    (jabber-send-iq jc group
+                    "set"
+                    '(query ((xmlns . "http://jabber.org/protocol/muc#del_register"))
+                            (x ((xmlns . "jabber:x:data") (type . "set"))))
+                    #'jabber-report-success "MUC delete register"
+                    #'jabber-report-success "MUC delete register"
+                    )
+    (setq jabber-qim-muc-autojoin
+          (remove-if #'(lambda (x)
+                         (string= (car x) group))
+                     jabber-qim-muc-autojoin))))
 
 (defalias 'jabber-groupchat-leave 'jabber-muc-leave
   "Deprecated. Use `jabber-muc-leave' instead.")
@@ -860,20 +871,6 @@ group, else it is a JID."
 
 (add-to-list 'jabber-body-printers 'jabber-muc-print-invite)
 (add-to-list 'jabber-body-printers 'jabber-qim-muc-accept-invite)
-
-;; (defun jabber-muc-accept-invite (xml-data who mode)
-;;   "Accept QIM MUC invitation automatically"
-;;   (dolist (x (jabber-xml-get-children xml-data 'x))
-;;     (when (string= (jabber-xml-get-attribute x 'xmlns) "http://jabber.org/protocol/muc#user")
-;;       (let ((invitation (car (jabber-xml-get-children x 'invite))))
-;;         (when invitation
-;;           (let ((group (jabber-xml-get-attribute xml-data 'from))
-;;                 (inviter (jabber-xml-get-attribute invitation 'from))
-;;                 (reason (car (jabber-xml-node-children (car (jabber-xml-get-children invitation 'reason))))))
-;;             (jabber-muc-join jabber-buffer-connection group
-;;                              (jabber-muc-read-my-nickname 
-;;                               jabber-buffer-connection group t)))
-;;           t)))))
 
 (defun jabber-muc-print-invite (xml-data who mode)
   "Print MUC invitation"
@@ -1310,6 +1307,8 @@ Return nil if X-MUC is nil."
                                            initial-member group nil))
                     (gethash group *jabber-qim-muc-initial-members*))
             (remhash group *jabber-qim-muc-initial-members*)
+            (add-to-list 'jabber-qim-muc-autojoin (list group
+                                                        (cons :silence t)))
             (ewoc-enter-last
              jabber-chat-ewoc
              (list :muc-notice

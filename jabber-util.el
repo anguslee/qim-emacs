@@ -233,13 +233,13 @@ Also return non-nil if JID matches JC, modulo resource."
 	  (jabber-connection-bare-jid jc))
    (member (jabber-jid-user jid) (mapcar (lambda (x) (jabber-jid-user (car x))) jabber-account-list))))
 
-(defun jabber-read-jid-completing (prompt &optional subset require-match default resource fulljids inherit-input-method)
+(defun jabber-read-jid-completing (prompt &optional subset require-match default resource fulljids inherit-input-method explict-default)
   "read a jid out of the current roster from the minibuffer.
 If SUBSET is non-nil, it should be a list of symbols from which
 the JID is to be selected, instead of using the entire roster.
 If REQUIRE-MATCH is non-nil, the JID must be in the list used.
 If DEFAULT is non-nil, it's used as the default value, otherwise
-the default is inferred from context.
+the default is inferred from context unless EXPLICT-DEFAULT is non-nil.
 RESOURCE is one of the following:
 
 nil         Accept full or bare JID, as entered
@@ -248,19 +248,21 @@ bare-or-muc Turn full JIDs to bare ones, except for in MUC
 
 If FULLJIDS is non-nil, complete jids with resources."
   (let ((jid-at-point (or 
-		       (and default
-			    ;; default can be either a symbol or a string
-			    (if (symbolp default)
-				(symbol-name default)
-			      default))
+                       (and default
+                            ;; default can be either a symbol or a string
+                            (if (symbolp default)
+                                (symbol-name default)
+                              default))
                        (let* ((jid (get-text-property (point) 'jabber-jid))
                               (res (get (jabber-jid-symbol jid) 'resource)))
                          (when jid
                            (if (and fulljids res (not (jabber-jid-resource jid)))
                                (format "%s/%s" jid res)
                              jid)))
-		       (bound-and-true-p jabber-chatting-with)
-		       (bound-and-true-p jabber-group)))
+                       (unless explict-default
+                         (or
+                          (bound-and-true-p jabber-chatting-with)
+                          (bound-and-true-p jabber-group)))))
 	(completion-ignore-case t)
 	(jid-completion-table (mapcar #'(lambda (item)
 					  (cons (symbol-name item) item))
