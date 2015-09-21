@@ -226,6 +226,7 @@ client; see `jabber-edit-bookmarks'."
     (load-file *qim-autojoin-settings-file*)))
 
 (defun jabber-qim-save-qim-muc-autojoin-settings ()
+  (interactive)
   (let ((coding-system-for-write 'no-conversion))
     (with-temp-file *qim-autojoin-settings-file*
       (insert (format "(setq jabber-qim-muc-autojoin '%s)"
