@@ -126,6 +126,10 @@
 (defvar *jabber-qim-username-to-jid-cache*
   '())
 
+;;;###autoload
+(defvar *jabber-qim-image-file-cache*
+  (make-hash-table :test 'equal))
+
 (defun jabber-qim-user-jid-by-completion (completion)
   (if (assoc-string completion
                     *jabber-qim-username-to-jid-cache*)
@@ -563,26 +567,33 @@ client; see `jabber-edit-bookmarks'."
                       :image-ext (car (last (split-string value "[.]")))
                       'action #'(lambda (button)
                                   (lexical-let ((image-url (button-get button :image-url))
-                                                (image-ext (button-get button :image-ext)))
-                                    (web-http-get
-                                     #'(lambda (httpc header body)
-                                         (ignore-errors
-                                           (if (equal "200" (gethash 'status-code header))
-                                               (let ((file-path (format "%s/%s.%s"
-                                                                        (jabber-qim-local-images-cache-dir)
-                                                                        (md5 body)
-                                                                        image-ext)))
-                                                 (unless (file-exists-p file-path)
-                                                   (let ((coding-system-for-write 'binary))
-                                                     (with-temp-file file-path
-                                                       (insert body))))
-                                                 (find-file file-path)
-                                                 (read-only-mode))
-                                             (message "ERROR Downloading Image: %s %s"
-                                                      (gethash 'status-code header)
-                                                      (gethash 'status-string header)))))
-                                     :url image-url))))
-             )))
+                                                (image-ext (button-get button :image-ext))
+                                                (cached-image-file (gethash (button-get button :image-url)
+                                                                            *jabber-qim-image-file-cache*)))
+                                    (if cached-image-file
+                                        (progn
+                                          (message "Found image in cache")
+                                          (find-file cached-image-file)
+                                          (read-only-mode))
+                                      (web-http-get
+                                       #'(lambda (httpc header body)
+                                           (ignore-errors
+                                             (if (equal "200" (gethash 'status-code header))
+                                                 (let ((file-path (format "%s/%s.%s"
+                                                                          (jabber-qim-local-images-cache-dir)
+                                                                          (md5 body)
+                                                                          image-ext)))
+                                                   (unless (file-exists-p file-path)
+                                                     (let ((coding-system-for-write 'binary))
+                                                       (with-temp-file file-path
+                                                         (insert body)))
+                                                     (puthash image-url file-path *jabber-qim-image-file-cache*q))
+                                                   (find-file file-path)
+                                                   (read-only-mode))
+                                               (message "ERROR Downloading Image: %s %s"
+                                                        (gethash 'status-code header)
+                                                        (gethash 'status-string header)))))
+                                       :url image-url))))))))
        (insert "\t")
        (insert-button "Forward Image To..."
                       :object-text object-text
@@ -603,27 +614,30 @@ client; see `jabber-edit-bookmarks'."
   (lexical-let ((latch (make-one-time-latch))
                 (image nil)
                 (ret nil))
-    (web-http-get
-     #'(lambda (httpc header body)
-         (ignore-errors
-           (when (and body
-                      (equal "200" (gethash 'status-code header)))
-             (let ((file-path (format "%s/%s.%s"
-                                      (jabber-qim-local-images-cache-dir)
-                                      (md5 body)
-                                      (car (last (split-string url-path "[.]"))))))
-               (unless (file-exists-p file-path)
-                 (let ((coding-system-for-write 'binary))
-                   (with-temp-file file-path
-                     (insert body))))
-               (setq image file-path)
-               (setq ret (md5 body)))))
-         (apply-partially #'nofify latch))
-     :url (format "%s/%s" *jabber-qim-file-server* url-path)
-     )
-    (wait latch 0.5)
+    (unless (setq image (gethash url-path *jabber-qim-image-file-cache*))
+      (web-http-get
+       #'(lambda (httpc header body)
+           (ignore-errors
+             (when (and body
+                        (equal "200" (gethash 'status-code header)))
+               (let ((file-path (format "%s/%s.%s"
+                                        (jabber-qim-local-images-cache-dir)
+                                        (md5 body)
+                                        (car (last (split-string url-path "[.]"))))))
+                 (unless (file-exists-p file-path)
+                   (let ((coding-system-for-write 'binary))
+                     (with-temp-file file-path
+                       (insert body))))
+                 (setq image file-path)
+                 (puthash url-path file-path *jabber-qim-image-file-cache*)
+                 (setq ret (md5 body)))))
+           (apply-partially #'nofify latch))
+       :url (format "%s/%s" *jabber-qim-file-server* url-path)
+       )
+      (wait latch 0.5))
     (when image
-      (list ret (jabber-create-image image)))))
+      (list (secure-hash-file image 'md5)
+            (jabber-create-image image)))))
 
 (defun jabber-qim-load-file (file-desc)
   (lexical-let ((file-path (format "%s/%s"
