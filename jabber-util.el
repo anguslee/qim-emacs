@@ -263,52 +263,53 @@ If FULLJIDS is non-nil, complete jids with resources."
                          (or
                           (bound-and-true-p jabber-chatting-with)
                           (bound-and-true-p jabber-group)))))
-	(completion-ignore-case t)
-	(jid-completion-table (mapcar #'(lambda (item)
-					  (cons (symbol-name item) item))
-				      (or subset (funcall (if fulljids
+        (completion-ignore-case t)
+        (jid-completion-table (mapcar #'(lambda (item)
+                                          (cons (symbol-name item) item))
+                                      (or subset (funcall (if fulljids
                                                               'jabber-concat-rosters-full
                                                             'jabber-concat-rosters)))))
-	chosen)
+        chosen)
     (dolist (item (or subset (jabber-concat-rosters)))
       (if (get item 'name)
-	  (push (cons (get item 'name) item) jid-completion-table)))
+          (push (cons (get item 'name) item) jid-completion-table)))
     ;; if the default is not in the allowed subset, it's not a good default
-    (if (and subset (not (assoc jid-at-point jid-completion-table)))
-	(setq jid-at-point nil))
+    (if (and subset
+             (not (assoc jid-at-point jid-completion-table)))
+        (setq jid-at-point nil))
     (let ((input
-	   (completing-read (concat prompt
-                                (if jid-at-point
-                                    (format "(default %s) " jid-at-point)))
-                        jid-completion-table
-                        nil require-match nil 'jabber-jid-history jid-at-point
-                        inherit-input-method)))
+           (completing-read (concat prompt
+                                    (if jid-at-point
+                                        (format "(default %s) " jid-at-point)))
+                            jid-completion-table
+                            nil require-match nil 'jabber-jid-history jid-at-point
+                            inherit-input-method)))
       (setq chosen
-	    (if (and input (assoc-ignore-case input jid-completion-table))
-		(symbol-name (cdr (assoc-ignore-case input jid-completion-table)))
-	      (and (not (zerop (length input)))
-		   input))))
+            (if (and input (assoc-ignore-case input jid-completion-table))
+                (symbol-name (cdr (assoc-ignore-case input jid-completion-table)))
+              (and (not (zerop (length input)))
+                   input))))
 
     (when chosen
       (case resource
-	(full
-	 ;; If JID is bare, add the highest-priority resource.
-	 (if (jabber-jid-resource chosen)
-	     chosen
-	   (let ((highest-resource (get (jabber-jid-symbol chosen) 'resource)))
-	     (if highest-resource
-		 (concat chosen "/" highest-resource)
-	       chosen))))
-	(bare-or-muc
-	 ;; If JID is full and non-MUC, remove resource.
-	 (if (null (jabber-jid-resource chosen))
-	     chosen
-	   (let ((bare (jabber-jid-user chosen)))
-	     (if (assoc bare *jabber-active-groupchats*)
-		 chosen
-	       bare))))
-	(t
-	 chosen)))))
+        (full
+         ;; If JID is bare, add the highest-priority resource.
+         (if (jabber-jid-resource chosen)
+             chosen
+           (let ((highest-resource (get (jabber-jid-symbol chosen) 'resource)))
+             (if highest-resource
+                 (concat chosen "/" highest-resource)
+               chosen))))
+        (bare-or-muc
+         ;; If JID is full and non-MUC, remove resource.
+         (if (null (jabber-jid-resource chosen))
+             chosen
+           (let ((bare (jabber-jid-user chosen)))
+             (if (assoc bare *jabber-active-groupchats*)
+                 chosen
+               bare))))
+        (t
+         chosen)))))
 
 (defun jabber-read-node (prompt)
   "Read node name, taking default from disco item at point."
