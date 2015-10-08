@@ -27,9 +27,7 @@ Bug反馈：geng.li@qunar.com
 
 5. 截屏：
 
-    *M-x jabber-qim-muc-send-screenshot* （要求当前buffer是群聊）
-
-    *M-x jabber-qim-chat-send-screenshot* （要求当前buffer是点对点聊天）
+    *M-x jabber-qim-send-screenshot (C-x C-j C-s)*
 
 
 6. 邀请入群组：
