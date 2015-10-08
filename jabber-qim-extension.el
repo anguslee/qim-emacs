@@ -381,6 +381,21 @@ client; see `jabber-edit-bookmarks'."
     (replace-regexp-in-string "\\\"" "" (match-string 0 type-text))
     ))
 
+;; (defun jabber-qim-parse-object-int (text attribute)
+;;   (string-match (format "%s=[0-9]+([.][0-9]+)?" attribute) text)
+;;   (let ((type-text (match-string 0 text)))
+;;     (string-match "[0-9]+([.][0-9]+)?"
+;;                   type-text)
+;;     (match-string 0 type-text)
+;;     ))
+
+;; (jabber-qim-parse-object-int "[obj type=\"emoticon\" value=16212]" "value")
+
+;; (string-match (format "%s=\\d*" "value") "[obj type=\"emoticon\" value=16212]")
+
+;; (match-string 0 "[obj type=\"emoticon\" value=16212]")
+
+
 (defvar *jabber-qim-emotion-map*
   (make-hash-table :test 'equal))
 
@@ -742,6 +757,40 @@ client; see `jabber-edit-bookmarks'."
 (add-to-list 'jabber-post-connect-hooks 'jabber-qim-user-muc-preload)
 
 (defun jabber-qim-send-screenshot (jc jid send-function &optional chat-buffer)
+  (interactive
+   (let* ((jc (jabber-read-account))
+          (jid-at-point (or
+                         (bound-and-true-p jabber-chatting-with)
+                         (bound-and-true-p jabber-group)))
+          (session-muc-alist (jabber-qim-session-muc-vcard-alist))
+          (jid (or
+                jid-at-point
+                (jabber-qim-user-jid-by-completion
+                 (jabber-read-jid-completing "Select chat buffer: "
+                                             (append (mapcar #'car session-muc-alist)
+                                                     (jabber-qim-user-jid-completion-list))
+                                             nil
+                                             nil
+                                             nil
+                                             nil
+                                             t))))
+          (muc-jid (if (and
+                        jid-at-point
+                        (jabber-qim-muc-jid-p jid-at-point))
+                       jid-at-point
+                     (cdr (assoc (intern jid)
+                                 session-muc-alist))))
+          (send-function (if muc-jid
+                             'jabber-muc-send
+                           'jabber-chat-send))
+          (buffer (if muc-jid
+                      (jabber-muc-create-buffer jc muc-jid)
+                    (jabber-chat-create-buffer jc jid))))
+     (list jc
+           (or muc-jid
+               jid)
+           send-function
+           buffer)))
   (let ((image-file (format "%s/%s.png"
                             (jabber-qim-local-screenshots-dir)
                             (jabber-message-uuid))))
@@ -749,6 +798,8 @@ client; see `jabber-edit-bookmarks'."
                    (call-process (executable-find "import") nil nil nil image-file)))
         (jabber-qim-send-file jc jid image-file send-function chat-buffer)
       (error "Screen capture failed."))))
+
+(define-key jabber-global-keymap "\C-s" 'jabber-qim-send-screenshot)
 
 
 (defun jabber-qim-muc-send-screenshot (jc group)
