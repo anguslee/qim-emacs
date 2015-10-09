@@ -683,7 +683,10 @@ client; see `jabber-edit-bookmarks'."
   "Max send file size set to 10MB")
 
 
-(cl-defun jabber-qim-send-file (jc jid filename send-function &optional chat-buffer)
+(cl-defun jabber-qim-send-file (filename jc jid send-function &optional chat-buffer)
+  (interactive
+   (append (list (read-file-name "Send File or Image: "))
+           (jabber-qim-interactive-send-argument-list "To chat: ")))
   (if (<= (nth 7 (file-attributes filename))
           jabber-qim-max-send-file-size)
       (let ((file-buffer (find-file-noselect filename t t)))
@@ -716,6 +719,8 @@ client; see `jabber-edit-bookmarks'."
          :data `(("file" . ,file-buffer)))
         (kill-buffer file-buffer))
     ))
+
+(define-key jabber-global-keymap "\C-f" 'jabber-qim-send-file)
 
 (defvar *jabber-qim-user-muc-room-jid-list*
   '())
@@ -756,47 +761,52 @@ client; see `jabber-edit-bookmarks'."
 
 (add-to-list 'jabber-post-connect-hooks 'jabber-qim-user-muc-preload)
 
+(defun jabber-qim-interactive-send-argument-list (&optional prompt rest)
+  (let* ((jc (jabber-read-account))
+         (jid-at-point (or
+                        (bound-and-true-p jabber-chatting-with)
+                        (bound-and-true-p jabber-group)))
+         (session-muc-alist (jabber-qim-session-muc-vcard-alist))
+         (jid (or
+               jid-at-point
+               (jabber-qim-user-jid-by-completion
+                (jabber-read-jid-completing (if (stringp prompt)
+                                                prompt
+                                              "Select chat: ")
+                                            (append (mapcar #'car session-muc-alist)
+                                                    (jabber-qim-user-jid-completion-list))
+                                            nil
+                                            nil
+                                            nil
+                                            nil
+                                            t))))
+         (muc-jid (if (and
+                       jid-at-point
+                       (jabber-qim-muc-jid-p jid-at-point))
+                      jid-at-point
+                    (cdr (assoc (intern jid)
+                                session-muc-alist))))
+         (send-function (if muc-jid
+                            'jabber-muc-send
+                          'jabber-chat-send))
+         (buffer (if muc-jid
+                     (jabber-muc-create-buffer jc muc-jid)
+                   (jabber-chat-create-buffer jc jid))))
+    (list jc
+          (or muc-jid
+              jid)
+          send-function
+          buffer)))
+
 (defun jabber-qim-send-screenshot (jc jid send-function &optional chat-buffer)
   (interactive
-   (let* ((jc (jabber-read-account))
-          (jid-at-point (or
-                         (bound-and-true-p jabber-chatting-with)
-                         (bound-and-true-p jabber-group)))
-          (session-muc-alist (jabber-qim-session-muc-vcard-alist))
-          (jid (or
-                jid-at-point
-                (jabber-qim-user-jid-by-completion
-                 (jabber-read-jid-completing "Select chat buffer: "
-                                             (append (mapcar #'car session-muc-alist)
-                                                     (jabber-qim-user-jid-completion-list))
-                                             nil
-                                             nil
-                                             nil
-                                             nil
-                                             t))))
-          (muc-jid (if (and
-                        jid-at-point
-                        (jabber-qim-muc-jid-p jid-at-point))
-                       jid-at-point
-                     (cdr (assoc (intern jid)
-                                 session-muc-alist))))
-          (send-function (if muc-jid
-                             'jabber-muc-send
-                           'jabber-chat-send))
-          (buffer (if muc-jid
-                      (jabber-muc-create-buffer jc muc-jid)
-                    (jabber-chat-create-buffer jc jid))))
-     (list jc
-           (or muc-jid
-               jid)
-           send-function
-           buffer)))
+   (jabber-qim-interactive-send-argument-list "Send screenshot to chat: "))
   (let ((image-file (format "%s/%s.png"
                             (jabber-qim-local-screenshots-dir)
                             (jabber-message-uuid))))
     (if (equal 0 (ignore-errors
                    (call-process (executable-find "import") nil nil nil image-file)))
-        (jabber-qim-send-file jc jid image-file send-function chat-buffer)
+        (jabber-qim-send-file image-file jc jid send-function chat-buffer)
       (error "Screen capture failed."))))
 
 (define-key jabber-global-keymap "\C-s" 'jabber-qim-send-screenshot)
@@ -823,7 +833,7 @@ client; see `jabber-edit-bookmarks'."
     (list (read-file-name "Send File or Image: "))))
   (if (<= (nth 7 (file-attributes filename))
           jabber-qim-max-send-file-size)
-      (jabber-qim-send-file jc group filename 'jabber-muc-send)
+      (jabber-qim-send-file filename jc group 'jabber-muc-send)
     (error "File size exceeds maximum: %s"
            (file-size-human-readable jabber-qim-max-send-file-size))))
 
@@ -836,7 +846,7 @@ client; see `jabber-edit-bookmarks'."
   (if chat-with
       (if (<= (nth 7 (file-attributes filename))
               jabber-qim-max-send-file-size)
-          (jabber-qim-send-file jc chat-with filename 'jabber-chat-send chat-buffer)
+          (jabber-qim-send-file filename jc chat-with 'jabber-chat-send chat-buffer)
         (error "File size exceeds maximum: %s"
            (file-size-human-readable jabber-qim-max-send-file-size)))
     (error "Not in CHAT buffer")))

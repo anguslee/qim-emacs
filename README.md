@@ -21,9 +21,7 @@ Bug反馈：geng.li@qunar.com
 
 4. 发送文件：
 
-    *M-x jabber-qim-muc-send-file* （要求当前buffer是群聊）
-
-    *M-x jabber-qim-chat-send-file* （要求当前buffer是点对点聊天）
+    *M-x jabber-qim-send-file (C-x C-j C-f)*
 
 5. 截屏：
 
