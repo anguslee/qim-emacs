@@ -689,7 +689,7 @@ client; see `jabber-edit-bookmarks'."
            (jabber-qim-interactive-send-argument-list "To chat: ")))
   (if (<= (nth 7 (file-attributes filename))
           jabber-qim-max-send-file-size)
-      (let ((file-buffer (find-file-noselect filename t t)))
+      (let ((file-buffer (find-file-noselect filename t)))
         (web-http-post
          #'(lambda (httpc headers body)
              (let ((jabber-group jid)
@@ -703,8 +703,8 @@ client; see `jabber-edit-bookmarks'."
                             (let ((size (image-size image)))
                               (format "[obj type=\"image\" value=\"%s\" width=%s height=%s]"
                                       (string-trim (url-unhex-string body))
-                                      (car size)
-                                      (cdr size)))
+                                      (round (car size))
+                                      (round (cdr size))))
                           (json-encode `((:HttpUrl . ,(string-trim (url-unhex-string body)))
                                          (:FileName . ,(file-name-nondirectory filename))
                                          (:FILEID . ,(jabber-message-uuid))
@@ -761,7 +761,7 @@ client; see `jabber-edit-bookmarks'."
 
 (add-to-list 'jabber-post-connect-hooks 'jabber-qim-user-muc-preload)
 
-(defun jabber-qim-interactive-send-argument-list (&optional prompt rest)
+(defun jabber-qim-interactive-send-argument-list (&optional prompt)
   (let* ((jc (jabber-read-account))
          (jid-at-point (or
                         (bound-and-true-p jabber-chatting-with)
