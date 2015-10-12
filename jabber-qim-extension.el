@@ -373,27 +373,15 @@ client; see `jabber-edit-bookmarks'."
          vcard))))
 
 
-(defun jabber-qim-parse-object-attribute (text attribute)
-  "Parse object attribute from objects like [obj type=\"emoticon\" value=\"[/guzg]\"]"
-  (string-match (format "%s=\\\".*\\\"" attribute) text)
-  (let ((type-text (match-string 0 text)))
-    (string-match "\\\".*?\\\"" type-text)
-    (replace-regexp-in-string "\\\"" "" (match-string 0 type-text))
-    ))
-
-;; (defun jabber-qim-parse-object-int (text attribute)
-;;   (string-match (format "%s=[0-9]+([.][0-9]+)?" attribute) text)
-;;   (let ((type-text (match-string 0 text)))
-;;     (string-match "[0-9]+([.][0-9]+)?"
-;;                   type-text)
-;;     (match-string 0 type-text)
-;;     ))
-
-;; (jabber-qim-parse-object-int "[obj type=\"emoticon\" value=16212]" "value")
-
-;; (string-match (format "%s=\\d*" "value") "[obj type=\"emoticon\" value=16212]")
-
-;; (match-string 0 "[obj type=\"emoticon\" value=16212]")
+(defun jabber-qim-object-attributes (object-text)
+  (when (string-prefix-p "[obj " object-text)
+    (mapcar #'(lambda (kv-text)
+                (let ((kv (split-string kv-text "=")))
+                  (cons (intern (car kv))
+                        (replace-regexp-in-string "\\\"" ""
+                                                  (string-join (cdr kv) "=")))))
+            (split-string (subseq object-text
+                                  5 (1- (length object-text)))))))
 
 
 (defvar *jabber-qim-emotion-map*
@@ -537,8 +525,9 @@ client; see `jabber-edit-bookmarks'."
 
 (defun jabber-qim-insert-object (object-text face)
   "Insert object into chat buffer."
-  (let ((type (intern (jabber-qim-parse-object-attribute object-text "type")))
-        (value (jabber-qim-parse-object-attribute object-text "value")))
+  (let* ((object-attributes (jabber-qim-object-attributes object-text))
+         (type (intern (cdr (assoc-string 'type object-attributes))))
+         (value (cdr (assoc-string 'value object-attributes))))
     (case type
       ('emoticon
        (let ((image (jabber-qim-emotion-image
