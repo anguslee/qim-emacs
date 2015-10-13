@@ -522,6 +522,19 @@ client; see `jabber-edit-bookmarks'."
                  'action #'jabber-qim-forward-object-action)
   (insert "\n"))
 
+(defconst jabber-qim-max-image-width 1024)
+
+(defconst jabber-qim-max-image-height 1024)
+
+
+(defun jabber-qim-scale-image-size (width height)
+  (let ((scale (max (/ width jabber-qim-max-image-width)
+                    (/ height jabber-qim-max-image-height))))
+    (if (> scale 1)
+        (cons (round (/ width scale))
+              (round (/ height scale)))
+      (cons width height))))
+
 
 (defun jabber-qim-insert-object (object-text face)
   "Insert object into chat buffer."
@@ -542,7 +555,11 @@ client; see `jabber-edit-bookmarks'."
                     'face face)))))
       ('image
        (insert "\n\n")
-       (let* ((image-ret (jabber-qim-load-image value))
+       (let* ((image-size (jabber-qim-scale-image-size (string-to-number
+                                                        (cdr (assoc-string 'width object-attributes)))
+                                                       (string-to-number
+                                                        (cdr (assoc-string 'height object-attributes)))))
+              (image-ret (jabber-qim-load-image value image-size))
               (image (cadr image-ret))
               (image-md5 (car image-ret)))
          (if image
@@ -614,7 +631,7 @@ client; see `jabber-edit-bookmarks'."
                 'face face))))))
 
 
-(defun jabber-qim-load-image (url-path)
+(defun jabber-qim-load-image (url-path &optional image-size)
   (lexical-let ((latch (make-one-time-latch))
                 (image nil)
                 (ret nil))
@@ -636,8 +653,12 @@ client; see `jabber-edit-bookmarks'."
                  (puthash url-path file-path *jabber-qim-image-file-cache*)
                  (setq ret (md5 body)))))
            (apply-partially #'nofify latch))
-       :url (format "%s/%s" *jabber-qim-file-server* url-path)
-       )
+       :url (if image-size
+                (format "%s/%s&w=%s&h=%s"
+                        *jabber-qim-file-server* url-path
+                        (car image-size)
+                        (cdr image-size))
+              (format "%s/%s" *jabber-qim-file-server* url-path)))
       (wait latch 0.5))
     (when image
       (list (secure-hash-file image 'md5)
@@ -689,7 +710,7 @@ client; see `jabber-edit-bookmarks'."
                  (switch-to-buffer chat-buffer))
                (funcall send-function jc
                         (if image
-                            (let ((size (image-size image)))
+                            (let ((size (image-size image t)))
                               (format "[obj type=\"image\" value=\"%s\" width=%s height=%s]"
                                       (string-trim (url-unhex-string body))
                                       (round (car size))
