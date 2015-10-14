@@ -333,7 +333,7 @@ This function is idempotent."
 				(funcall jabber-alert-message-function 
 					 from (current-buffer) body-text))))))))
 
-(defun jabber-chat-send (jc body &optional msg-type)
+(defun jabber-chat-send (jc body &optional msg-type msg-id)
   "Send BODY through connection JC, and display it in chat buffer."
   ;; Build the stanza...
   (let* ((id (apply 'format "emacs-msg-%d.%d.%d" (current-time)))
@@ -341,9 +341,14 @@ This function is idempotent."
                            ((to . ,jabber-chatting-with)
                             (type . "chat")
                             (id . ,id))
-                           (body ((maType . 0) (msgType . ,(if msg-type
-                                                               msg-type
-                                                             jabber-qim-msg-type-default)) (id . ,(jabber-message-uuid))) ,body))))
+                           (body ((maType . 0)
+                                  (msgType . ,(if msg-type
+                                                  msg-type
+                                                jabber-qim-msg-type-default))
+                                  (id . ,(or
+                                          msg-id
+                                          (jabber-message-uuid))))
+                                 ,body))))
     ;; ...add additional elements...
     ;; TODO: Once we require Emacs 24.1, use `run-hook-wrapped' instead.
     ;; That way we don't need to eliminate the "local hook" functionality

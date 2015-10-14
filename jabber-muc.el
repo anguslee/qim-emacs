@@ -236,18 +236,23 @@ This function is idempotent."
 
     (current-buffer)))
 
-(defun jabber-muc-send (jc body &optional msg-type)
+(defun jabber-muc-send (jc body &optional msg-type msg-id)
   "Send BODY to MUC room in current buffer."
   ;; There is no need to display the sent message in the buffer, as
   ;; we will get it back from the MUC server.
-  (let ((uuid (jabber-message-uuid)))
+  (let ((uuid (or
+               msg-id
+               (jabber-message-uuid))))
     (jabber-send-sexp jc
 		    `(message
 		      ((to . ,jabber-group)
 		       (type . "groupchat"))
-		      (body ((maType . 0) (msgType . ,(if msg-type
-                                                  msg-type
-                                                jabber-qim-msg-type-default)) (id . ,uuid)) ,body)))))
+		      (body ((maType . 0)
+                     (msgType . ,(if msg-type
+                                     msg-type
+                                   jabber-qim-msg-type-default))
+                     (id . ,uuid))
+                    ,body)))))
 
 (defun jabber-muc-add-groupchat (group nickname)
   "Remember participating in GROUP under NICKNAME."

@@ -535,6 +535,18 @@ client; see `jabber-edit-bookmarks'."
               (round (/ height scale)))
       (cons width height))))
 
+(defun jabber-qim-parse-image-type (img-value)
+  (car
+   (last
+    (split-string (find-if
+                   #'(lambda (param)
+                       (string-prefix-p "file=" param))
+                   (split-string
+                    (cadr (split-string
+                           img-value
+                           "[?]"))
+                    "&")) "[.]"))))
+
 
 (defun jabber-qim-insert-object (object-text face)
   "Insert object into chat buffer."
@@ -570,7 +582,7 @@ client; see `jabber-edit-bookmarks'."
                (insert "\n\n")
                (insert-button "View Image"
                       :image-md5 image-md5
-                      :image-ext (car (last (split-string value "[.]")))
+                      :image-ext (jabber-qim-parse-image-type value)
                       'action #'(lambda (button)
                                   (let ((file-path (format "%s/%s.%s"
                                                            (jabber-qim-local-images-cache-dir)
@@ -585,7 +597,7 @@ client; see `jabber-edit-bookmarks'."
                 'face face))
              (insert-button "View Image"
                       :image-url (format "%s/%s" *jabber-qim-file-server* value)
-                      :image-ext (car (last (split-string value "[.]")))
+                      :image-ext (jabber-qim-parse-image-type value)
                       'action #'(lambda (button)
                                   (lexical-let ((image-url (button-get button :image-url))
                                                 (image-ext (button-get button :image-ext))
@@ -608,7 +620,7 @@ client; see `jabber-edit-bookmarks'."
                                                      (let ((coding-system-for-write 'binary))
                                                        (with-temp-file file-path
                                                          (insert body)))
-                                                     (puthash image-url file-path *jabber-qim-image-file-cache*q))
+                                                     (puthash image-url file-path *jabber-qim-image-file-cache*))
                                                    (find-file file-path)
                                                    (read-only-mode))
                                                (message "ERROR Downloading Image: %s %s"
@@ -644,7 +656,7 @@ client; see `jabber-edit-bookmarks'."
                (let ((file-path (format "%s/%s.%s"
                                         (jabber-qim-local-images-cache-dir)
                                         (md5 body)
-                                        (car (last (split-string url-path "[.]"))))))
+                                        (jabber-qim-parse-image-type url-path))))
                  (unless (file-exists-p file-path)
                    (let ((coding-system-for-write 'binary))
                      (with-temp-file file-path
@@ -705,14 +717,16 @@ client; see `jabber-edit-bookmarks'."
              (let ((jabber-group jid)
                    (jabber-chatting-with jid)
                    (image (ignore-errors
-                            (create-image filename))))
+                            (create-image filename)))
+                   (msg-id (jabber-message-uuid)))
                (when chat-buffer
                  (switch-to-buffer chat-buffer))
                (funcall send-function jc
                         (if image
                             (let ((size (image-size image t)))
-                              (format "[obj type=\"image\" value=\"%s\" width=%s height=%s]"
+                              (format "[obj type=\"image\" value=\"%s&msgid=%s\" width=%s height=%s]"
                                       (string-trim (url-unhex-string body))
+                                      msg-id
                                       (round (car size))
                                       (round (cdr size))))
                           (json-encode `((:HttpUrl . ,(string-trim (url-unhex-string body)))
@@ -723,12 +737,12 @@ client; see `jabber-edit-bookmarks'."
                                                         (nth 7 (file-attributes filename)))))))
                         (if image
                             jabber-qim-msg-type-default
-                          jabber-qim-msg-type-file))))
+                          jabber-qim-msg-type-file)
+                        msg-id)))
          :url (format "%s/cgi-bin/file_upload.pl" *jabber-qim-file-server*)
          :mime-type 'multipart/form-data
          :data `(("file" . ,file-buffer)))
-        (kill-buffer file-buffer))
-    ))
+        (kill-buffer file-buffer))))
 
 (define-key jabber-global-keymap "\C-f" 'jabber-qim-send-file)
 
