@@ -729,7 +729,9 @@ client; see `jabber-edit-bookmarks'."
                                       msg-id
                                       (round (car size))
                                       (round (cdr size))))
-                          (json-encode `((:HttpUrl . ,(string-trim (url-unhex-string body)))
+                          (json-encode `((:HttpUrl . ,(format "%s&msgid=%s"
+                                                              (string-trim (url-unhex-string body))
+                                                              msg-id))
                                          (:FileName . ,(file-name-nondirectory filename))
                                          (:FILEID . ,(jabber-message-uuid))
                                          (:FILEMD5 . ,(secure-hash-file filename 'md5))
