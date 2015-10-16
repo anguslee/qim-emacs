@@ -1,7 +1,8 @@
 **基于jabber.el的emacs qim客户端**
 ===============================
 
-![界面效果图](http://wiki.corp.qunar.com/download/attachments/69142038/demo-screen.png?version=1&modificationDate=1444820910898 "界面效果")
+![界面效果图](http://wiki.corp.qunar.com/download/attachments/69142038/demo-screen.png "界面效果")
+
 
 **注意**：加入qtalk群需要执行jabber-qim-muc-join命令，原jabber-muc-join命令仅用于加入非qtalk群组
 

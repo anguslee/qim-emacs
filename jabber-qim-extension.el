@@ -472,7 +472,7 @@ client; see `jabber-edit-bookmarks'."
    "Forward to: "
    (button-get button :msg-type)))
 
-(defun jabber-qim-insert-file (file-desc body-text face)
+(defun jabber-qim-insert-file (file-desc body-text face &optional uid)
   "Insert file into chat buffer."
   (insert "\n\n")
   (insert (jabber-propertize
@@ -487,6 +487,7 @@ client; see `jabber-edit-bookmarks'."
   (insert "\n")
   (insert-button "View In Directory"
                  :file-desc file-desc
+                 :uid (or uid "")
                  'action #'(lambda (button)
                              (lexical-let* ((file-name (cdr (assoc 'FileName
                                                                    (button-get button :file-desc))))
@@ -495,9 +496,11 @@ client; see `jabber-edit-bookmarks'."
                                                                file-name))
                                             (file-md5 (cdr (assoc 'FILEMD5
                                                                   (button-get button :file-desc))))
-                                            (url (format "%s/%s" *jabber-qim-file-server*
+                                            (url (format "%s/%s&uid=%s"
+                                                         *jabber-qim-file-server*
                                                          (cdr (assoc 'HttpUrl
-                                                                     (button-get button :file-desc))))))
+                                                                     (button-get button :file-desc)))
+                                                         (url-hexify-string (button-get button :uid)))))
                                (if (and
                                     (file-exists-p file-path)
                                     (string= file-md5 (secure-hash-file file-path 'md5)))
@@ -522,9 +525,10 @@ client; see `jabber-edit-bookmarks'."
                  'action #'jabber-qim-forward-object-action)
   (insert "\n"))
 
+
 (defconst jabber-qim-max-image-width 1024)
 
-(defconst jabber-qim-max-image-height 1024)
+(defconst jabber-qim-max-image-height 768)
 
 
 (defun jabber-qim-scale-image-size (width height)
@@ -548,7 +552,7 @@ client; see `jabber-edit-bookmarks'."
                     "&")) "[.]"))))
 
 
-(defun jabber-qim-insert-object (object-text face)
+(defun jabber-qim-insert-object (object-text face &optional uid)
   "Insert object into chat buffer."
   (let* ((object-attributes (jabber-qim-object-attributes object-text))
          (type (intern (cdr (assoc-string 'type object-attributes))))
@@ -571,7 +575,7 @@ client; see `jabber-edit-bookmarks'."
                                                         (cdr (assoc-string 'width object-attributes)))
                                                        (string-to-number
                                                         (cdr (assoc-string 'height object-attributes)))))
-              (image-ret (jabber-qim-load-image value image-size))
+              (image-ret (jabber-qim-load-image value image-size uid))
               (image (cadr image-ret))
               (image-md5 (car image-ret)))
          (if image
@@ -598,6 +602,7 @@ client; see `jabber-edit-bookmarks'."
              (insert-button "View Image"
                       :image-url (format "%s/%s" *jabber-qim-file-server* value)
                       :image-ext (jabber-qim-parse-image-type value)
+                      :uid (or uid "")
                       'action #'(lambda (button)
                                   (lexical-let ((image-url (button-get button :image-url))
                                                 (image-ext (button-get button :image-ext))
@@ -605,7 +610,6 @@ client; see `jabber-edit-bookmarks'."
                                                                             *jabber-qim-image-file-cache*)))
                                     (if cached-image-file
                                         (progn
-                                          (message "Found image in cache")
                                           (find-file cached-image-file)
                                           (read-only-mode))
                                       (web-http-get
@@ -626,7 +630,9 @@ client; see `jabber-edit-bookmarks'."
                                                (message "ERROR Downloading Image: %s %s"
                                                         (gethash 'status-code header)
                                                         (gethash 'status-string header)))))
-                                       :url image-url))))))))
+                                       :url (format "%s&uid=%s"
+                                                    image-url
+                                                    (url-hexify-string (button-get button :uid)))))))))))
        (insert "\t")
        (insert-button "Forward Image To..."
                       :object-text object-text
@@ -643,7 +649,7 @@ client; see `jabber-edit-bookmarks'."
                 'face face))))))
 
 
-(defun jabber-qim-load-image (url-path &optional image-size)
+(defun jabber-qim-load-image (url-path &optional image-size uid)
   (lexical-let ((latch (make-one-time-latch))
                 (image nil)
                 (ret nil))
@@ -666,11 +672,15 @@ client; see `jabber-edit-bookmarks'."
                  (setq ret (md5 body)))))
            (apply-partially #'nofify latch))
        :url (if image-size
-                (format "%s/%s&w=%s&h=%s"
+                (format "%s/%s&w=%s&h=%s&uid=%s"
                         *jabber-qim-file-server* url-path
                         (car image-size)
-                        (cdr image-size))
-              (format "%s/%s" *jabber-qim-file-server* url-path)))
+                        (cdr image-size)
+                        (url-hexify-string
+                         (or uid "")))
+              (format "%s/%s&uid=%s" *jabber-qim-file-server*
+                      url-path (url-hexify-string
+                                (or uid "")))))
       (wait latch 0.5))
     (when image
       (list (secure-hash-file image 'md5)

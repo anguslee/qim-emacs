@@ -612,17 +612,21 @@ If DONT-PRINT-NICK-P is true, don't include nickname."
                   (jabber-qim-body-parse-file body)))
                 (face (case who
                         ((:foreign :muc-foreign) 'jabber-chat-text-foreign)
-                        ((:local :muc-local) 'jabber-chat-text-local))))
+                        ((:local :muc-local) 'jabber-chat-text-local)))
+                (uid (plist-get (fsm-get-state-data jabber-buffer-connection)
+                                :original-jid)))
             (if file-desc
-                (jabber-qim-insert-file file-desc body face)
+                (jabber-qim-insert-file file-desc body face
+                                        uid)
               (jabber-chat-print-message-body-segments
                body
-               face)))
+               face
+               uid)))
           ))
       t)))
 
 
-(defun jabber-chat-print-message-body-segments (body face)
+(defun jabber-chat-print-message-body-segments (body face &optional uid)
   (let ((match-start
          (string-match "\\[obj "
                        body))
@@ -634,7 +638,7 @@ If DONT-PRINT-NICK-P is true, don't include nickname."
                                    segment))
             (let* ((object (match-string 0 segment))
                    (text (substring segment (length object))))
-              (jabber-qim-insert-object object face)
+              (jabber-qim-insert-object object face uid)
               (when (> (length text) 0)
                 (insert (jabber-propertize 
                          text
