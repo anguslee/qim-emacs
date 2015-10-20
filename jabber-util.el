@@ -174,8 +174,9 @@ Return nil if none found."
   "return the user (username@server) portion of a JID"
   ;;transports don't have @, so don't require it
   ;;(string-match ".*@[^/]*" string)
-  (string-match "[^/]*" string)
-  (match-string 0 string))
+  (when string
+    (string-match "[^/]*" string)
+    (match-string 0 string)))
 
 (defun jabber-jid-server (string)
   "Return the server portion of a JID."
@@ -214,7 +215,8 @@ Return nil if none found."
 
 (defun jabber-jid-resource (string)
   "return the resource portion of a JID, or nil if there is none."
-  (when (string-match "^\\(\\([^/]*@\\)?[^/]*\\)/\\(.*\\)" string)
+  (when (and string
+             (string-match "^\\(\\([^/]*@\\)?[^/]*\\)/\\(.*\\)" string))
     (match-string 3 string)))
 
 (defun jabber-jid-symbol (string)

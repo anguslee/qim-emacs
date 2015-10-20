@@ -645,11 +645,11 @@ With double prefix argument, specify more connection details."
 				    xml-data))))
 		   ;; So let's bind a resource.  We can either pick a resource ourselves,
 		   ;; or have the server pick one for us.
-		   (resource (plist-get state-data :resource)))
+               (resource (plist-get state-data :resource)))
 	       (jabber-send-iq fsm nil "set"
 			       `(bind ((xmlns . "urn:ietf:params:xml:ns:xmpp-bind"))
-				      ,@(when resource
-					  `((resource () ,resource))))
+                          ,@(when resource
+                              `((resource () ,resource))))
 			       handle-bind t
 			       handle-bind nil)
 	       (list :bind state-data))

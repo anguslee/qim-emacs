@@ -539,17 +539,20 @@ client; see `jabber-edit-bookmarks'."
               (round (/ height scale)))
       (cons width height))))
 
+
 (defun jabber-qim-parse-image-type (img-value)
-  (car
-   (last
-    (split-string (find-if
-                   #'(lambda (param)
-                       (string-prefix-p "file=" param))
-                   (split-string
-                    (cadr (split-string
-                           img-value
-                           "[?]"))
-                    "&")) "[.]"))))
+  (let ((ext (car
+              (last
+               (split-string (find-if
+                              #'(lambda (param)
+                                  (string-prefix-p "file=" param))
+                              (split-string
+                               (cadr (split-string
+                                      img-value
+                                      "[?]"))
+                               "&")) "[.]")))))
+    (when ext
+      (downcase ext))))
 
 
 (defun jabber-qim-insert-object (object-text face &optional uid)
