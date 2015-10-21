@@ -8,7 +8,9 @@
 
 Bug反馈：geng.li@qunar.com，或者直接在gitlab上建issue
 
-讨论组：Emacs版qtalk讨论组，群id：5b241f5d37aefff23b8a8fd9b721f8fb@conference.ejabhost1
+讨论组：Emacs版qtalk讨论组 (群id：5b241f5d37aefff23b8a8fd9b721f8fb@conference.ejabhost1)
+
+已知问题: http://gitlab.corp.qunar.com/geng.li/qim-emacs/issues
 
 ## **常用功能**
 
