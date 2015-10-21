@@ -6,7 +6,9 @@
 
 **注意**：加入qtalk群需要执行jabber-qim-muc-join命令，原jabber-muc-join命令仅用于加入非qtalk群组
 
-Bug反馈：geng.li@qunar.com
+Bug反馈：geng.li@qunar.com，或者直接在gitlab上建issue
+
+讨论组：Emacs版qtalk讨论组，群id：5b241f5d37aefff23b8a8fd9b721f8fb@conference.ejabhost1
 
 ## **常用功能**
 
