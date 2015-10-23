@@ -198,21 +198,6 @@
           (jabber-qim-session-muc-vcards)))
 
 
-;; (defun jabber-qim-set-muc-vcard (muc-jid nickname title desc pic-url)
-;;   (json-encode (vector `((:muc_name . ,muc-jid)
-;;                          (:nick . ,nickname)
-;;                          (:title . ,title)
-;;                          (:desc . ,desc)
-;;                          (:version . 0)))))
-
-;; (jabber-qim-api-request-post
-;;  (lambda (data conn headers)
-;;    (message "%s" headers)
-;;    (message "%s" data))
-;;  "setmucvcard"
-;;  (jabber-qim-set-muc-vcard "test22323-angus@conference.ejabhost1" "hahaha" "ddd" "desc" nil)
-;;  'application/json)
-
 ;;;###autoload
 (defcustom jabber-qim-muc-autojoin nil
   "List of QIM MUC rooms to automatically join on connection.
@@ -540,17 +525,25 @@ client; see `jabber-edit-bookmarks'."
       (cons width height))))
 
 
+(defun jabber-qim-parse-image-filename (img-value)
+  (car
+   (last
+    (split-string (find-if
+                   #'(lambda (param)
+                       (string-prefix-p "file=" param))
+                   (split-string
+                    (cadr (split-string
+                           img-value
+                           "[?]"))
+                    "&")) "/"))))
+
 (defun jabber-qim-parse-image-type (img-value)
-  (let ((ext (car
-              (last
-               (split-string (find-if
-                              #'(lambda (param)
-                                  (string-prefix-p "file=" param))
-                              (split-string
-                               (cadr (split-string
-                                      img-value
-                                      "[?]"))
-                               "&")) "[.]")))))
+  (let ((ext
+         (car
+          (last (split-string
+                 (jabber-qim-parse-image-filename
+                  img-value)
+                 "[.]")))))
     (when ext
       (downcase ext))))
 
@@ -578,9 +571,8 @@ client; see `jabber-edit-bookmarks'."
                                                         (cdr (assoc-string 'width object-attributes)))
                                                        (string-to-number
                                                         (cdr (assoc-string 'height object-attributes)))))
-              (image-ret (jabber-qim-load-image value image-size uid))
-              (image (cadr image-ret))
-              (image-md5 (car image-ret)))
+              (image-ret (jabber-qim-wget-image value image-size uid))
+              (image (cadr image-ret)))
          (if image
              (progn
                (insert-image
@@ -588,16 +580,12 @@ client; see `jabber-edit-bookmarks'."
                 value)
                (insert "\n\n")
                (insert-button "View Image"
-                      :image-md5 image-md5
-                      :image-ext (jabber-qim-parse-image-type value)
-                      'action #'(lambda (button)
-                                  (let ((file-path (format "%s/%s.%s"
-                                                           (jabber-qim-local-images-cache-dir)
-                                                           (button-get button :image-md5)
-                                                           (button-get button :image-ext))))
-                                    (when (file-exists-p file-path)
-                                      (find-file file-path)
-                                      (read-only-mode))))))
+                              :image-filepath (caddr image-ret)
+                              'action #'(lambda (button)
+                                          (let ((file-path (button-get button :image-filepath)))
+                                            (when (file-exists-p file-path)
+                                              (find-file file-path)
+                                              (read-only-mode))))))
            (progn
              (insert (jabber-propertize
                 (format "[Image]<%s/%s> " *jabber-qim-file-server* value)
@@ -651,43 +639,75 @@ client; see `jabber-edit-bookmarks'."
                 object-text
                 'face face))))))
 
+(defun jabber-qim-wget-image (url-path &optional image-size uid)
+  (let ((image-file (gethash url-path *jabber-qim-image-file-cache*)))
+    (unless image-file
+      (let ((image-download-path (format "%s/%s"
+                                         (jabber-qim-local-images-cache-dir)
+                                         (jabber-qim-parse-image-filename url-path))))
+        (ignore-errors
+          (call-process (executable-find "wget") nil nil nil
+                        "-T" "0.3"
+                        "-O" image-download-path
+                        (if image-size
+                            (format "%s/%s&w=%s&h=%s&uid=%s"
+                                    *jabber-qim-file-server* url-path
+                                    (car image-size)
+                                    (cdr image-size)
+                                    (url-hexify-string
+                                     (or uid "")))
+                          (format "%s/%s&uid=%s" *jabber-qim-file-server*
+                                  url-path (url-hexify-string
+                                            (or uid ""))))))
+        (let ((image-file-size (nth 7 (file-attributes image-download-path))))
+          (when (and image-file-size
+                     (> image-file-size 0))
+            (setq image-file image-download-path)
+            (puthash url-path image-download-path *jabber-qim-image-file-cache*)
+            ))))
+    (when image-file
+      (list (secure-hash-file image-file 'md5)
+            (jabber-create-image image-file)
+            image-file))))
 
-(defun jabber-qim-load-image (url-path &optional image-size uid)
-  (lexical-let ((latch (make-one-time-latch))
-                (image nil)
-                (ret nil))
-    (unless (setq image (gethash url-path *jabber-qim-image-file-cache*))
-      (web-http-get
-       #'(lambda (httpc header body)
-           (ignore-errors
-             (when (and body
-                        (equal "200" (gethash 'status-code header)))
-               (let ((file-path (format "%s/%s.%s"
-                                        (jabber-qim-local-images-cache-dir)
-                                        (md5 body)
-                                        (jabber-qim-parse-image-type url-path))))
-                 (unless (file-exists-p file-path)
-                   (let ((coding-system-for-write 'binary))
-                     (with-temp-file file-path
-                       (insert body))))
-                 (setq image file-path)
-                 (puthash url-path file-path *jabber-qim-image-file-cache*)
-                 (setq ret (md5 body)))))
-           (apply-partially #'nofify latch))
-       :url (if image-size
-                (format "%s/%s&w=%s&h=%s&uid=%s"
-                        *jabber-qim-file-server* url-path
-                        (car image-size)
-                        (cdr image-size)
-                        (url-hexify-string
-                         (or uid "")))
-              (format "%s/%s&uid=%s" *jabber-qim-file-server*
-                      url-path (url-hexify-string
-                                (or uid "")))))
-      (wait latch 0.5))
-    (when image
-      (list (secure-hash-file image 'md5)
-            (jabber-create-image image)))))
+
+;; (defun jabber-qim-load-image (url-path &optional image-size uid)
+;;   (lexical-let ((latch (make-one-time-latch))
+;;                 (image nil)
+;;                 (ret nil))
+;;     (unless (setq image (gethash url-path *jabber-qim-image-file-cache*))
+;;       (web-http-get
+;;        #'(lambda (httpc header body)
+;;            (ignore-errors
+;;              (when (and body
+;;                         (equal "200" (gethash 'status-code header)))
+;;                (let ((file-path (format "%s/%s.%s"
+;;                                         (jabber-qim-local-images-cache-dir)
+;;                                         (md5 body)
+;;                                         (jabber-qim-parse-image-type url-path))))
+;;                  (unless (file-exists-p file-path)
+;;                    (let ((coding-system-for-write 'binary))
+;;                      (with-temp-file file-path
+;;                        (insert body))))
+;;                  (setq image file-path)
+;;                  (puthash url-path file-path *jabber-qim-image-file-cache*)
+;;                  (setq ret (md5 body)))))
+;;            (apply-partially #'nofify latch))
+;;        :url (if image-size
+;;                 (format "%s/%s&w=%s&h=%s&uid=%s"
+;;                         *jabber-qim-file-server* url-path
+;;                         (car image-size)
+;;                         (cdr image-size)
+;;                         (url-hexify-string
+;;                          (or uid "")))
+;;               (format "%s/%s&uid=%s" *jabber-qim-file-server*
+;;                       url-path (url-hexify-string
+;;                                 (or uid "")))))
+;;       (wait latch 0.5))
+;;     (when image
+;;       (list (secure-hash-file image 'md5)
+;;             (jabber-create-image image)
+;;             image))))
 
 (defun jabber-qim-load-file (file-desc)
   (lexical-let ((file-path (format "%s/%s"

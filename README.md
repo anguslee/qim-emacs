@@ -6,11 +6,11 @@
 
 **注意**：加入qtalk群需要执行jabber-qim-muc-join命令，原jabber-muc-join命令仅用于加入非qtalk群组
 
+## **技术支持**
+
 讨论组：Emacs版qtalk讨论组 (群id：5b241f5d37aefff23b8a8fd9b721f8fb@conference.ejabhost1)
 
-已知问题: http://gitlab.corp.qunar.com/geng.li/qim-emacs/issues
-
-Bug反馈：可直接在上面已知问题列表上新建issue，或者联系：geng.li@qunar.com
+已知问题列表: http://gitlab.corp.qunar.com/geng.li/qim-emacs/issues
 
 ## **常用功能**
 
@@ -64,12 +64,13 @@ Bug反馈：可直接在上面已知问题列表上新建issue，或者联系：
 
 **依赖**：
 
-* Linux或者Mac OSX系统安装GNU Emacs v24.5+, 低于这个版本的emacs会因为找不到subr-x模块报错。其他组合没测试过。
+* Linux或者Mac OSX系统安装GNU Emacs v24.5+, 低于这个版本的emacs会因为找不到subr-x模块报错。其他组合没测试过；
+* wget命令(https://www.gnu.org/software/wget/)，chat buffer里加载图片需要；
 * openssl
 * autoconf
 * automake
-* emacs-uuid(http://www.emacswiki.org/emacs/uuid.el), 或者命令行能提供uuidgen命令
-* ImageMagick(http://www.emacswiki.org/emacs/ImageMagick), 截屏功能依赖此
+* emacs-uuid(http://www.emacswiki.org/emacs/uuid.el), 或者命令行能提供uuidgen命令；
+* ImageMagick(http://www.emacswiki.org/emacs/ImageMagick), 截屏功能依赖此。
 
 **安装运行**：
 
