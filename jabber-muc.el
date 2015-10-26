@@ -822,7 +822,7 @@ group, else it is a JID."
              (cons "Invite someone to chatroom" 'jabber-muc-invite))
 
 (defun jabber-muc-invite (jc jid group reason)
-  "Invite JID to GROUP, stating REASON."
+  "Invite JID to GROUP."
   (interactive
    (list (jabber-read-account)
          (jabber-qim-user-jid-by-completion
@@ -867,9 +867,7 @@ group, else it is a JID."
   (add-to-list 'jabber-jid-muc-menu
                (cons "Send file/image" 'jabber-qim-muc-send-file)))
 
-(when (and
-       (executable-find "import")
-       (functionp 'jabber-qim-muc-send-screenshot))
+(when (functionp 'jabber-qim-muc-send-screenshot)
   (add-to-list 'jabber-jid-muc-menu
                (cons "Take a screenshot" 'jabber-qim-muc-send-screenshot)))
 

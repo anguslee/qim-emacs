@@ -743,9 +743,7 @@ Returns the chat buffer."
   (add-to-list 'jabber-jid-chat-menu
                (cons "Send file/image" 'jabber-qim-chat-send-file)))
 
-(when (and
-       (executable-find "import")
-       (functionp 'jabber-qim-chat-send-screenshot))
+(when (functionp 'jabber-qim-chat-send-screenshot)
   (add-to-list 'jabber-jid-chat-menu
                (cons "Take a screenshot" 'jabber-qim-chat-send-screenshot)))
 

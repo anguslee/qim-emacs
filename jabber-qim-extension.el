@@ -865,19 +865,28 @@ client; see `jabber-edit-bookmarks'."
 (defun jabber-qim-send-screenshot (jc jid send-function &optional chat-buffer)
   (interactive
    (jabber-qim-interactive-send-argument-list "Send screenshot to chat: "))
-  (if (executable-find "import")
-    (let ((image-file (format "%s/%s.png"
-                              (jabber-qim-local-screenshots-dir)
-                              (jabber-message-uuid)))
-          (current-jid (or jabber-group
-                           jabber-chatting-with)))
-      (when current-jid
-        (message "Sending screenshot to %s:" (jabber-jid-displayname current-jid)))
-      (if (equal 0 (ignore-errors
-                     (call-process (executable-find "import") nil nil nil image-file)))
-          (jabber-qim-send-file image-file jc jid send-function chat-buffer)
-        (message "Screen capture failed.")))
-    (message "Missing ImageMagick")))
+  (let ((image-file (format "%s/%s.png"
+                            (jabber-qim-local-screenshots-dir)
+                            (jabber-message-uuid)))
+        (screencapture-executable (executable-find
+                                   (if (eq system-type 'darwin)
+                                       "screencapture"
+                                     "import")))
+        (current-jid (or jabber-group
+                         jabber-chatting-with)))
+    (if screencapture-executable
+        (progn
+          (when current-jid
+            (message "Sending screenshot to %s:" (jabber-jid-displayname current-jid)))
+          (if (equal 0 (ignore-errors
+                   (if (eq system-type 'darwin)
+                       (call-process screencapture-executable nil nil nil
+                                     "-i" image-file)
+                     (call-process screencapture-executable nil nil nil
+                                   image-file))))
+              (jabber-qim-send-file image-file jc jid send-function chat-buffer)
+            (message "Screen capture failed.")))
+      (message "Screen capture exec not available."))))
 
 (define-key jabber-global-keymap "\C-s" 'jabber-qim-send-screenshot)
 
