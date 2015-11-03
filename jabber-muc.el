@@ -1310,8 +1310,7 @@ Return nil if X-MUC is nil."
                                            initial-member group nil))
                     (gethash group *jabber-qim-muc-initial-members*))
             (remhash group *jabber-qim-muc-initial-members*)
-            (add-to-list 'jabber-qim-muc-autojoin (list group
-                                                        (cons :silence t)))
+            (add-to-list 'jabber-qim-muc-autojoin (list group))
             (ewoc-enter-last
              jabber-chat-ewoc
              (list :muc-notice

@@ -322,8 +322,7 @@ client; see `jabber-edit-bookmarks'."
                    (string-prefix-p (format "%s." *jabber-qim-muc-sub-hostname*)
                                     (jabber-jid-server group)))
           (jabber-qim-muc-join jabber-buffer-connection group)
-          (add-to-list 'jabber-qim-muc-autojoin (list group
-                                                      (cons :silence t)))
+          (add-to-list 'jabber-qim-muc-autojoin (list group))
           (return t))))))
 
 
@@ -647,7 +646,7 @@ client; see `jabber-edit-bookmarks'."
                                          (jabber-qim-parse-image-filename url-path))))
         (ignore-errors
           (call-process (executable-find "wget") nil nil nil
-                        "-T" "0.3"
+                        "-T" "1.0"
                         "-O" image-download-path
                         (if image-size
                             (format "%s/%s&w=%s&h=%s&uid=%s"
@@ -879,11 +878,11 @@ client; see `jabber-edit-bookmarks'."
           (when current-jid
             (message "Sending screenshot to %s:" (jabber-jid-displayname current-jid)))
           (if (equal 0 (ignore-errors
-                   (if (eq system-type 'darwin)
-                       (call-process screencapture-executable nil nil nil
-                                     "-i" image-file)
-                     (call-process screencapture-executable nil nil nil
-                                   image-file))))
+                         (if (eq system-type 'darwin)
+                             (call-process screencapture-executable nil nil nil
+                                           "-i" image-file)
+                           (call-process screencapture-executable nil nil nil
+                                         image-file))))
               (jabber-qim-send-file image-file jc jid send-function chat-buffer)
             (message "Screen capture failed.")))
       (message "Screen capture exec not available."))))
