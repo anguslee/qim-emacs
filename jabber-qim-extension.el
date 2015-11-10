@@ -199,11 +199,8 @@
 
 
 ;;;###autoload
-(defcustom jabber-qim-muc-autojoin nil
-  "List of QIM MUC rooms to automatically join on connection.
-This list is saved in your Emacs customizations.  You can also store
-such a list on the Jabber server, where it is available to every
-client; see `jabber-edit-bookmarks'."
+(defcustom jabber-qim-autojoin-properties nil
+  "Muc autojoin properties"
   :group 'jabber-chat
   :type '(repeat (string :tag "JID of QIM chatroom")))
 
@@ -218,8 +215,8 @@ client; see `jabber-edit-bookmarks'."
   (interactive)
   (let ((coding-system-for-write 'no-conversion))
     (with-temp-file *qim-autojoin-settings-file*
-      (insert (format "(setq jabber-qim-muc-autojoin '%s)"
-                      (prin1-to-string jabber-qim-muc-autojoin)))))
+      (insert (format "(setq jabber-qim-autojoin-properties '%s)"
+                      (prin1-to-string jabber-qim-autojoin-properties)))))
   t)
 
 (add-hook 'jabber-post-disconnect-hook
@@ -234,32 +231,85 @@ client; see `jabber-edit-bookmarks'."
   (when jabber-group
     (if (find-if #'(lambda (x)
                      (string=  jabber-group (car x)))
-                 jabber-qim-muc-autojoin)
+                 jabber-qim-autojoin-properties)
         (when (y-or-n-p (format "Remove %s from autojoin list?"
                                 (jabber-jid-displayname jabber-group)))
-          (setq jabber-qim-muc-autojoin
+          (setq jabber-qim-autojoin-properties
                 (remove-if #'(lambda (x)
                                (string= (car x) jabber-group))
-                           jabber-qim-muc-autojoin)))
+                           jabber-qim-autojoin-properties)))
       (when (y-or-n-p (format "Add %s to autojoin list?"
                               (jabber-jid-displayname jabber-group)))
-        (add-to-list 'jabber-qim-muc-autojoin (list jabber-group
+        (add-to-list 'jabber-qim-autojoin-properties (list jabber-group
                                                     (cons :silence (not (y-or-n-p "Enable message alerts?")))))))))
 
-(defun jabber-qim-muc-autojoin (jc)
-  "Join rooms specified in account bookmarks and global `jabber-muc-autojoin'."
-  (interactive (list (jabber-read-account)))
-  (when (bound-and-true-p jabber-qim-muc-autojoin)
-    (dolist (group jabber-qim-muc-autojoin)
-      (let ((muc-jid (car group))
-            (muc-properties (cdr group)))
-        (jabber-qim-muc-join jc muc-jid)
-        (when (cdr (assoc :silence muc-properties))
-          (unless (find muc-jid *jabber-silenced-groupchats* :test 'equal)
-            (add-to-list '*jabber-silenced-groupchats*
-                         muc-jid)))))))
 
-(add-to-list 'jabber-post-connect-hooks 'jabber-qim-muc-autojoin)
+(defvar *jabber-qim-user-muc-room-jid-list*
+  '())
+
+(defun jabber-qim-user-muc-preload (jc)
+  (setq *jabber-qim-user-muc-room-jid-list* '())
+  (jabber-send-iq jc (format "%s.%s"
+                             *jabber-qim-muc-sub-hostname*
+                             *jabber-qim-hostname*)
+                  "get"
+                  '(query ((xmlns . "http://jabber.org/protocol/muc#user_mucs")))
+                  #'(lambda (jc xml-data closure-data)
+                      (mapcar #'(lambda (muc)
+                                  (let ((muc-jid (format "%s@%s"
+                                                       (cdr (assoc 'name muc))
+                                                       (cdr (assoc 'host muc)))))
+                                    (jabber-qim-api-request-post
+                                     #'(lambda (data conn headers)
+                                         (let ((muc-vcard (when (and (equal "200" (gethash 'status-code headers))
+                                                                     (ignore-errors
+                                                                       (nth 0 (cdr (assoc 'data data)))))
+                                                            (nth 0 (cdr (assoc 'data data))))))
+                                           (when muc-vcard
+                                             (add-to-list '*jabber-qim-user-muc-room-jid-list*
+                                                          (cons (intern (jabber-qim-muc-vcard-group-display-name muc-vcard))
+                                                                (jabber-qim-muc-vcard-group-jid muc-vcard)))
+                                             
+                                             (let* ((muc-jid (jabber-qim-muc-vcard-group-jid muc-vcard))
+                                                    (muc-properties (cdr (assoc-string muc-jid
+                                                                                       jabber-qim-autojoin-properties))))
+                                               (puthash (jabber-jid-user muc-jid)
+                                                        muc-vcard
+                                                        *jabber-qim-muc-vcard-cache*)
+                                               (jabber-qim-muc-join jc muc-jid)
+                                               (when (cdr (assoc :silence muc-properties))
+                                                 (unless (find muc-jid *jabber-silenced-groupchats* :test 'equal)
+                                                   (add-to-list '*jabber-silenced-groupchats*
+                                                                muc-jid)))))))
+                                     "getmucvcard"
+                                     (json-encode (vector `((:muc_name . ,(jabber-jid-user muc-jid))
+                                                            (:version . 0))))
+                                     'applicaition/json)))
+                              (mapcar #'cadr (cddar (jabber-xml-get-children xml-data 'query)))))
+                  nil
+                  #'(lambda (jc xml-data closure-data)
+                      (message "%s" closure-data))
+                  "MUC preload failed"))
+
+
+(add-to-list 'jabber-post-connect-hooks 'jabber-qim-user-muc-preload)
+
+;; (defun jabber-qim-muc-autojoin (jc)
+;;   "Join all of user's muc rooms"
+;;   (interactive (list (jabber-read-account)))
+;;   (when (bound-and-true-p *jabber-qim-user-muc-room-jid-list*)
+;;     (mapcar #'(lambda (muc-jid)
+;;                 (let ((muc-properties (cdr (assoc-string muc-jid
+;;                                                          jabber-qim-muc-autojoin))))
+;;                   (jabber-qim-muc-join jc muc-jid)
+;;                   (when (cdr (assoc :silence muc-properties))
+;;                     (unless (find muc-jid *jabber-silenced-groupchats* :test 'equal)
+;;                       (add-to-list '*jabber-silenced-groupchats*
+;;                                    muc-jid)))))
+;;             (mapcar #'cdr *jabber-qim-user-muc-room-jid-list*))))
+
+
+; (add-to-list 'jabber-post-connect-hooks 'jabber-qim-muc-autojoin)
 
 
 ;;;###autoload (autoload 'jabber-qim-muc-join "jabber-qim-extension" "Join a qim MUC chatroom" t)
@@ -322,7 +372,6 @@ client; see `jabber-edit-bookmarks'."
                    (string-prefix-p (format "%s." *jabber-qim-muc-sub-hostname*)
                                     (jabber-jid-server group)))
           (jabber-qim-muc-join jabber-buffer-connection group)
-          (add-to-list 'jabber-qim-muc-autojoin (list group))
           (return t))))))
 
 
@@ -785,44 +834,6 @@ client; see `jabber-edit-bookmarks'."
 
 (define-key jabber-global-keymap "\C-f" 'jabber-qim-send-file)
 
-(defvar *jabber-qim-user-muc-room-jid-list*
-  '())
-
-(defun jabber-qim-user-muc-preload (jc)
-  (setq *jabber-qim-user-muc-room-jid-list* '())
-  (jabber-send-iq jc (format "%s.%s"
-                             *jabber-qim-muc-sub-hostname*
-                             *jabber-qim-hostname*)
-                  "get"
-                  '(query ((xmlns . "http://jabber.org/protocol/muc#user_mucs")))
-                  #'(lambda (jc xml-data closure-data)
-                      (mapcar #'(lambda (muc)
-                                  (let ((muc-jid (format "%s@%s"
-                                                       (cdr (assoc 'name muc))
-                                                       (cdr (assoc 'host muc)))))
-                                    (jabber-qim-api-request-post
-                                     #'(lambda (data conn headers)
-                                         (let ((muc-vcard (if (and (equal "200" (gethash 'status-code headers))
-                                                               (ignore-errors
-                                                                 (nth 0 (cdr (assoc 'data data)))))
-                                                          (nth 0 (cdr (assoc 'data data)))
-                                                          `((SN . ,(jabber-jid-user muc-jid))
-                                                            (MN . ,(jabber-jid-user muc-jid))))))
-                                           (add-to-list '*jabber-qim-user-muc-room-jid-list*
-                                                        (cons (intern (jabber-qim-muc-vcard-group-display-name muc-vcard))
-                                                              (jabber-qim-muc-vcard-group-jid muc-vcard)))))
-                                     "getmucvcard"
-                                     (json-encode (vector `((:muc_name . ,(jabber-jid-user muc-jid))
-                                                            (:version . 0))))
-                                     'applicaition/json)))
-                              (mapcar #'cadr (cddar (jabber-xml-get-children xml-data 'query)))))
-                  nil
-                  #'(lambda (jc xml-data closure-data)
-                      (message "%s" closure-data))
-                  "MUC preload failed"))
-
-
-(add-to-list 'jabber-post-connect-hooks 'jabber-qim-user-muc-preload)
 
 (defun jabber-qim-interactive-send-argument-list (&optional prompt)
   (let* ((jc (jabber-read-account))

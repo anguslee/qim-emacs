@@ -449,9 +449,9 @@ JID; only provide completion as a guide."
         (goto-char (point-min))
         (mapc 'jabber-chat-insert-backlog-entry (nreverse backlog-entries))))))
 
-(when (functionp 'jabber-qim-muc-toggle-autojoin)
-  (add-to-list 'jabber-jid-muc-menu
-               (cons "Add to/Remove from autojoin" 'jabber-qim-muc-toggle-autojoin)))
+;; (when (functionp 'jabber-qim-muc-toggle-autojoin)
+;;   (add-to-list 'jabber-jid-muc-menu
+;;                (cons "Add to/Remove from autojoin" 'jabber-qim-muc-toggle-autojoin)))
 
 
 ;; (add-to-list 'jabber-jid-muc-menu
@@ -695,10 +695,10 @@ groupchat buffer."
                     #'jabber-report-success "MUC delete register"
                     #'jabber-report-success "MUC delete register"
                     )
-    (setq jabber-qim-muc-autojoin
+    (setq jabber-qim-autojoin-properties
           (remove-if #'(lambda (x)
                          (string= (car x) group))
-                     jabber-qim-muc-autojoin))))
+                     jabber-qim-autojoin-properties))))
 
 (defalias 'jabber-groupchat-leave 'jabber-muc-leave
   "Deprecated. Use `jabber-muc-leave' instead.")
@@ -860,10 +860,16 @@ group, else it is a JID."
         (setq *jabber-silenced-groupchats*
               (remove-if #'(lambda (x)
                              (equal x jabber-group))
-                         *jabber-silenced-groupchats*)))
+                         *jabber-silenced-groupchats*))
+        (setq jabber-qim-autojoin-properties
+              (remove-if #'(lambda (x)
+                             (string= (car x) jabber-group))
+                         jabber-qim-autojoin-properties)))
     (progn
       (message "Message alerts DEactivated: %s" (jabber-jid-displayname jabber-group))
-      (add-to-list '*jabber-silenced-groupchats* jabber-group))
+      (add-to-list '*jabber-silenced-groupchats* jabber-group)
+      (add-to-list 'jabber-qim-autojoin-properties (list jabber-group
+                                                         (cons :silence t))))
     ))
 
 (when (functionp 'jabber-qim-muc-send-file)
@@ -1313,7 +1319,6 @@ Return nil if X-MUC is nil."
                                            initial-member group nil))
                     (gethash group *jabber-qim-muc-initial-members*))
             (remhash group *jabber-qim-muc-initial-members*)
-            (add-to-list 'jabber-qim-muc-autojoin (list group))
             (ewoc-enter-last
              jabber-chat-ewoc
              (list :muc-notice

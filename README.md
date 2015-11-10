@@ -44,12 +44,9 @@
 
     *C-c [return]* （群聊菜单）
 
-8. 设置自动加入的群组，在~/.qim-autojoin.el文件里设置变量：
+8. 开启/关闭群组消息提示（重启后仍生效）
 
-        (setq jabber-qim-muc-autojoin
-            '(("去哪儿度假bu@conference.ejabhost1" ; 群ID
-                (:silence . t)))) ; :silence表示默认不在message框里提示消息，除非被@。需要提示的话就去掉这项设置
-
+    *M-x jabber-muc-toggle-message-alert*
 
 需要输入群组ID或者用户ID的时候，都可以用TAB在minibuffer里做补全。用户ID可以用域用户名或者姓名的方式做前缀检索。
 
