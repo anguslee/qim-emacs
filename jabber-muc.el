@@ -849,6 +849,9 @@ group, else it is a JID."
 (add-to-list 'jabber-jid-muc-menu
              (cons "Toggle chatroom message alerts" 'jabber-muc-toggle-message-alert))
 
+(define-key jabber-global-keymap "\C-v" 'jabber-muc-invite)
+
+
 (defun jabber-muc-toggle-message-alert ()
   (interactive)
   (if (find jabber-group *jabber-silenced-groupchats* :test 'equal)

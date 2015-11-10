@@ -30,13 +30,13 @@
 
 
 (defun jabber-qim-local-images-cache-dir ()
-  (format "%s/images" jabber-qim-local-file-dir))
+  (format "%s/images" (expand-file-name jabber-qim-local-file-dir)))
 
 (defun jabber-qim-local-received-files-cache-dir ()
-  (format "%s/received-files" jabber-qim-local-file-dir))
+  (format "%s/received-files" (expand-file-name jabber-qim-local-file-dir)))
 
 (defun jabber-qim-local-screenshots-dir ()
-  (format "%s/screenshots" jabber-qim-local-file-dir))
+  (format "%s/screenshots" (expand-file-name jabber-qim-local-file-dir)))
 
 
 (ignore-errors

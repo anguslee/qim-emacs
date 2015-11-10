@@ -349,9 +349,9 @@ Examples:
         (when (or jabber-muc-alert-self
                   (not (string= nick (cdr (assoc group *jabber-active-groupchats*)))))
           (format "Message from %s in %s: %s" nick
-                  (jabber-jid-user (jabber-jid-displayname group))
+                  (jabber-jid-displayname group t)
                   text))
-      (format "Message in %s: %s" (jabber-jid-displayname group) text))))
+      (format "Message in %s: %s" (jabber-jid-displayname group t) text))))
 
 (defun jabber-muc-wave (nick group buffer text title)
   "Play the wave file specified in `jabber-alert-muc-wave'"
