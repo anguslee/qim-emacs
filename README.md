@@ -85,6 +85,7 @@
 
 每次更新代码需要重新运行上面的：
 
+    ./configure
     make jabber-autoloads.el
 
 ## **参考配置**
