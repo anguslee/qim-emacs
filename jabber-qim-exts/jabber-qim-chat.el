@@ -3,6 +3,7 @@
 (require 'json)
 (require 'jabber-qim-util)
 (require 'jabber-qim-webapi)
+(require 'jabber-core)
 (require 'jabber-avatar)
 (require 'jabber-util)
 
@@ -20,21 +21,24 @@
 (defvar *jabber-qim-username-to-jid-cache*
   '())
 
-(jabber-qim-api-request-post
- #'(lambda (data conn headers)
-     (mapcar #'(lambda (vcard)
-                 (add-to-list '*jabber-qim-user-jid-cache*
-                              (jabber-jid-symbol (jabber-qim-user-vcard-jid vcard)))
-                 (puthash (jabber-qim-user-vcard-jid vcard)
-                          vcard *jabber-qim-user-vcard-cache*)
-                 (add-to-list '*jabber-qim-username-to-jid-cache*
-                              (cons (intern (format "%s - %s"
-                                                    (jabber-qim-user-vcard-name vcard)
-                                                    (jabber-qim-user-vcard-position vcard)))
-                                    (jabber-qim-user-vcard-jid vcard)))) data))
- "getusers"
- "u="
- 'applicaion/json)
+(defun jabber-qim-users-preload (jc)
+  (jabber-qim-api-request-post
+   #'(lambda (data conn headers)
+       (mapcar #'(lambda (vcard)
+                   (add-to-list '*jabber-qim-user-jid-cache*
+                                (jabber-jid-symbol (jabber-qim-user-vcard-jid vcard)))
+                   (puthash (jabber-qim-user-vcard-jid vcard)
+                            vcard *jabber-qim-user-vcard-cache*)
+                   (add-to-list '*jabber-qim-username-to-jid-cache*
+                                (cons (intern (format "%s - %s"
+                                                      (jabber-qim-user-vcard-name vcard)
+                                                      (jabber-qim-user-vcard-position vcard)))
+                                      (jabber-qim-user-vcard-jid vcard)))) data))
+   "getusers"
+   "u="
+   'applicaion/json))
+
+(add-to-list 'jabber-post-connect-hooks 'jabber-qim-users-preload)
 
 ;; extension functions
 

@@ -4,6 +4,7 @@
 (require 'jabber-qim-util)
 (require 'jabber-qim-webapi)
 
+(require 'jabber-core)
 (require 'jabber-util)
 
 ;;;###autoload
