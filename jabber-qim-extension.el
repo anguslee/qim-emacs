@@ -34,4 +34,9 @@
 (require 'jabber-qim-muc)
 
 
+(add-to-list 'jabber-post-connect-hooks 'jabber-qim-user-muc-preload)
+
+(add-to-list 'jabber-post-connect-hooks 'jabber-qim-users-preload)
+
+
 (provide 'jabber-qim-extension)

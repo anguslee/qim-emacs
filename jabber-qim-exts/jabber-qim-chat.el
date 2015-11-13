@@ -38,8 +38,6 @@
    "u="
    'applicaion/json))
 
-(add-to-list 'jabber-post-connect-hooks 'jabber-qim-users-preload)
-
 ;; extension functions
 
 (defun jabber-qim-object-attributes (object-text)

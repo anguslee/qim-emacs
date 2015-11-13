@@ -105,8 +105,6 @@
                   "MUC preload failed"))
 
 
-(add-to-list 'jabber-post-connect-hooks 'jabber-qim-user-muc-preload)
-
 ;;;###autoload (autoload 'jabber-qim-muc-join "jabber-qim-extension" "Join a qim MUC chatroom" t)
 (cl-defun jabber-qim-muc-join (jc muc-jid &optional popup)
   "Join a qim MUC chatroom"
