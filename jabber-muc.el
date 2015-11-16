@@ -572,10 +572,8 @@ groupchat buffer."
 		  "set"
 		  '(query ((xmlns . "http://jabber.org/protocol/muc#register"))
 			  (x ((xmlns . "jabber:x:data") (type . "set"))))
-		  #'jabber-report-success "MUC join register"
-		  #'jabber-report-success "MUC join register"
-          )
-  )
+		  #'jabber-report-success (format "%s join register" (jabber-jid-displayname group t))
+		  #'jabber-report-success (format "%s join register" (jabber-jid-displayname group t))))
 
 (defalias 'jabber-groupchat-join 'jabber-muc-join
   "Deprecated. Use `jabber-muc-join' instead.")
