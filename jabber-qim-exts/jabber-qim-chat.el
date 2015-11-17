@@ -236,8 +236,8 @@
                                                (replace-regexp-in-string "\\\[" "" value)))))
          (if image
              (insert-image
-                image
-                value)
+              image
+              value)
            (insert (jabber-propertize
                     object-text
                     'face face)))))

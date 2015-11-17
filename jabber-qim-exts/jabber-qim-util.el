@@ -78,9 +78,10 @@
 
 (defun secure-hash-file (file algorithm)
   (when (file-exists-p file)
-    (with-temp-buffer
-      (insert-file-contents file)
-      (secure-hash algorithm (current-buffer)))))
+    (let ((coding-system-for-read 'no-conversion))
+      (with-temp-buffer
+        (insert-file-contents file)
+        (secure-hash algorithm (current-buffer))))))
 
 
 (provide 'jabber-qim-util)
