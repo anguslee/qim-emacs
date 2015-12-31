@@ -59,8 +59,9 @@
 
 (defun jabber-qim-load-emotions-from-dir (dir)
   "Load emotions from single directory"
-  (let ((resource-xml (xml-parse-file
-                       (format "%s/emotions.xml" dir))))
+  (let ((resource-xml (ignore-errors
+                        (xml-parse-file
+                         (format "%s/emotions.xml" dir)))))
     (mapcar (lambda (face-node)
               (let* ((face-attributes (nth 1 face-node))
                      (face-shortcut (cdr (assoc 'shortcut face-attributes)))
