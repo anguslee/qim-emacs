@@ -61,13 +61,13 @@
 
 **依赖**：
 
-* Linux或者Mac OSX系统安装GNU Emacs v24.5+, 低于这个版本的emacs会因为找不到subr-x模块报错。其他组合没测试过；
-* wget命令(https://www.gnu.org/software/wget/)，chat buffer里加载图片需要；
+* Linux或者Mac OSX系统安装GNU Emacs v24.5+, 低于这个版本的emacs可能会因为找不到subr-x模块报错。其他组合没测试过；
+* [wget命令](https://www.gnu.org/software/wget/)，chat buffer里加载图片需要；
 * openssl
 * autoconf
 * automake
-* emacs-uuid(http://www.emacswiki.org/emacs/uuid.el), 或者命令行能提供uuidgen命令；
-* ImageMagick(http://www.emacswiki.org/emacs/ImageMagick), 截屏功能依赖此。
+* [emacs-uuid](http://www.emacswiki.org/emacs/uuid.el), 或者命令行能提供uuidgen命令；
+* [ImageMagick](http://www.emacswiki.org/emacs/ImageMagick), 截屏功能依赖此。
 
 **安装运行**：
 
@@ -128,11 +128,11 @@
     (jabber-connect-all)
 
 
-## **引用代码**
+## **引用资源**
 
-emacs-web (https://github.com/nicferrier/emacs-web)
-
-elisp-latch (https://github.com/skeeto/elisp-latch)
+* [emacs-web](https://github.com/nicferrier/emacs-web)
+* [elisp-latch](https://github.com/skeeto/elisp-latch)
+* Emoji-One表情来自[Emoji One](http://emojione.com/ "Emoji art supplied by Emoji One")
 
 ## **分支说明**
 
