@@ -1,6 +1,6 @@
 <FACESETTING>
     <DEFAULTFACE version="1000" count="16" showall="0" line="5">
-        <FACE id="CECAC826E415DA760156CCB5180DD851" shortcut="/bishi" tip="鄙视" multiframe="4">
+        <FACE id="CECAC826E415DA760156CCB5180DD851" shortcut="/bishix" tip="鄙视" multiframe="4">
             <FILE_ORG>bs.gif</FILE_ORG>
             <FILE_FIXED>bs.gif</FILE_FIXED>
         </FACE>
@@ -24,7 +24,7 @@
             <FILE_ORG>hc.gif</FILE_ORG>
             <FILE_FIXED>hc.gif</FILE_FIXED>
         </FACE>
-        <FACE id="27CE418CA2B7886A0A49C996040C3737" shortcut="/jiayou" tip="加油" multiframe="7">
+        <FACE id="27CE418CA2B7886A0A49C996040C3737" shortcut="/jiayoux" tip="加油" multiframe="7">
             <FILE_ORG>jy.gif</FILE_ORG>
             <FILE_FIXED>jy.gif</FILE_FIXED>
         </FACE>

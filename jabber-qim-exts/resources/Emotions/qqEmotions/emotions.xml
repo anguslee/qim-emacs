@@ -1,6 +1,6 @@
 <FACESETTING>
     <DEFAULTFACE version="1000" count="171" showall="0" line="5">
-        <FACE id="CECAC826E415DA760156CCB5180DD856" shortcut="/wx" tip="微笑" multiframe="4">
+        <FACE id="CECAC826E415DA760156CCB5180DD856" shortcut="/wxx" tip="微笑" multiframe="4">
             <FILE_ORG>14.png</FILE_ORG>
             <FILE_FIXED>14fix.bmp</FILE_FIXED>
         </FACE>
@@ -20,15 +20,15 @@
             <FILE_ORG>10.png</FILE_ORG>
             <FILE_FIXED>10fix.bmp</FILE_FIXED>
         </FACE>
-        <FACE id="52A732B5E633E15A28BDFC8998C3284E" shortcut="/fn" tip="发怒" multiframe="24">
+        <FACE id="52A732B5E633E15A28BDFC8998C3284E" shortcut="/fnx" tip="发怒" multiframe="24">
             <FILE_ORG>11.png</FILE_ORG>
             <FILE_FIXED>11fix.bmp</FILE_FIXED>
         </FACE>
-        <FACE id="27CE418CA2B7886A0A49C996040C3736" shortcut="/tp" tip="调皮" multiframe="7">
+        <FACE id="27CE418CA2B7886A0A49C996040C3736" shortcut="/tpx" tip="调皮" multiframe="7">
             <FILE_ORG>12.png</FILE_ORG>
             <FILE_FIXED>12fix.bmp</FILE_FIXED>
         </FACE>
-        <FACE id="759416D730E7129332EC5036F3E22280" shortcut="/cy" tip="呲牙" multiframe="2">
+        <FACE id="759416D730E7129332EC5036F3E22280" shortcut="/cyx" tip="呲牙" multiframe="2">
             <FILE_ORG>13.png</FILE_ORG>
             <FILE_FIXED>13fix.bmp</FILE_FIXED>
         </FACE>
@@ -44,11 +44,11 @@
             <FILE_ORG>96.png</FILE_ORG>
             <FILE_FIXED>96fix.bmp</FILE_FIXED>
         </FACE>
-        <FACE id="597905230ED414FCCCACE43115EE6FE6" shortcut="/tx" tip="偷笑" multiframe="2">
+        <FACE id="597905230ED414FCCCACE43115EE6FE6" shortcut="/txx" tip="偷笑" multiframe="2">
             <FILE_ORG>20.png</FILE_ORG>
             <FILE_FIXED>20fix.bmp</FILE_FIXED>
         </FACE>
-        <FACE id="960476F13C0FDAD3C4DCA54571460D11" shortcut="/ka" tip="可爱" multiframe="4">
+        <FACE id="960476F13C0FDAD3C4DCA54571460D11" shortcut="/kax" tip="可爱" multiframe="4">
             <FILE_ORG>21.png</FILE_ORG>
             <FILE_FIXED>21fix.bmp</FILE_FIXED>
         </FACE>
@@ -144,11 +144,11 @@
             <FILE_ORG>6.png</FILE_ORG>
             <FILE_FIXED>6fix.bmp</FILE_FIXED>
         </FACE>
-        <FACE id="9C996476966A2A0BE1151890F1FD3497" shortcut="/zk" tip="抓狂" multiframe="6">
+        <FACE id="9C996476966A2A0BE1151890F1FD3497" shortcut="/zkx" tip="抓狂" multiframe="6">
             <FILE_ORG>18.png</FILE_ORG>
             <FILE_FIXED>18fix.bmp</FILE_FIXED>
         </FACE>
-        <FACE id="9CB71583E9E9BBC7BE192BCFCC7F4837" shortcut="/db" tip="大兵" multiframe="17">
+        <FACE id="9CB71583E9E9BBC7BE192BCFCC7F4837" shortcut="/dbx" tip="大兵" multiframe="17">
             <FILE_ORG>29.png</FILE_ORG>
             <FILE_FIXED>29fix.bmp</FILE_FIXED>
         </FACE>
@@ -196,7 +196,7 @@
             <FILE_ORG>124.png</FILE_ORG>
             <FILE_FIXED>124fix.bmp</FILE_FIXED>
         </FACE>
-        <FACE id="A92C95351E07540ACF861490638BEDA8" shortcut="/fw" tip="飞吻" multiframe="1">
+        <FACE id="A92C95351E07540ACF861490638BEDA8" shortcut="/fwx" tip="飞吻" multiframe="1">
             <FILE_ORG>85.png</FILE_ORG>
             <FILE_FIXED>85fix.bmp</FILE_FIXED>
         </FACE>
@@ -320,7 +320,7 @@
             <FILE_ORG>117.png</FILE_ORG>
             <FILE_FIXED>117fix.bmp</FILE_FIXED>
         </FACE>
-        <FACE id="867640BA38932DB4333B1588DD5A9DAE" shortcut="/bb" tip="便便" multiframe="4">
+        <FACE id="867640BA38932DB4333B1588DD5A9DAE" shortcut="/bbx" tip="便便" multiframe="4">
             <FILE_ORG>59.png</FILE_ORG>
             <FILE_FIXED>59fix.bmp</FILE_FIXED>
         </FACE>
@@ -328,7 +328,7 @@
             <FILE_ORG>75.png</FILE_ORG>
             <FILE_FIXED>75fix.bmp</FILE_FIXED>
         </FACE>
-        <FACE id="7F4597C5C703D444E1126DC1ACABFDC6" shortcut="/ty" tip="太阳" multiframe="1">
+        <FACE id="7F4597C5C703D444E1126DC1ACABFDC6" shortcut="/tyx" tip="太阳" multiframe="1">
             <FILE_ORG>74.png</FILE_ORG>
             <FILE_FIXED>74fix.bmp</FILE_FIXED>
         </FACE>
@@ -449,11 +449,11 @@
             <FILE_ORG>48.gif</FILE_ORG>
             <FILE_FIXED>48fix.bmp</FILE_FIXED>
         </FACE>
-        <FACE id="5CCB1E26E09B5BF375C63B589C7E0BD5" shortcut="/qianc" tip="钱" multiframe="1">
+        <FACE id="5CCB1E26E09B5BF375C63B589C7E0BD5" shortcut="/qiancx" tip="钱" multiframe="1">
             <FILE_ORG>50.gif</FILE_ORG>
             <FILE_FIXED>50fix.bmp</FILE_FIXED>
         </FACE>
-        <FACE id="57777C3ECC3C575AA9DDDEE1FAAE6AD3" shortcut="/dp" tip="灯泡" multiframe="2">
+        <FACE id="57777C3ECC3C575AA9DDDEE1FAAE6AD3" shortcut="/dpx" tip="灯泡" multiframe="2">
             <FILE_ORG>51.gif</FILE_ORG>
             <FILE_FIXED>51fix.bmp</FILE_FIXED>
         </FACE>
@@ -517,7 +517,7 @@
             <FILE_ORG>88.gif</FILE_ORG>
             <FILE_FIXED>88fix.bmp</FILE_FIXED>
         </FACE>
-        <FACE id="419680CC7675E7961D763EFBBFB21662" shortcut="/xy" tip="下雨" multiframe="1">
+        <FACE id="419680CC7675E7961D763EFBBFB21662" shortcut="/xyx" tip="下雨" multiframe="1">
             <FILE_ORG>90.gif</FILE_ORG>
             <FILE_FIXED>90fix.bmp</FILE_FIXED>
         </FACE>
@@ -653,7 +653,7 @@
             <FILE_ORG>162.png</FILE_ORG>
             <FILE_FIXED>162fix.png</FILE_FIXED>
         </FACE>
-        <FACE id="B78693EF9778602C6A35B6A89390AB0B" shortcut="/yusan" tip="雨伞" multiframe="1">
+        <FACE id="B78693EF9778602C6A35B6A89390AB0B" shortcut="/yusanx" tip="雨伞" multiframe="1">
             <FILE_ORG>163.png</FILE_ORG>
             <FILE_FIXED>163fix.png</FILE_FIXED>
         </FACE>
