@@ -232,9 +232,10 @@
          (value (cdr (assoc-string 'value object-attributes))))
     (case type
       ('emoticon
-       (let ((image (jabber-qim-emotion-image
-                     (replace-regexp-in-string "\\\]" ""
-                                               (replace-regexp-in-string "\\\[" "" value)))))
+       (let ((image (ignore-errors
+                      (jabber-qim-emotion-image
+                       (replace-regexp-in-string "\\\]" ""
+                                                 (replace-regexp-in-string "\\\[" "" value))))))
          (if image
              (insert-image
               image
