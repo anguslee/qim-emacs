@@ -833,16 +833,28 @@ group, else it is a JID."
                                         ;(remq (jabber-jid-symbol jabber-group) (jabber-concat-rosters))
            ))
          (jabber-muc-read-completing "To group: ")
-         nil
-                                        ; (jabber-read-with-input-method "Reason: ")
-         ))
-  (jabber-send-sexp
-   jc
-   `(message ((to . ,group))
-	     (x ((xmlns . "http://jabber.org/protocol/muc#user"))
-		(invite ((to . ,jid))
-			,(unless (zerop (length reason))
-			   `(reason nil ,reason)))))))
+         nil))
+  (jabber-send-iq jc group
+                  "set"
+                  `(query ((xmlns . "http://jabber.org/protocol/muc#invite"))
+                          (invite ((jid . ,jid) (type . "set"))))
+                  #'(lambda (jc xml-data context)
+                      (let* ((query (car (jabber-xml-get-children xml-data 'query)))
+                             (invited (car (jabber-xml-get-children query 'iq_invite)))
+                             (status (jabber-xml-get-attribute invited 'status))
+                             (group (nth 0 context))
+                             (jid (nth 1 context))
+                             (reason (nth 2 context)))
+                        (when (string-equal status "online")
+                          (jabber-send-sexp
+                           jc
+                           `(message ((to . ,group))
+                                     (x ((xmlns . "http://jabber.org/protocol/muc#user"))
+                                        (invite ((to . ,jid))
+                                                ,(unless (zerop (length reason))
+                                                   `(reason nil ,reason)))))))))
+                  (list group jid reason)
+                  #'jabber-report-success "MUC invite error"))
 
 (add-to-list 'jabber-jid-muc-menu
              (cons "Toggle chatroom message alerts" 'jabber-muc-toggle-message-alert))
