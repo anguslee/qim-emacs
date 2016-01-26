@@ -6,7 +6,6 @@
 (require 'jabber-core)
 (require 'jabber-avatar)
 (require 'jabber-util)
-(require 'jabber-activity)
 
 ;; user environment
 
