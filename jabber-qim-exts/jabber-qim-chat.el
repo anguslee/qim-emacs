@@ -7,7 +7,6 @@
 (require 'jabber-avatar)
 (require 'jabber-util)
 (require 'jabber-activity)
-(require 'jabber-keymap)
 
 ;; user environment
 
