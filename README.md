@@ -48,6 +48,10 @@
 
     *M-x jabber-muc-toggle-message-alert*
 
+9. 切换到含未读消息的会话
+
+    *M-x jabber-qim-chat-switch-to-unread (C-x C-j C-u)*
+
 需要输入群组ID或者用户ID的时候，都可以用TAB在minibuffer里做补全。用户ID可以用域用户名或者姓名的方式做前缀检索。
 
 
@@ -68,6 +72,7 @@
 * automake
 * [emacs-uuid](http://www.emacswiki.org/emacs/uuid.el), 或者命令行能提供uuidgen命令；
 * [ImageMagick](http://www.emacswiki.org/emacs/ImageMagick), 截屏功能依赖此。
+* [dash.el](https://github.com/magnars/dash.el), 可以通过package-install安装
 
 **安装运行**：
 
@@ -132,6 +137,7 @@
 
 * [emacs-web](https://github.com/nicferrier/emacs-web)
 * [elisp-latch](https://github.com/skeeto/elisp-latch)
+* [s.el](https://github.com/magnars/s.el)
 * Emoji-One表情来自[Emoji One](http://emojione.com/ "Emoji art supplied by Emoji One")
 
 ## **分支说明**

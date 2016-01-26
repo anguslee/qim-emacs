@@ -6,6 +6,8 @@
 (require 'jabber-core)
 (require 'jabber-avatar)
 (require 'jabber-util)
+(require 'jabber-activity)
+(require 'jabber-keymap)
 
 ;; user environment
 
@@ -98,6 +100,39 @@
   (find-file (file-name-directory file-path))
   (revert-buffer t t t)
   (dired-goto-file file-path))
+
+
+(defun jabber-qim-chat-switch-to-unread (jc jid &optional other-window)
+  "Switch to an unread message buffer."
+  (interactive (let* ((session-muc-alist
+                       (jabber-qim-session-muc-vcard-alist))
+                      (unread-message-jids
+                       (mapcar #'jabber-jid-user jabber-activity-jids))
+                      (jid-or-username
+                       (jabber-read-jid-completing "Switch To Unread Conversation: "
+                                                   (mapcar #'(lambda (id)
+                                                               (or (car
+                                                                     (find-if #'(lambda (x)
+                                                                                  (equal id (cdr x)))
+                                                                              (append *jabber-qim-username-to-jid-cache*
+                                                                                      session-muc-alist)))
+                                                                   (intern id)))
+                                                           unread-message-jids)
+                                                   t nil nil nil t))
+                      (jid (jabber-qim-user-jid-by-completion jid-or-username))
+                      (account
+                       (jabber-read-account nil jid)))
+                 (list 
+                  account jid current-prefix-arg)))
+  (let* ((muc-jid (cdr (assoc (intern jid)
+                             (jabber-qim-session-muc-vcard-alist))))
+         (buffer (if muc-jid
+                     (jabber-muc-create-buffer jc muc-jid)
+                   (jabber-chat-create-buffer jc jid))))
+    (switch-to-buffer buffer)))
+
+(define-key jabber-global-keymap "\C-u" 'jabber-qim-chat-switch-to-unread)
+
 
 (defun jabber-qim-send-to-chat (data &optional prompt msg-type)
   "Send data to selected (active) chat buffer"
