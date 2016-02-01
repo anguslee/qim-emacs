@@ -108,22 +108,22 @@
                        (mapcar #'jabber-jid-user jabber-activity-jids))
                       (jid-or-username
                        (jabber-read-jid-completing "Switch To Unread Conversation: "
-                                                   (mapcar #'(lambda (id)
-                                                               (or (car
+                                                    (mapcar #'(lambda (id)
+                                                                (or (car
                                                                      (find-if #'(lambda (x)
                                                                                   (equal id (cdr x)))
                                                                               (append *jabber-qim-username-to-jid-cache*
                                                                                       session-muc-alist)))
-                                                                   (intern id)))
-                                                           unread-message-jids)
-                                                   t nil nil nil t))
+                                                                    (intern id)))
+                                                            unread-message-jids)
+                                                    t nil nil nil t t))
                       (jid (jabber-qim-user-jid-by-completion jid-or-username))
                       (account
                        (jabber-read-account nil jid)))
                  (list 
                   account jid current-prefix-arg)))
   (let* ((muc-jid (cdr (assoc (intern jid)
-                             (jabber-qim-session-muc-vcard-alist))))
+                              (jabber-qim-session-muc-vcard-alist))))
          (buffer (if muc-jid
                      (jabber-muc-create-buffer jc muc-jid)
                    (jabber-chat-create-buffer jc jid))))
