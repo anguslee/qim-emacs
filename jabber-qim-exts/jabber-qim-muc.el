@@ -104,6 +104,24 @@
                       (message "%s" closure-data))
                   "MUC preload failed"))
 
+(defun jabber-qim-muc-set-topic (jc muc-jid topic)
+  (interactive
+   (jabber-muc-argument-list
+    (list (jabber-read-with-input-method "New title: " jabber-muc-topic))))
+  (jabber-qim-api-request-post
+   (lambda (data conn headers)
+     (unless (equal "200" (gethash 'status-code headers))
+       (message "Set topic failed. Response: %s" data)
+       ;; (puthash (jabber-jid-user muc-jid)
+       ;;          `((SN . ,groupchat-name)
+       ;;            (MN . ,(jabber-jid-user muc-jid)))
+       ;;          *jabber-qim-muc-vcard-cache*)
+       ))
+   "setmucvcard"
+   (json-encode (vector `((:muc_name . ,(jabber-jid-user muc-jid))
+                          (:title . ,topic))))
+   'applicaition/json))
+
 
 ;;;###autoload (autoload 'jabber-qim-muc-join "jabber-qim-extension" "Join a qim MUC chatroom" t)
 (cl-defun jabber-qim-muc-join (jc muc-jid &optional popup)
@@ -137,12 +155,17 @@
                                  (nth 0 (cdr (assoc 'data data)))))
                           (nth 0 (cdr (assoc 'data data)))
                         `((SN . ,(jabber-jid-user muc-jid))
-                          (MN . ,(jabber-jid-user muc-jid))))
+                          (MN . ,(jabber-jid-user muc-jid))
+                          (MT . "")))
                       *jabber-qim-muc-vcard-cache*))
            (jabber-muc-join jc
                             muc-jid
                             (jabber-muc-read-my-nickname jc muc-jid t)
-                            popup))
+                            popup)
+           (with-current-buffer (jabber-muc-create-buffer jc muc-jid)
+             (setq jabber-muc-topic (jabber-qim-muc-vcard-group-topic
+                                     (gethash (jabber-jid-user muc-jid)
+                                              *jabber-qim-muc-vcard-cache*)))))
        "getmucvcard"
        (json-encode (vector `((:muc_name . ,(jabber-jid-user muc-jid))
                               (:version . 0))))

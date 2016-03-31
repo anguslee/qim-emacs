@@ -742,7 +742,7 @@ groupchat buffer."
     ))
 
 (add-to-list 'jabber-jid-muc-menu
-	     (cons "Set topic" 'jabber-muc-set-topic))
+	     (cons "Set topic" 'jabber-qim-muc-set-topic))
 
 (defun jabber-muc-set-topic (jc group topic)
   "Set topic of GROUP to TOPIC."
@@ -1037,9 +1037,9 @@ include groupchat invites."
   (let ((from (jabber-xml-get-attribute presence 'from))
 	(type (jabber-xml-get-attribute presence 'type))
 	(muc-marker (find-if 
-		     (lambda (x) (equal (jabber-xml-get-attribute x 'xmlns)
-				   "http://jabber.org/protocol/muc#user"))
-		     (jabber-xml-get-children presence 'x))))
+                  (lambda (x) (equal (jabber-xml-get-attribute x 'xmlns)
+                                     "http://jabber.org/protocol/muc#user"))
+                  (jabber-xml-get-children presence 'x))))
     ;; This is MUC presence if it has an MUC-namespaced tag...
     (or muc-marker
 	;; ...or if it is error presence from a room we tried to join.
@@ -1140,7 +1140,7 @@ Return nil if X-MUC is nil."
       (if (or (assoc group *jabber-active-groupchats*)
               (jabber-muc-invite-message-p xml-data))
           (with-current-buffer (jabber-muc-create-buffer jc group)
-            (jabber-muc-snarf-topic xml-data)
+            ; (jabber-muc-snarf-topic xml-data)
             ;; Call alert hooks only when something is output
             (when (or error-p
                       (run-hook-with-args-until-success 'printers xml-data type :printp))
@@ -1170,27 +1170,37 @@ Return nil if X-MUC is nil."
 
 (defun jabber-muc-process-presence (jc presence)
   (let* ((from (jabber-xml-get-attribute presence 'from))
-	 (type (jabber-xml-get-attribute presence 'type))
-	 (x-muc (find-if 
-		 (lambda (x) (equal (jabber-xml-get-attribute x 'xmlns)
-			       "http://jabber.org/protocol/muc#user"))
-		 (jabber-xml-get-children presence 'x)))
-	 (group (jabber-jid-user from))
-	 (nickname (jabber-jid-resource from))
-	 (symbol (jabber-jid-symbol from))
-	 (our-nickname (gethash symbol jabber-pending-groupchats))
-	 (item (car (jabber-xml-get-children x-muc 'item)))
-	 (actor (jabber-xml-get-attribute (car (jabber-xml-get-children item 'actor)) 'jid))
-	 (reason (car (jabber-xml-node-children (car (jabber-xml-get-children item 'reason)))))
-	 (error-node (car (jabber-xml-get-children presence 'error)))
-	 (status-codes (if error-node
-			   (list (jabber-xml-get-attribute error-node 'code))
-			 (mapcar
-			  (lambda (status-element)
-			    (jabber-xml-get-attribute status-element 'code))
-			  (jabber-xml-get-children x-muc 'status)))))
+         (type (jabber-xml-get-attribute presence 'type))
+         (x-muc (find-if 
+                 (lambda (x) (equal (jabber-xml-get-attribute x 'xmlns)
+                                    "http://jabber.org/protocol/muc#user"))
+                 (jabber-xml-get-children presence 'x)))
+         (groupchat-vcard-update
+          (car (jabber-xml-get-children presence 'vcard_updte)))
+         (group (jabber-jid-user from))
+         (nickname (jabber-jid-resource from))
+         (symbol (jabber-jid-symbol from))
+         (our-nickname (gethash symbol jabber-pending-groupchats))
+         (item (car (jabber-xml-get-children x-muc 'item)))
+         (actor (jabber-xml-get-attribute (car (jabber-xml-get-children item 'actor)) 'jid))
+         (reason (car (jabber-xml-node-children (car (jabber-xml-get-children item 'reason)))))
+         (error-node (car (jabber-xml-get-children presence 'error)))
+         (status-codes (if error-node
+                           (list (jabber-xml-get-attribute error-node 'code))
+                         (mapcar
+                          (lambda (status-element)
+                            (jabber-xml-get-attribute status-element 'code))
+                          (jabber-xml-get-children x-muc 'status)))))
+    
     ;; handle leaving a room
     (cond 
+     (groupchat-vcard-update
+      (let ((new-topic (jabber-xml-get-attribute
+                        groupchat-vcard-update
+                        'title)))
+        (when new-topic
+          (with-current-buffer (get-buffer (jabber-muc-get-buffer group))
+            (setq jabber-muc-topic new-topic)))))
      ((or (string= type "unavailable") (string= type "error"))
       ;; error from room itself? or are we leaving?
       (if (or (null nickname)

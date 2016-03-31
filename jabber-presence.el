@@ -147,7 +147,10 @@ CLOSURE-DATA should be 'initial if initial roster push, nil otherwise."
      ((string= type "subscribe")
       (run-with-idle-timer 0.01 nil #'jabber-process-subscription-request jc from presence-status))
 
-     ((jabber-muc-presence-p xml-data)
+     ((or (jabber-muc-presence-p xml-data)
+          (string-prefix-p "http://jabber.org/protocol/muc#"
+                           (jabber-xml-get-attribute xml-data 'xmlns)
+                           t))
       (jabber-muc-process-presence jc xml-data))
 
      (t
