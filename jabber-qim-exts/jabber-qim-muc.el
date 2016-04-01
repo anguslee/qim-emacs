@@ -131,7 +131,7 @@
    "setmucvcard"
    (json-encode (vector `((:muc_name . ,(jabber-jid-user muc-jid))
                           (:title . ,topic))))
-   'applicaition/json))
+   'application/json))
 
 
 ;;;###autoload (autoload 'jabber-qim-muc-join "jabber-qim-extension" "Join a qim MUC chatroom" t)
@@ -180,7 +180,7 @@
        "getmucvcard"
        (json-encode (vector `((:muc_name . ,(jabber-jid-user muc-jid))
                               (:version . 0))))
-       'applicaition/json)
+       'application/json)
     ;; Fallback
     (jabber-muc-join jc muc-jid
                      (jabber-muc-read-my-nickname jc muc-jid)
@@ -222,7 +222,7 @@
           "getmucvcard"
           (json-encode (vector `((:muc_name . ,(jabber-jid-user muc-jid))
                                  (:version . 0))))
-          'applicaition/json)
+          'application/json)
          (wait latch 0.2)
          (if (null vcard)
              `((SN . ,(jabber-jid-user muc-jid))
