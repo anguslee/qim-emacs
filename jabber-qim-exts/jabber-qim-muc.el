@@ -60,6 +60,16 @@
 		     'jabber-qim-save-qim-muc-autojoin-settings)
 
 
+(defun jabber-qim-user-muc-join-all (jc)
+  (jabber-send-sexp-if-connected jc
+                                 `(presence
+                                   ((to . ,(format "%s.%s"
+                                                   *jabber-qim-muc-sub-hostname*
+                                                   *jabber-qim-hostname*)))
+                                   (x
+                                    ((xmlns . "http://jabber.org/protocol/muc#presence_all"))))))
+
+
 (defun jabber-qim-user-muc-preload (jc)
   (setq *jabber-qim-user-muc-room-jid-list* '())
   (jabber-send-iq jc (format "%s.%s"
@@ -68,37 +78,38 @@
                   "get"
                   '(query ((xmlns . "http://jabber.org/protocol/muc#user_mucs")))
                   #'(lambda (jc xml-data closure-data)
-                      (mapcar #'(lambda (muc)
-                                  (let ((muc-jid (format "%s@%s"
-                                                       (cdr (assoc 'name muc))
-                                                       (cdr (assoc 'host muc)))))
-                                    (jabber-qim-api-request-post
-                                     #'(lambda (data conn headers)
-                                         (let ((muc-vcard (when (and (equal "200" (gethash 'status-code headers))
-                                                                     (ignore-errors
-                                                                       (nth 0 (cdr (assoc 'data data)))))
-                                                            (nth 0 (cdr (assoc 'data data))))))
-                                           (when muc-vcard
-                                             (add-to-list '*jabber-qim-user-muc-room-jid-list*
-                                                          (cons (intern (jabber-qim-muc-vcard-group-display-name muc-vcard))
-                                                                (jabber-qim-muc-vcard-group-jid muc-vcard)))
-                                             
-                                             (let* ((muc-jid (jabber-qim-muc-vcard-group-jid muc-vcard))
-                                                    (muc-properties (cdr (assoc-string muc-jid
-                                                                                       jabber-qim-autojoin-properties))))
-                                               (puthash (jabber-jid-user muc-jid)
-                                                        muc-vcard
-                                                        *jabber-qim-muc-vcard-cache*)
-                                               (jabber-qim-muc-join jc muc-jid)
-                                               (when (cdr (assoc :silence muc-properties))
-                                                 (unless (find muc-jid *jabber-silenced-groupchats* :test 'equal)
-                                                   (add-to-list '*jabber-silenced-groupchats*
-                                                                muc-jid)))))))
-                                     "getmucvcard"
-                                     (json-encode (vector `((:muc_name . ,(jabber-jid-user muc-jid))
-                                                            (:version . 0))))
-                                     'applicaition/json)))
-                              (mapcar #'cadr (cddar (jabber-xml-get-children xml-data 'query)))))
+                      (jabber-qim-api-request-post
+                       #'(lambda (data conn headers)
+                           (when (equal "200" (gethash 'status-code headers))
+                             (let ((muc-vcards (ignore-errors
+                                                 (cdr (assoc 'data data)))))
+                               (mapcar #'(lambda (muc-vcard)
+                                           (add-to-list '*jabber-qim-user-muc-room-jid-list*
+                                                        (cons (intern (jabber-qim-muc-vcard-group-display-name muc-vcard))
+                                                              (jabber-qim-muc-vcard-group-jid muc-vcard)))
+                                           
+                                           (let* ((muc-jid (jabber-qim-muc-vcard-group-jid muc-vcard))
+                                                  (muc-properties (cdr (assoc-string muc-jid
+                                                                                     jabber-qim-autojoin-properties))))
+                                             (puthash (jabber-jid-user muc-jid)
+                                                      muc-vcard
+                                                      *jabber-qim-muc-vcard-cache*)
+                                             (when (cdr (assoc :silence muc-properties))
+                                               (unless (find muc-jid *jabber-silenced-groupchats* :test 'equal)
+                                                 (add-to-list '*jabber-silenced-groupchats*
+                                                              muc-jid)))))
+                                       muc-vcards)))
+                           (jabber-qim-user-muc-join-all jc))
+                       "getmucvcard"
+                       (json-encode
+                        (mapcar #'(lambda (muc)
+                                    (let ((muc-jid (format "%s@%s"
+                                                           (cdr (assoc 'name muc))
+                                                           (cdr (assoc 'host muc)))))
+                                      `((:muc_name . ,(jabber-jid-user muc-jid))
+                                        (:version . 0))))
+                                (mapcar #'cadr (cddar (jabber-xml-get-children xml-data 'query)))))
+                       'application/json))
                   nil
                   #'(lambda (jc xml-data closure-data)
                       (message "%s" closure-data))
@@ -214,12 +225,11 @@
           'applicaition/json)
          (wait latch 0.2)
          (if (null vcard)
-             (puthash (jabber-jid-user muc-jid)
-                      `((SN . ,(jabber-jid-user muc-jid))
-                        (MN . ,(jabber-jid-user muc-jid)))
-                      *jabber-qim-muc-vcard-cache*)
-           (puthash (jabber-jid-user muc-jid) vcard *jabber-qim-muc-vcard-cache*))
-         vcard))))
+             `((SN . ,(jabber-jid-user muc-jid))
+               (MN . ,(jabber-jid-user muc-jid)))
+           (progn
+             (puthash (jabber-jid-user muc-jid) vcard *jabber-qim-muc-vcard-cache*)
+             vcard))))))
 
 (defun jabber-qim-muc-send-screenshot (jc group)
   (interactive

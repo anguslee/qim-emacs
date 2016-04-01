@@ -208,7 +208,10 @@ This function is idempotent."
     (setq jabber-buffer-connection jc)
 
     (set (make-local-variable 'jabber-group) group)
-    (make-local-variable 'jabber-muc-topic)
+    (set (make-local-variable 'jabber-muc-topic)
+         (jabber-qim-muc-vcard-group-topic
+          (gethash (jabber-jid-user group)
+                   *jabber-qim-muc-vcard-cache*)))
     (setq jabber-send-function 'jabber-muc-send)
     (setq header-line-format jabber-muc-header-line-format)
     (current-buffer)))
@@ -1199,6 +1202,9 @@ Return nil if X-MUC is nil."
                         groupchat-vcard-update
                         'title)))
         (when new-topic
+          (jabber-qim-muc-vcard-group-topic-update (gethash group
+                                                            *jabber-qim-muc-vcard-cache*)
+                                                   new-topic)
           (with-current-buffer (get-buffer (jabber-muc-get-buffer group))
             (setq jabber-muc-topic new-topic)))))
      ((or (string= type "unavailable") (string= type "error"))

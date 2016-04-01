@@ -25,6 +25,13 @@
   (decode-coding-string (cdr (assoc 'MT vcard))
                         'utf-8-emacs-unix))
 
+(defun jabber-qim-muc-vcard-group-topic-update (vcard new-topic)
+  "Set group topic"
+  (ignore-errors
+    (setcdr (assoc 'MT
+                   vcard)
+            new-topic)))
+
 ;;;###autoload (autoload 'jabber-qim-user-vcard-jid "jabber-qim-extension" "Return user jid" t)
 (defun jabber-qim-user-vcard-jid (vcard)
   "Return user jid"
