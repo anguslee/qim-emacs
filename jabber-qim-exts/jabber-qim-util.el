@@ -19,6 +19,14 @@
   (decode-coding-string (cdr (assoc 'SN vcard))
                         'utf-8-emacs-unix))
 
+(defun jabber-qim-muc-vcard-group-display-name-update (vcard new-name)
+  "Set new display name"
+  (ignore-errors
+    (setcdr (assoc 'SN
+                   vcard)
+            new-name)))
+
+
 ;;;###autoload (autoload 'jabber-qim-muc-vcard-group-topic "jabber-qim-extension" "Return group topic" t)
 (defun jabber-qim-muc-vcard-group-topic (vcard)
   "Return group topic"

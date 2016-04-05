@@ -36,7 +36,9 @@
                                       (jabber-qim-user-vcard-jid vcard)))) data))
    "getusers"
    "u="
-   'applicaion/json))
+   'application/json))
+
+(jabber-qim-users-preload (jabber-read-account))
 
 ;; extension functions
 

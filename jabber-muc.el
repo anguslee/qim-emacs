@@ -1200,13 +1200,22 @@ Return nil if X-MUC is nil."
      (groupchat-vcard-update
       (let ((new-topic (jabber-xml-get-attribute
                         groupchat-vcard-update
-                        'title)))
+                        'title))
+            (new-nick (jabber-xml-get-attribute
+                        groupchat-vcard-update
+                        'nick)))
         (when new-topic
           (jabber-qim-muc-vcard-group-topic-update (gethash group
                                                             *jabber-qim-muc-vcard-cache*)
                                                    new-topic)
           (with-current-buffer (get-buffer (jabber-muc-get-buffer group))
-            (setq jabber-muc-topic new-topic)))))
+            (setq jabber-muc-topic new-topic)))
+        (when new-nick
+          (with-current-buffer (get-buffer (jabber-muc-get-buffer group))
+            (jabber-qim-muc-vcard-group-display-name-update
+             (gethash group *jabber-qim-muc-vcard-cache*)
+             new-nick)
+            (rename-buffer (jabber-muc-get-buffer group))))))
      ((or (string= type "unavailable") (string= type "error"))
       ;; error from room itself? or are we leaving?
       (if (or (null nickname)
