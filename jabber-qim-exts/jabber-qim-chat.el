@@ -38,10 +38,8 @@
    "u="
    'application/json))
 
-(jabber-qim-users-preload (jabber-read-account))
 
 ;; extension functions
-
 (defun jabber-qim-object-attributes (object-text)
   (when (string-prefix-p "[obj " object-text)
     (mapcar #'(lambda (kv-text)
