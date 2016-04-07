@@ -656,7 +656,7 @@
      "setmucvcard"
      (json-encode (vector `((:muc_name . ,(jabber-jid-user muc-jid))
                             (:nick . ,groupchat-name))))
-     'applicaition/json)))
+     'application/json)))
 
 (define-key jabber-global-keymap "\C-g" 'jabber-qim-chat-start-groupchat)
 

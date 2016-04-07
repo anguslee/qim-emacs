@@ -30,8 +30,9 @@
 ;;;###autoload (autoload 'jabber-qim-muc-vcard-group-topic "jabber-qim-extension" "Return group topic" t)
 (defun jabber-qim-muc-vcard-group-topic (vcard)
   "Return group topic"
-  (decode-coding-string (cdr (assoc 'MT vcard))
-                        'utf-8-emacs-unix))
+  (ignore-errors
+    (decode-coding-string (cdr (assoc 'MT vcard))
+                          'utf-8-emacs-unix)))
 
 (defun jabber-qim-muc-vcard-group-topic-update (vcard new-topic)
   "Set group topic"
