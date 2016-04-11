@@ -381,45 +381,6 @@
             (jabber-create-image image-file)
             image-file))))
 
-
-;; (defun jabber-qim-load-image (url-path &optional image-size uid)
-;;   (lexical-let ((latch (make-one-time-latch))
-;;                 (image nil)
-;;                 (ret nil))
-;;     (unless (setq image (gethash url-path *jabber-qim-image-file-cache*))
-;;       (web-http-get
-;;        #'(lambda (httpc header body)
-;;            (ignore-errors
-;;              (when (and body
-;;                         (equal "200" (gethash 'status-code header)))
-;;                (let ((file-path (format "%s/%s.%s"
-;;                                         (jabber-qim-local-images-cache-dir)
-;;                                         (md5 body)
-;;                                         (jabber-qim-parse-image-type url-path))))
-;;                  (unless (file-exists-p file-path)
-;;                    (let ((coding-system-for-write 'binary))
-;;                      (with-temp-file file-path
-;;                        (insert body))))
-;;                  (setq image file-path)
-;;                  (puthash url-path file-path *jabber-qim-image-file-cache*)
-;;                  (setq ret (md5 body)))))
-;;            (apply-partially #'nofify latch))
-;;        :url (if image-size
-;;                 (format "%s/%s&w=%s&h=%s&uid=%s"
-;;                         *jabber-qim-file-server* url-path
-;;                         (car image-size)
-;;                         (cdr image-size)
-;;                         (url-hexify-string
-;;                          (or uid "")))
-;;               (format "%s/%s&uid=%s" *jabber-qim-file-server*
-;;                       url-path (url-hexify-string
-;;                                 (or uid "")))))
-;;       (wait latch 0.5))
-;;     (when image
-;;       (list (secure-hash-file image 'md5)
-;;             (jabber-create-image image)
-;;             image))))
-
 (defun jabber-qim-load-file (file-desc)
   (lexical-let ((file-path (format "%s/%s"
                            (jabber-qim-local-received-files-cache-dir)

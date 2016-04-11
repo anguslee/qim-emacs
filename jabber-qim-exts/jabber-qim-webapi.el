@@ -1,8 +1,6 @@
 ;;; Extensions for qim web APIs -*- lexical-binding: t -*-
 
 (require 'web)
-(require 'latch)
-
 
 (defvar *jabber-qim-api-server*
   "https://qtapi.corp.qunar.com")

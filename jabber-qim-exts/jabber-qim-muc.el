@@ -210,26 +210,30 @@
    (string-prefix-p (format "%s." *jabber-qim-muc-sub-hostname*)
                     (jabber-jid-server muc-jid))
    (or (gethash (jabber-jid-user muc-jid) *jabber-qim-muc-vcard-cache*)
-       (lexical-let ((latch (make-one-time-latch))
-                     (vcard nil))
-         (jabber-qim-api-request-post
-          (lambda (data conn headers)
-            (ignore-errors
-              (setq vcard
-                    (nth 0 (cdr (assoc 'data data))))
-              )
-            (apply-partially #'nofify latch))
-          "getmucvcard"
-          (json-encode (vector `((:muc_name . ,(jabber-jid-user muc-jid))
-                                 (:version . 0))))
-          'application/json)
-         (wait latch 0.2)
-         (if (null vcard)
-             `((SN . ,(jabber-jid-user muc-jid))
-               (MN . ,(jabber-jid-user muc-jid)))
-           (progn
-             (puthash (jabber-jid-user muc-jid) vcard *jabber-qim-muc-vcard-cache*)
-             vcard))))))
+       `((SN . ,(jabber-jid-user muc-jid))
+         (MN . ,(jabber-jid-user muc-jid)))
+
+       ;; (lexical-let ((latch (make-one-time-latch))
+       ;;               (vcard nil))
+       ;;   (jabber-qim-api-request-post
+       ;;    (lambda (data conn headers)
+       ;;      (ignore-errors
+       ;;        (setq vcard
+       ;;              (nth 0 (cdr (assoc 'data data))))
+       ;;        )
+       ;;      (apply-partially #'nofify latch))
+       ;;    "getmucvcard"
+       ;;    (json-encode (vector `((:muc_name . ,(jabber-jid-user muc-jid))
+       ;;                           (:version . 0))))
+       ;;    'application/json)
+       ;;   (wait latch 0.2)
+       ;;   (if (null vcard)
+       ;;       `((SN . ,(jabber-jid-user muc-jid))
+       ;;         (MN . ,(jabber-jid-user muc-jid)))
+       ;;     (progn
+       ;;       (puthash (jabber-jid-user muc-jid) vcard *jabber-qim-muc-vcard-cache*)
+       ;;       vcard)))
+       )))
 
 (defun jabber-qim-muc-send-screenshot (jc group)
   (interactive
