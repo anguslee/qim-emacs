@@ -8,6 +8,8 @@
 (defvar *jabber-qim-file-server*
   "https://qtalk.corp.qunar.com")
 
+(defvar *jabber-qim-file-service-version* "v2")
+
 (add-to-list 'web-json-expected-mimetypes-list
              "text/json")
 

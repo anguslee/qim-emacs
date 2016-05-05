@@ -240,7 +240,9 @@
    (last
     (split-string (find-if
                    #'(lambda (param)
-                       (string-prefix-p "file=" param))
+                       (or
+                        (string-prefix-p "name=" param)
+                        (string-prefix-p "file=" param)))
                    (split-string
                     (cadr (split-string
                            img-value
@@ -421,26 +423,37 @@
            (jabber-qim-interactive-send-argument-list "To chat: ")))
   (if (<= (nth 7 (file-attributes filename))
           jabber-qim-max-send-file-size)
-      (let ((file-buffer (find-file-noselect filename t)))
+      (let* ((file-buffer (find-file-noselect filename t))
+             (file-hash-code (secure-hash 'md5 file-buffer))
+             (image
+              (ignore-errors
+                (create-image filename)))
+             (file-type (if image
+                            "img"
+                          "file"))
+             (connection-state (plist-get jc
+                                          :state-data)))
         (web-http-post
          #'(lambda (httpc headers body)
-             (let ((jabber-group jid)
-                   (jabber-chatting-with jid)
-                   (image (ignore-errors
-                            (create-image filename)))
-                   (msg-id (jabber-message-uuid)))
+             (let* ((jabber-group jid)
+                    (jabber-chatting-with jid)
+                    (msg-id (jabber-message-uuid))
+                    (response (ignore-errors
+                                (json-read-from-string body)))
+                    (response-ret (cdr (assoc 'ret response)))
+                    (response-file-url (cdr (assoc 'data response))))
                (when chat-buffer
                  (switch-to-buffer chat-buffer))
                (funcall send-function jc
                         (if image
                             (let ((size (image-size image t)))
                               (format "[obj type=\"image\" value=\"%s&msgid=%s\" width=%s height=%s]"
-                                      (string-trim (url-unhex-string body))
+                                      (string-trim (url-filename (url-generic-parse-url response-file-url)))
                                       msg-id
                                       (round (car size))
                                       (round (cdr size))))
                           (json-encode `((:HttpUrl . ,(format "%s&msgid=%s"
-                                                              (string-trim (url-unhex-string body))
+                                                              (string-trim (url-filename (url-generic-parse-url response-file-url)))
                                                               msg-id))
                                          (:FileName . ,(file-name-nondirectory filename))
                                          (:FILEID . ,(jabber-message-uuid))
@@ -451,7 +464,17 @@
                             jabber-qim-msg-type-default
                           jabber-qim-msg-type-file)
                         msg-id)))
-         :url (format "%s/cgi-bin/file_upload.pl" *jabber-qim-file-server*)
+         :url (format "%s/file/%s/upload/%s?k=%s&u=%s&key=%s&name=%s&size=%s"
+                      *jabber-qim-file-server*
+                      *jabber-qim-file-service-version*
+                      file-type
+                      (plist-get connection-state
+                                 :qim-auth-key)
+                      (plist-get connection-state
+                                 :username)
+                      file-hash-code
+                      (url-encode-url (file-name-nondirectory filename))
+                      (nth 7 (file-attributes filename)))
          :mime-type 'multipart/form-data
          :data `(("file" . ,file-buffer)))
         (kill-buffer file-buffer))))
