@@ -1219,8 +1219,8 @@ Return nil if X-MUC is nil."
      ((or (string= type "unavailable") (string= type "error"))
       ;; error from room itself? or are we leaving?
       (if (or (null nickname)
-	      (member "110" status-codes)
-	      (string= nickname our-nickname))
+              ; (member "110" status-codes)
+              (string= nickname our-nickname))
 	  ;; Assume that an error means that we were thrown out of the
 	  ;; room...
 	  (let* ((leavingp t)
