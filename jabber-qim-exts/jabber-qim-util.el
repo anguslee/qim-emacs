@@ -16,8 +16,11 @@
 ;;;###autoload (autoload 'jabber-qim-muc-vcard-group-display-name "jabber-qim-extension" "Return group display name" t)
 (defun jabber-qim-muc-vcard-group-display-name (vcard)
   "Return group display name"
-  (decode-coding-string (cdr (assoc 'SN vcard))
-                        'utf-8-emacs-unix))
+  (let ((sn-val (decode-coding-string (cdr (assoc 'SN vcard))
+                                      'utf-8-emacs-unix)))
+    (if (> (length sn-val) 0)
+        sn-val
+      (jabber-qim-muc-vcard-group-jid vcard))))
 
 (defun jabber-qim-muc-vcard-group-display-name-update (vcard new-name)
   "Set new display name"
