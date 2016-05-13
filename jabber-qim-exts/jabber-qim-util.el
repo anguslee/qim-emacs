@@ -92,8 +92,10 @@
       (when user-vcard
         (jabber-qim-user-vcard-name user-vcard)))))
 
-(defun jabber-qim-readmark-message-p (message)
-  (string= "readmark" (jabber-xml-get-attribute message 'type)))
+(defun jabber-qim-control-message-p (message)
+  (or
+   (string= "readmark" (jabber-xml-get-attribute message 'type))
+   (string= "revoke" (jabber-xml-get-attribute message 'type))))
 
 (defun secure-hash-file (file algorithm)
   (when (file-exists-p file)

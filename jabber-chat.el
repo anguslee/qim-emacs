@@ -304,7 +304,7 @@ This function is idempotent."
   ;; For now, everything that is not a public MUC message is
   ;; potentially a 1to1 chat message.
   (when (not (or (jabber-muc-message-p xml-data)
-                 (jabber-qim-readmark-message-p xml-data)))
+                 (jabber-qim-control-message-p xml-data)))
     ;; Note that we handle private MUC messages here.
     (let ((from (jabber-xml-get-attribute xml-data 'from))
 	  (error-p (jabber-xml-get-children xml-data 'error))
