@@ -13,10 +13,13 @@
 (add-to-list 'web-json-expected-mimetypes-list
              "text/json")
 
-(defun jabber-qim-api-request-post (callback command data mime-type)
+(defun jabber-qim-api-request-post (callback command data mime-type &optional auth-info)
   (web-json-post 
    callback
-   :url (format "%s/%s" *jabber-qim-api-server* command)
+   :url (format "%s/%s?u=%s&k=%s" *jabber-qim-api-server*
+                command
+                (or (cdr (assoc :u auth-info)) "")
+                (or (cdr (assoc :k auth-info)) ""))
    :data data
    :mime-type mime-type
    :json-object-type 'alist

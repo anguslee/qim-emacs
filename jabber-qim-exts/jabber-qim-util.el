@@ -2,9 +2,11 @@
 (require 'jabber-util)
 
 (defun jabber-qim-muc-jid-p (muc-jid)
-  (string= (format "%s.%s" *jabber-qim-muc-sub-hostname*
-                   *jabber-qim-hostname*)
-           (jabber-jid-server muc-jid)))
+  ;; (string= (format "%s.%s" *jabber-qim-muc-sub-hostname*
+  ;;                  *jabber-qim-hostname*)
+  ;;          (jabber-jid-server muc-jid))
+  (string-prefix-p (format "%s." *jabber-qim-muc-sub-hostname*)
+                   (jabber-jid-server muc-jid)))
 
 
 ;;;###autoload (autoload 'jabber-qim-muc-vcard-group-jid "jabber-qim-extension" "Return group jid" t)
@@ -28,6 +30,12 @@
     (setcdr (assoc 'SN
                    vcard)
             new-name)))
+
+(defun jabber-qim-jid-domain (jid)
+  (if (jabber-qim-muc-jid-p jid)
+      (cadr (split-string (jabber-jid-server jid)
+                          "[.]" t))
+    (jabber-jid-server jid)))
 
 
 ;;;###autoload (autoload 'jabber-qim-muc-vcard-group-topic "jabber-qim-extension" "Return group topic" t)
@@ -104,5 +112,12 @@
         (insert-file-contents file)
         (secure-hash algorithm (current-buffer))))))
 
+(defun jabber-qim-api-connection-auth-info (jc)
+  (let ((connection-state (plist-get jc
+                                     :state-data)))
+    `((:u . ,(plist-get connection-state
+                        :username))
+      (:k . ,(plist-get connection-state
+                        :qim-auth-key)))))
 
 (provide 'jabber-qim-util)
