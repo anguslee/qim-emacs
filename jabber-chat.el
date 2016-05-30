@@ -51,6 +51,8 @@ with):
 	   (jabber-propertize " "
 			      'display (get buddy 'avatar)))))
     (:eval (jabber-jid-displayname jabber-chatting-with))
+    "\t" (format "DEPT: %s"(jabber-qim-user-vcard-position (gethash jabber-chatting-with
+                                                        *jabber-qim-user-vcard-cache*)))
     "\t" (:eval (let ((buddy (jabber-jid-symbol jabber-chatting-with)))
 		  (propertize 
 		   (or
