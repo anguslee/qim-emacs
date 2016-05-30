@@ -12,14 +12,16 @@
 ;;;###autoload (autoload 'jabber-qim-muc-vcard-group-jid "jabber-qim-extension" "Return group jid" t)
 (defun jabber-qim-muc-vcard-group-jid (vcard)
   "Return group jid"
-  (decode-coding-string (cdr (assoc 'MN vcard))
-                        'utf-8-emacs-unix))
+  (ignore-errors
+    (decode-coding-string (cdr (assoc 'MN vcard))
+                         'utf-8-emacs-unix)))
 
 ;;;###autoload (autoload 'jabber-qim-muc-vcard-group-display-name "jabber-qim-extension" "Return group display name" t)
 (defun jabber-qim-muc-vcard-group-display-name (vcard)
   "Return group display name"
-  (let ((sn-val (decode-coding-string (cdr (assoc 'SN vcard))
-                                      'utf-8-emacs-unix)))
+  (let ((sn-val (ignore-errors
+                  (decode-coding-string (cdr (assoc 'SN vcard))
+                                       'utf-8-emacs-unix))))
     (if (> (length sn-val) 0)
         sn-val
       (jabber-qim-muc-vcard-group-jid vcard))))

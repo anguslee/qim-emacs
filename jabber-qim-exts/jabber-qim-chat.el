@@ -36,7 +36,8 @@
                                       (jabber-qim-user-vcard-jid vcard)))) data))
    "getusers"
    "u="
-   'application/json))
+   'application/json
+   (jabber-qim-api-connection-auth-info jc)))
 
 
 ;; extension functions
@@ -402,6 +403,22 @@
       (:md5 . ,(cdr (assoc 'FILEMD5 file-desc))))
     ))
 
+(defconst jabber-qim-msg-type-muc-notify "15"
+  "Message is a groupchat notify")
+
+(defconst jabber-qim-msg-type-redpack (format "%s" (lsh 1 9))
+  "Message is a red pack")
+
+(defconst jabber-qim-msg-type-redpack-info (format "%s" (1+ (lsh 1 9)))
+  "Message is a red pack info")
+
+(defconst jabber-qim-msg-type-aa (format "%s" (lsh 1 10))
+  "Message is a aa")
+
+(defconst jabber-qim-msg-type-aa-info (format "%s" (1+ (lsh 1 10)))
+  "Message is a aa info")
+
+
 (defconst jabber-qim-msg-type-file "5"
   "Message is a file")
 
@@ -640,7 +657,8 @@
      "setmucvcard"
      (json-encode (vector `((:muc_name . ,(jabber-jid-user muc-jid))
                             (:nick . ,groupchat-name))))
-     'application/json)))
+     'application/json
+     (jabber-qim-api-connection-auth-info jc))))
 
 (define-key jabber-global-keymap "\C-g" 'jabber-qim-chat-start-groupchat)
 

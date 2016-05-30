@@ -1136,14 +1136,13 @@ Return nil if X-MUC is nil."
 		   :muc-local)
 		  (t :muc-foreign)))
 	   (body-text (car (jabber-xml-node-children
-			   (car (jabber-xml-get-children
-				 xml-data 'body)))))
-
+                        (car (jabber-xml-get-children
+                              xml-data 'body)))))
+       (msg-type (jabber-qim-message-type xml-data))
 	   (printers (append jabber-muc-printers jabber-chat-printers)))
       (if (or (assoc group *jabber-active-groupchats*)
               (jabber-muc-invite-message-p xml-data))
           (with-current-buffer (jabber-muc-create-buffer jc group)
-            ; (jabber-muc-snarf-topic xml-data)
             ;; Call alert hooks only when something is output
             (when (or error-p
                       (run-hook-with-args-until-success 'printers xml-data type :printp))
@@ -1164,11 +1163,15 @@ Return nil if X-MUC is nil."
                                        (numberp (string-match
                                                  "@all"
                                                  body-text)))))) ; Not being @'ed
-                  (dolist (hook '(jabber-muc-hooks jabber-alert-muc-hooks))
-                    (run-hook-with-args hook
-                                        nick group (current-buffer) body-text
-                                        (funcall jabber-alert-muc-function
-                                                 nick group (current-buffer) body-text))))))))
+                  (unless (find msg-type `(,jabber-qim-msg-type-aa-info
+                                           ,jabber-qim-msg-type-muc-notify
+                                           ,jabber-qim-msg-type-redpack-info)
+                                :test #'equal)
+                    (dolist (hook '(jabber-muc-hooks jabber-alert-muc-hooks))
+                      (run-hook-with-args hook
+                                          nick group (current-buffer) body-text
+                                          (funcall jabber-alert-muc-function
+                                                   nick group (current-buffer) body-text)))))))))
       )))
 
 (defun jabber-muc-process-presence (jc presence)

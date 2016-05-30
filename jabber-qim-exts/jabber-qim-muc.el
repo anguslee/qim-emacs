@@ -30,7 +30,8 @@
 (defun jabber-qim-session-muc-vcards ()
   (let ((ret '()))
     (maphash #'(lambda (key value)
-                 (add-to-list 'ret value))
+                 (when value
+                     (add-to-list 'ret value)))
              *jabber-qim-muc-vcard-cache*)
     ret))
 
@@ -109,7 +110,8 @@
                                       `((:muc_name . ,(jabber-jid-user muc-jid))
                                         (:version . 0))))
                                 (mapcar #'cadr (cddar (jabber-xml-get-children xml-data 'query)))))
-                       'application/json))
+                       'application/json
+                       (jabber-qim-api-connection-auth-info jc)))
                   nil
                   #'(lambda (jc xml-data closure-data)
                       (message "%s" closure-data))
@@ -131,7 +133,8 @@
    "setmucvcard"
    (json-encode (vector `((:muc_name . ,(jabber-jid-user muc-jid))
                           (:title . ,topic))))
-   'application/json))
+   'application/json
+   (jabber-qim-api-connection-auth-info jc)))
 
 
 ;;;###autoload (autoload 'jabber-qim-muc-join "jabber-qim-extension" "Join a qim MUC chatroom" t)
@@ -155,38 +158,37 @@
              muc-name))
          t))
   (if (jabber-qim-muc-jid-p muc-jid)
-      (let ((api-auth-info (jabber-qim-api-connection-auth-info jc)))
-        (jabber-qim-api-request-post
-         #'(lambda (data conn headers)
-             (unless (gethash (jabber-jid-user muc-jid)
-                              *jabber-qim-muc-vcard-cache*)
-               (puthash (jabber-jid-user muc-jid)
-                        (if (and (equal "200" (gethash 'status-code headers))
-                                 (ignore-errors
-                                   (nth 0 (cdr (assoc 'data data)))))
-                            (nth 0
-                                 (cdr (assoc 'mucs
-                                             (nth 0 (cdr (assoc 'data data))))))
-                          `((SN . ,(jabber-jid-user muc-jid))
-                            (MN . ,(jabber-jid-user muc-jid))
-                            (MT . "")))
-                        *jabber-qim-muc-vcard-cache*))
-             (jabber-muc-join jc
-                              muc-jid
-                              (jabber-muc-read-my-nickname jc muc-jid t)
-                              popup)
-             (with-current-buffer (jabber-muc-create-buffer jc muc-jid)
-               (setq jabber-muc-topic (jabber-qim-muc-vcard-group-topic
-                                       (gethash (jabber-jid-user muc-jid)
-                                                *jabber-qim-muc-vcard-cache*)))))
-         "domain/get_muc_vcard"
-         (json-encode (vector
-                       `((:domain . ,(jabber-qim-jid-domain muc-jid))
-                         (:mucs .
-                                ,(vector `((:muc_name . ,(jabber-jid-user muc-jid))
-                                           (:version . 0)))))))
-         'application/json
-         api-auth-info))
+      (jabber-qim-api-request-post
+       #'(lambda (data conn headers)
+           (unless (gethash (jabber-jid-user muc-jid)
+                            *jabber-qim-muc-vcard-cache*)
+             (puthash (jabber-jid-user muc-jid)
+                      (if (and (equal "200" (gethash 'status-code headers))
+                               (ignore-errors
+                                 (nth 0 (cdr (assoc 'data data)))))
+                          (nth 0
+                               (cdr (assoc 'mucs
+                                           (nth 0 (cdr (assoc 'data data))))))
+                        `((SN . ,(jabber-jid-user muc-jid))
+                          (MN . ,(jabber-jid-user muc-jid))
+                          (MT . "")))
+                      *jabber-qim-muc-vcard-cache*))
+           (jabber-muc-join jc
+                            muc-jid
+                            (jabber-muc-read-my-nickname jc muc-jid t)
+                            popup)
+           (with-current-buffer (jabber-muc-create-buffer jc muc-jid)
+             (setq jabber-muc-topic (jabber-qim-muc-vcard-group-topic
+                                     (gethash (jabber-jid-user muc-jid)
+                                              *jabber-qim-muc-vcard-cache*)))))
+       "domain/get_muc_vcard"
+       (json-encode (vector
+                     `((:domain . ,(jabber-qim-jid-domain muc-jid))
+                       (:mucs .
+                              ,(vector `((:muc_name . ,(jabber-jid-user muc-jid))
+                                         (:version . 0)))))))
+       'application/json
+       (jabber-qim-api-connection-auth-info jc))
     ;; Fallback
     (jabber-muc-join jc muc-jid
                      (jabber-muc-read-my-nickname jc muc-jid)
