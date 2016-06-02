@@ -46,21 +46,22 @@ with):
 
 (defcustom jabber-chat-header-line-format
   '("" (jabber-chat-buffer-show-avatar
-	(:eval 
-	 (let ((buddy (jabber-jid-symbol jabber-chatting-with)))
-	   (jabber-propertize " "
-			      'display (get buddy 'avatar)))))
+        (:eval 
+         (let ((buddy (jabber-jid-symbol jabber-chatting-with)))
+           (jabber-propertize " "
+                              'display (get buddy 'avatar)))))
     (:eval (jabber-jid-displayname jabber-chatting-with))
-    "\t" (format "DEPT: %s"(jabber-qim-user-vcard-position (gethash jabber-chatting-with
-                                                        *jabber-qim-user-vcard-cache*)))
+    "\t" (:eval (format "DEPT: %s"
+                        (jabber-qim-user-vcard-position (gethash jabber-chatting-with
+                                                                 *jabber-qim-user-vcard-cache*))))
     "\t" (:eval (let ((buddy (jabber-jid-symbol jabber-chatting-with)))
-		  (propertize 
-		   (or
-		    (cdr (assoc (get buddy 'show) jabber-presence-strings))
-		    (get buddy 'show))
-		   'face
-		   (or (cdr (assoc (get buddy 'show) jabber-presence-faces))
-		       'jabber-roster-user-online))))
+                  (propertize 
+                   (or
+                    (cdr (assoc (get buddy 'show) jabber-presence-strings))
+                    (get buddy 'show))
+                   'face
+                   (or (cdr (assoc (get buddy 'show) jabber-presence-faces))
+                       'jabber-roster-user-online))))
     "\t" (:eval (jabber-fix-status (get (jabber-jid-symbol jabber-chatting-with) 'status)))
     "\t" jabber-events-message		;see jabber-events.el
     "\t" jabber-chatstates-message)		;see jabber-chatstates.el
