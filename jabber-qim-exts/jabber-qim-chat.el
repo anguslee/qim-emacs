@@ -356,23 +356,27 @@
 (defun jabber-qim-wget-image (url-path &optional image-size uid)
   (let ((image-file (gethash url-path *jabber-qim-image-file-cache*)))
     (unless image-file
-      (let ((image-download-path (format "%s/%s"
+      (let* ((image-download-path (format "%s/%s"
                                          (jabber-qim-local-images-cache-dir)
-                                         (jabber-qim-parse-image-filename url-path))))
+                                         (jabber-qim-parse-image-filename url-path)))
+             (image-url-obj (url-generic-parse-url url-path))
+             (image-url (if (url-host image-url-obj)
+                            url-path
+                          (format "%s/%s" *jabber-qim-file-server* url-path))))
         (ignore-errors
           (call-process (executable-find "wget") nil nil nil
                         "-T" "1.0"
                         "-O" image-download-path
                         (if image-size
-                            (format "%s/%s&w=%s&h=%s&uid=%s"
-                                    *jabber-qim-file-server* url-path
+                            (format "%s&w=%s&h=%s&uid=%s"
+                                    image-url
                                     (car image-size)
                                     (cdr image-size)
                                     (url-hexify-string
                                      (or uid "")))
-                          (format "%s/%s&uid=%s" *jabber-qim-file-server*
-                                  url-path (url-hexify-string
-                                            (or uid ""))))))
+                          (format "%s&uid=%s" image-url
+                                  (url-hexify-string
+                                   (or uid ""))))))
         (let ((image-file-size (nth 7 (file-attributes image-download-path))))
           (when (and image-file-size
                      (> image-file-size 0))

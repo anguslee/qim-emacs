@@ -848,7 +848,9 @@ group, else it is a JID."
                              (group (nth 0 context))
                              (jid (nth 1 context))
                              (reason (nth 2 context)))
-                        (when (string-equal status "online")
+                        (when (or (string-equal status "online")
+                                  (not (string-equal (jabber-qim-jid-domain jid)
+                                                     (jabber-qim-jid-domain group))))
                           (jabber-send-sexp
                            jc
                            `(message ((to . ,group))
