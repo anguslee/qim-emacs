@@ -1061,7 +1061,12 @@ Return nil if X-MUC is nil."
 
 (defun jabber-muc-print-prompt (xml-data &optional local dont-print-nick-p)
   "Print MUC prompt for message in XML-DATA."
-  (let ((nick (jabber-jid-resource (jabber-xml-get-attribute xml-data 'from)))
+  (let ((nick (or
+               (jabber-qim-user-vcard-name (gethash (format "%s@%s"
+                                                            (jabber-jid-resource (jabber-xml-get-attribute xml-data 'from))
+                                                            *jabber-qim-hostname*)
+                                                    *jabber-qim-user-vcard-cache*))
+               (jabber-jid-resource (jabber-xml-get-attribute xml-data 'from))))
 	(timestamp (jabber-message-timestamp xml-data)))
     (if (stringp nick)
 	(insert (jabber-propertize
@@ -1130,7 +1135,12 @@ Return nil if X-MUC is nil."
   (when (jabber-muc-message-p xml-data)
     (let* ((from (jabber-xml-get-attribute xml-data 'from))
 	   (group (jabber-jid-user from))
-	   (nick (jabber-jid-resource from))
+	   (nick (or
+              (jabber-qim-user-vcard-name (gethash (format "%s@%s"
+                                                           (jabber-jid-resource from)
+                                                           *jabber-qim-hostname*)
+                                                   *jabber-qim-user-vcard-cache*))
+              (jabber-jid-resource from)))
 	   (error-p (jabber-xml-get-children xml-data 'error))
 	   (type (cond 
 		  (error-p :muc-error)
