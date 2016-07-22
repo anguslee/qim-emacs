@@ -57,21 +57,24 @@
 ;;;###autoload (autoload 'jabber-qim-user-vcard-jid "jabber-qim-extension" "Return user jid" t)
 (defun jabber-qim-user-vcard-jid (vcard)
   "Return user jid"
-  (format "%s@%s" (decode-coding-string (cdr (assoc 'U vcard))
-                                        'utf-8-emacs-unix)
-          *jabber-qim-hostname*))
+  (and (cdr (assoc 'U vcard))
+       (format "%s@%s" (decode-coding-string (cdr (assoc 'U vcard))
+                                             'utf-8-emacs-unix)
+               *jabber-qim-hostname*)))
 
 ;;;###autoload (autoload 'jabber-qim-user-vcard-name "jabber-qim-extension" "Return user name" t)
 (defun jabber-qim-user-vcard-name (vcard)
   "Return user name"
-  (decode-coding-string (cdr (assoc 'N vcard))
-                        'utf-8-emacs-unix))
+  (and (cdr (assoc 'N vcard))
+       (decode-coding-string (cdr (assoc 'N vcard))
+                             'utf-8-emacs-unix)))
 
 ;;;###autoload (autoload 'jabber-qim-user-vcard-position "jabber-qim-extension" "Return user position" t)
 (defun jabber-qim-user-vcard-position (vcard)
   "Return user position"
-  (decode-coding-string (cdr (assoc 'D vcard))
-                        'utf-8-emacs-unix))
+  (and (cdr (assoc 'D vcard))
+       (decode-coding-string (cdr (assoc 'D vcard))
+                             'utf-8-emacs-unix)))
 
 (defun jabber-qim-user-jid-by-completion (completion)
   (if (assoc-string completion

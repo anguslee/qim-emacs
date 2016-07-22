@@ -994,11 +994,11 @@ include groupchat invites."
   ;; room@server/nick.  Public groupchat errors have type "error" and
   ;; are from room@server.
   (let ((from (jabber-xml-get-attribute message 'from))
-	(type (jabber-xml-get-attribute message 'type)))
+        (type (jabber-xml-get-attribute message 'type)))
     (or 
      (string= type "groupchat")
      (and (string= type "error")
-	  (gethash (jabber-jid-symbol from) jabber-pending-groupchats))
+          (gethash (jabber-jid-symbol from) jabber-pending-groupchats))
      (jabber-xml-path message '(("http://jabber.org/protocol/muc#user" . "x") invite)))))
 
 ;;;###autoload
@@ -1134,24 +1134,24 @@ Return nil if X-MUC is nil."
   "If XML-DATA is a groupchat message, handle it as such."
   (when (jabber-muc-message-p xml-data)
     (let* ((from (jabber-xml-get-attribute xml-data 'from))
-	   (group (jabber-jid-user from))
-	   (nick (or
-              (jabber-qim-user-vcard-name (gethash (format "%s@%s"
-                                                           (jabber-jid-resource from)
-                                                           *jabber-qim-hostname*)
-                                                   *jabber-qim-user-vcard-cache*))
-              (jabber-jid-resource from)))
-	   (error-p (jabber-xml-get-children xml-data 'error))
-	   (type (cond 
-		  (error-p :muc-error)
-		  ((string= nick (cdr (assoc group *jabber-active-groupchats*)))
-		   :muc-local)
-		  (t :muc-foreign)))
-	   (body-text (car (jabber-xml-node-children
-                        (car (jabber-xml-get-children
-                              xml-data 'body)))))
-       (msg-type (jabber-qim-message-type xml-data))
-	   (printers (append jabber-muc-printers jabber-chat-printers)))
+           (group (jabber-jid-user from))
+           (nick (or
+                  (jabber-qim-user-vcard-name (gethash (format "%s@%s"
+                                                               (jabber-jid-resource from)
+                                                               *jabber-qim-hostname*)
+                                                       *jabber-qim-user-vcard-cache*))
+                  (jabber-jid-resource from)))
+           (error-p (jabber-xml-get-children xml-data 'error))
+           (type (cond 
+                  (error-p :muc-error)
+                  ((string= nick (cdr (assoc group *jabber-active-groupchats*)))
+                   :muc-local)
+                  (t :muc-foreign)))
+           (body-text (car (jabber-xml-node-children
+                            (car (jabber-xml-get-children
+                                  xml-data 'body)))))
+           (msg-type (jabber-qim-message-type xml-data))
+           (printers (append jabber-muc-printers jabber-chat-printers)))
       (if (or (assoc group *jabber-active-groupchats*)
               (jabber-muc-invite-message-p xml-data))
           (with-current-buffer (jabber-muc-create-buffer jc group)
