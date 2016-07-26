@@ -102,7 +102,7 @@ configure a Google Talk account like this:
   :type 'string
   :group 'jabber)
 
-(defcustom jabber-default-priority 10
+(defcustom jabber-default-priority 5
   "default priority"
   :type 'integer
   :group 'jabber)
