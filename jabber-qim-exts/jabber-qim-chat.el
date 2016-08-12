@@ -192,11 +192,10 @@
                                                                file-name))
                                             (file-md5 (cdr (assoc 'FILEMD5
                                                                   (button-get button :file-desc))))
-                                            (url (format "%s/%s&uid=%s"
-                                                         *jabber-qim-file-server*
-                                                         (cdr (assoc 'HttpUrl
-                                                                     (button-get button :file-desc)))
-                                                         (url-hexify-string (button-get button :uid)))))
+                                            (url (let ((url-obj (url-generic-parse-url (cdr (assoc 'HttpUrl (button-get button :file-desc))))))
+                                                   (if (url-host url-obj)
+                                                       (cdr (assoc 'HttpUrl (button-get button :file-desc)))
+                                                     (format "%s/%s" *jabber-qim-file-server* (cdr (assoc 'HttpUrl (button-get button :file-desc))))))))
                                (if (and
                                     (file-exists-p file-path)
                                     (string= file-md5 (secure-hash-file file-path 'md5)))
@@ -243,7 +242,8 @@
                    #'(lambda (param)
                        (or
                         (string-prefix-p "name=" param)
-                        (string-prefix-p "file=" param)))
+                        (string-prefix-p "file=" param)
+                        (string-prefix-p "filename=" param)))
                    (split-string
                     (cadr (split-string
                            img-value
@@ -392,7 +392,10 @@
   (lexical-let ((file-path (format "%s/%s"
                            (jabber-qim-local-received-files-cache-dir)
                            (cdr (assoc 'FileName file-desc))))
-        (url (format "%s/%s" *jabber-qim-file-server* (cdr (assoc 'HttpUrl file-desc)))))
+                (url (let ((url-obj (url-generic-parse-url (cdr (assoc 'HttpUrl file-desc)))))
+                       (if (url-host url-obj)
+                           (cdr (assoc 'HttpUrl file-desc))
+                         (format "%s/%s" *jabber-qim-file-server* (cdr (assoc 'HttpUrl file-desc)))))))
     (web-http-get
      #'(lambda (httpc header body)
          (let ((coding-system-for-write 'binary))
