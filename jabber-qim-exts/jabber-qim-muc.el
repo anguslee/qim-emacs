@@ -205,7 +205,6 @@
             (group (jabber-xml-get-attribute xml-data 'from)))
         (when (and invitation
                    (jabber-qim-muc-jid-p group))
-          (message "muc joining: %s" xml-data)
           (jabber-qim-muc-join jabber-buffer-connection group)
           (return t))))))
 

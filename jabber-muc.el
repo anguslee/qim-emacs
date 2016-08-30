@@ -1326,7 +1326,9 @@ Return nil if X-MUC is nil."
 	(let ((whichgroup (assoc group *jabber-active-groupchats*)))
 	  (if whichgroup
 	      (setcdr whichgroup nickname)
-	    (add-to-list '*jabber-active-groupchats* (cons group nickname))))
+	    (progn
+          (jabber-qim-muc-join jc group)
+          (add-to-list '*jabber-active-groupchats* (cons group nickname)))))
 	;; The server may have changed our nick.  Record the new one.
 	(puthash symbol nickname jabber-pending-groupchats))
 
