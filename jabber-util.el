@@ -439,6 +439,7 @@ The query child is often but not always <query/>."
   "Given a <message/> element, return its timestamp, or nil if none."
   (jabber-x-delay
    (or
+    (jabber-xml-path xml-data '(("jabber:stime:delay" . "stime")))
     (jabber-xml-path xml-data '(("urn:xmpp:delay" . "delay")))
     (jabber-xml-path xml-data '(("jabber:x:delay" . "x"))))))
 
@@ -449,16 +450,21 @@ a <x/> tag in namespace jabber:x:delay (XEP-0091).
 Return nil if no such data available."
   (cond
    ((and (eq (jabber-xml-node-name xml-data) 'x)
-	 (string= (jabber-xml-get-attribute xml-data 'xmlns) "jabber:x:delay"))
+         (string= (jabber-xml-get-attribute xml-data 'xmlns) "jabber:x:delay"))
     (let ((stamp (jabber-xml-get-attribute xml-data 'stamp)))
       (if (and (stringp stamp)
-	       (= (length stamp) 17))
-	  (jabber-parse-legacy-time stamp))))
+               (= (length stamp) 17))
+          (jabber-parse-legacy-time stamp))))
    ((and (eq (jabber-xml-node-name xml-data) 'delay)
-	 (string= (jabber-xml-get-attribute xml-data 'xmlns) "urn:xmpp:delay"))
+         (string= (jabber-xml-get-attribute xml-data 'xmlns) "urn:xmpp:delay"))
     (let ((stamp (jabber-xml-get-attribute xml-data 'stamp)))
       (when (stringp stamp)
-	(jabber-parse-time stamp))))))
+        (jabber-parse-time stamp))))
+   ((and (eq (jabber-xml-node-name xml-data) 'stime)
+         (string= (jabber-xml-get-attribute xml-data 'xmlns) "jabber:stime:delay"))
+    (let ((stamp (jabber-xml-get-attribute xml-data 'stamp)))
+      (when (stringp stamp)
+        (jabber-parse-legacy-time stamp))))))
       
 (defun jabber-parse-legacy-time (timestamp)
   "Parse timestamp in ccyymmddThh:mm:ss format (UTC) and return as internal time value."
