@@ -236,19 +236,27 @@
 
 
 (defun jabber-qim-parse-image-filename (img-value)
-  (car
-   (last
-    (split-string (find-if
-                   #'(lambda (param)
-                       (or
-                        (string-prefix-p "name=" param)
-                        (string-prefix-p "file=" param)
-                        (string-prefix-p "filename=" param)))
-                   (split-string
-                    (cadr (split-string
-                           img-value
-                           "[?]"))
-                    "&")) "/"))))
+  (or
+   (ignore-errors
+     (car
+      (last
+       (split-string (find-if
+                      #'(lambda (param)
+                          (or
+                           (string-prefix-p "name=" param)
+                           (string-prefix-p "file=" param)
+                           (string-prefix-p "filename=" param)))
+                      (split-string
+                       (cadr (split-string
+                              img-value
+                              "[?]"))
+                       "&")) "/"))))
+   (car
+    (last (split-string
+           (car (url-path-and-query
+                 (url-generic-parse-url img-value)))
+           "/")))))
+
 
 (defun jabber-qim-parse-image-type (img-value)
   (let ((ext
@@ -368,13 +376,22 @@
                         "-T" "1.0"
                         "-O" image-download-path
                         (if image-size
-                            (format "%s&w=%s&h=%s&uid=%s"
+                            (format (concat "%s"
+                                            (if (find ?? image-url)
+                                                ""
+                                              "?")
+                                            "&w=%s&h=%s&uid=%s")
                                     image-url
                                     (car image-size)
                                     (cdr image-size)
                                     (url-hexify-string
                                      (or uid "")))
-                          (format "%s&uid=%s" image-url
+                          (format (concat "%s"
+                                          (if (find ?? image-url)
+                                                ""
+                                              "?")
+                                          "&uid=%s")
+                                  image-url
                                   (url-hexify-string
                                    (or uid ""))))))
         (let ((image-file-size (nth 7 (file-attributes image-download-path))))
