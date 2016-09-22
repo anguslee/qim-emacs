@@ -428,7 +428,11 @@ JID; only provide completion as a guide."
 
 (defun jabber-muc-read-nickname (group prompt)
   "Read the nickname of a participant in GROUP."
-  (let ((nicknames (cdr (assoc group jabber-muc-participants))))
+  (let ((nicknames (remove-duplicates
+                    (mapcar #'jabber-jid-displayname
+                            (mapcar #'car
+                                    (cdr (assoc group jabber-muc-participants))))
+                    :test #'string-equal)))
     (unless nicknames
       (error "Unknown group: %s" group))
     (completing-read prompt nicknames nil t nil 'jabber-muc-nickname-history nil t)))
@@ -560,7 +564,7 @@ groupchat buffer."
   (interactive 
    (let ((account (jabber-read-account))
 	 (group (jabber-read-jid-completing "group: ")))
-     (list account group (jabber-muc-read-my-nickname account group) t)))
+     (list account group (jabber-muc-read-my-nickname account group t) t)))
 
   ;; If the user is already in the room, we don't need as many checks.
   (if (or (assoc group *jabber-active-groupchats*)
@@ -711,38 +715,52 @@ groupchat buffer."
   "Print names, affiliations, and roles of participants in current buffer."
   (interactive)
   (ewoc-enter-last jabber-chat-ewoc (list :notice
-					  (jabber-muc-print-names
-					   (cdr (assoc jabber-group jabber-muc-participants)))
-					  :time (current-time))))
+                                          (jabber-muc-print-names
+                                           (cdr (assoc jabber-group jabber-muc-participants)))
+                                          :time (current-time))))
 
 (defun jabber-muc-format-names (participant)
   "Format one participant name"
   (format-spec jabber-muc-print-names-format
                (list
-                (cons ?n (car participant))
-                (cons ?a (plist-get (cdr participant) 'affiliation))
-                (cons ?j (or (plist-get (cdr participant) 'jid) "")))))
+                (cons ?n (jabber-jid-displayname (car participant)))
+                (cons ?a (or (plist-get (cdr participant) 'affiliation) ""))
+                (cons ?j (or (plist-get (cdr participant) 'jid)
+                             (when (and (plist-get (cdr participant) 'domain)
+                                        (plist-get (cdr participant) 'real_jid))
+                               (format "%s@%s"
+                                       (plist-get (cdr participant) 'real_jid)
+                                       (plist-get (cdr participant) 'domain)))
+                             "")))))
 
 (defun jabber-muc-print-names (participants)
   "Format and return data in PARTICIPANTS."
-  (let ((mlist) (plist) (vlist) (nlist))
-    (mapcar (lambda (x)
-              (let ((role (plist-get (cdr x) 'role)))
-                (cond ((string= role "moderator")
-                       (add-to-list 'mlist x))
-                      ((string= role "participant")
-                       (add-to-list 'plist x))
-                      ((string= role "visitor")
-                       (add-to-list 'vlist x))
-                      ((string= role "none")
-                       (add-to-list 'nlist x)))))
-            participants)
-    (concat
-     (apply 'concat "\nModerators:\n" (mapcar 'jabber-muc-format-names mlist))
-     (apply 'concat "\nParticipants:\n" (mapcar 'jabber-muc-format-names plist))
-     (apply 'concat "\nVisitors:\n" (mapcar 'jabber-muc-format-names vlist))
-     (apply 'concat "\nNones:\n" (mapcar 'jabber-muc-format-names nlist)))
-    ))
+  (apply 'concat "\nParticipants:\n" (mapcar 'jabber-muc-format-names (remove-duplicates participants
+                                                                                         :test #'(lambda (p1 p2)
+                                                                                                   (string-equal
+                                                                                                    (jabber-jid-displayname (car p1))
+                                                                                                    (jabber-jid-displayname (car p2)))))))
+  ;; (let ((mlist) (plist) (vlist) (nlist))
+  ;;   (mapcar (lambda (x)
+  ;;             (let ((role (plist-get (cdr x) 'role)))
+  ;;               (cond ((string= role "moderator")
+  ;;                      (add-to-list 'mlist x))
+  ;;                     ((string= role "participant")
+  ;;                      (add-to-list 'plist x))
+  ;;                     ((string= role "visitor")
+  ;;                      (add-to-list 'vlist x))
+  ;;                     ((or
+  ;;                       (string= role "none")
+  ;;                       (not role))
+  ;;                      (add-to-list 'nlist x)))))
+  ;;           participants)
+  ;;   (concat
+  ;;    (apply 'concat "\nModerators:\n" (mapcar 'jabber-muc-format-names mlist))
+  ;;    (apply 'concat "\nParticipants:\n" (mapcar 'jabber-muc-format-names plist))
+  ;;    (apply 'concat "\nVisitors:\n" (mapcar 'jabber-muc-format-names vlist))
+  ;;    (apply 'concat "\nNones:\n" (mapcar 'jabber-muc-format-names nlist)))
+  ;;   )
+  )
 
 (add-to-list 'jabber-jid-muc-menu
 	     (cons "Set topic" 'jabber-qim-muc-set-topic))
@@ -1312,34 +1330,35 @@ Return nil if X-MUC is nil."
       ;; someone is entering
 
       (when (or (member "110" status-codes) (string= nickname our-nickname))
-	;; This is us.  We just succeeded in entering the room.
-	;;
-	;; The MUC server is supposed to send a 110 code whenever this
-	;; is our presence ("self-presence"), but at least one
-	;; (ejabberd's mod_irc) doesn't, so check the nickname as well.
-	;;
-	;; This check might give incorrect results if the server
-	;; changed our nickname to avoid collision with an existing
-	;; participant, but even in this case the window where we have
-	;; incorrect information should be very small, as we should be
-	;; getting our own 110+210 presence shortly.
-	(let ((whichgroup (assoc group *jabber-active-groupchats*)))
-	  (if whichgroup
-	      (setcdr whichgroup nickname)
-	    (progn
-          (jabber-qim-muc-join jc group)
-          (add-to-list '*jabber-active-groupchats* (cons group nickname)))))
-	;; The server may have changed our nick.  Record the new one.
-	(puthash symbol nickname jabber-pending-groupchats))
+        ;; This is us.  We just succeeded in entering the room.
+        ;;
+        ;; The MUC server is supposed to send a 110 code whenever this
+        ;; is our presence ("self-presence"), but at least one
+        ;; (ejabberd's mod_irc) doesn't, so check the nickname as well.
+        ;;
+        ;; This check might give incorrect results if the server
+        ;; changed our nickname to avoid collision with an existing
+        ;; participant, but even in this case the window where we have
+        ;; incorrect information should be very small, as we should be
+        ;; getting our own 110+210 presence shortly.
+        (let ((whichgroup (assoc group *jabber-active-groupchats*)))
+          (if whichgroup
+              (setcdr whichgroup nickname)
+            (progn
+              (unless (gethash group *jabber-qim-muc-vcard-cache*)
+                (jabber-qim-muc-join jc group))
+              (add-to-list '*jabber-active-groupchats* (cons group nickname)))))
+        ;; The server may have changed our nick.  Record the new one.
+        (puthash symbol nickname jabber-pending-groupchats))
 
       ;; Whoever enters, we create a buffer (if it didn't already
       ;; exist), and print a notice.  This is where autojoined MUC
       ;; rooms have buffers created for them.  We also remember some
       ;; metadata.
       (let ((old-plist (jabber-muc-participant-plist group nickname))
-	    (new-plist (jabber-muc-parse-affiliation x-muc)))
-	(jabber-muc-modify-participant group nickname new-plist)
-	(let ((report (jabber-muc-report-delta nickname old-plist new-plist
+            (new-plist (jabber-muc-parse-affiliation x-muc)))
+        (jabber-muc-modify-participant group nickname new-plist)
+        (let ((report (jabber-muc-report-delta nickname old-plist new-plist
                                              reason actor)))
 	  (when report
 	    (with-current-buffer (jabber-muc-create-buffer jc group)
