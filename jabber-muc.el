@@ -1074,8 +1074,8 @@ include groupchat invites."
 Return nil if X-MUC is nil."
   ;; XXX: parse <actor/> and <reason/> tags?  or maybe elsewhere?
   (apply 'nconc (mapcar (lambda (prop) (list (car prop) (cdr prop)))
-			(jabber-xml-node-attributes
-			 (car (jabber-xml-get-children x-muc 'item))))))
+                        (jabber-xml-node-attributes
+                         (car (jabber-xml-get-children x-muc 'item))))))
 
 (defun jabber-muc-print-prompt (xml-data &optional local dont-print-nick-p)
   "Print MUC prompt for message in XML-DATA."
@@ -1294,8 +1294,7 @@ Return nil if X-MUC is nil."
 						:muc-error
 					      :muc-notice)
 					    message
-					    :time (current-time)))))
-		(message "%s: %s" (jabber-jid-displayname group) message))))
+					    :time (current-time))))))))
 	;; or someone else?
 	(let* ((plist (jabber-muc-participant-plist group nickname))
 	       (jid (plist-get plist 'jid))
@@ -1357,7 +1356,14 @@ Return nil if X-MUC is nil."
       ;; metadata.
       (let ((old-plist (jabber-muc-participant-plist group nickname))
             (new-plist (jabber-muc-parse-affiliation x-muc)))
-        (jabber-muc-modify-participant group nickname new-plist)
+        (if (and nickname new-plist)
+            (jabber-muc-modify-participant group nickname new-plist)
+          (when (equal "http://jabber.org/protocol/muc#invite"
+                       (jabber-xml-get-attribute presence 'xmlns))
+            (let* ((invited-jid (jabber-xml-get-attribute presence 'invite_jid))
+                   (invited-nickname (jabber-jid-displayname invited-jid))
+                   (affiliation (list 'jid invited-jid)))
+              (jabber-muc-modify-participant group invited-nickname affiliation))))
         (let ((report (jabber-muc-report-delta nickname old-plist new-plist
                                              reason actor)))
 	  (when report
