@@ -170,55 +170,56 @@
 
 (defun jabber-qim-insert-file (file-desc body-text face &optional uid)
   "Insert file into chat buffer."
-  (insert "\n\n")
-  (insert (jabber-propertize
-           (format "[File Received: %s; Size: %s; MD5 Checksum: %s] "
-                   (cdr (assoc 'FileName
-                               file-desc))
-                   (cdr (assoc 'FileSize
-                               file-desc))
-                   (cdr (assoc 'FILEMD5
-                               file-desc)))
-           'face face))
-  (insert "\n")
-  (insert-button "View In Directory"
-                 :file-desc file-desc
-                 :uid (or uid "")
-                 'action #'(lambda (button)
-                             (lexical-let* ((file-name (cdr (assoc 'FileName
-                                                                   (button-get button :file-desc))))
-                                            (file-path (format "%s/%s"
-                                                               (jabber-qim-local-received-files-cache-dir)
-                                                               file-name))
-                                            (file-md5 (cdr (assoc 'FILEMD5
-                                                                  (button-get button :file-desc))))
-                                            (url (let ((url-obj (url-generic-parse-url (cdr (assoc 'HttpUrl (button-get button :file-desc))))))
-                                                   (if (url-host url-obj)
-                                                       (cdr (assoc 'HttpUrl (button-get button :file-desc)))
-                                                     (format "%s/%s" *jabber-qim-file-server* (cdr (assoc 'HttpUrl (button-get button :file-desc))))))))
-                               (if (and
-                                    (file-exists-p file-path)
-                                    (string= file-md5 (secure-hash-file file-path 'md5)))
-                                   (jabber-qim-view-file-in-directory file-path)
-                                 (web-http-get
-                                  #'(lambda (httpc header body)
-                                      (if (equal "200" (gethash 'status-code header))
-                                          (let ((coding-system-for-write 'binary))
-                                            (with-temp-file file-path
-                                              (insert body))
-                                            (message "File %s downloaded" file-name)
-                                            (jabber-qim-view-file-in-directory file-path))
-                                        (message "ERROR Downloading %s: %s %s"
-                                                 file-name
-                                                 (gethash 'status-code header)
-                                                 (gethash 'status-string header))))
-                                  :url url)))))
-  (insert "\t")
-  (insert-button "Forward File To..."
-                 :object-text body-text
-                 :msg-type jabber-qim-msg-type-file
-                 'action #'jabber-qim-forward-object-action)
-  (insert "\n"))
+  (let ((file-link (let ((url-obj (url-generic-parse-url (cdr (assoc 'HttpUrl file-desc)))))
+                     (if (url-host url-obj)
+                         (cdr (assoc 'HttpUrl file-desc))
+                       (format "%s/%s" *jabber-qim-file-server* (cdr (assoc 'HttpUrl file-desc)))))))
+    (insert "\n\n")
+    (insert (jabber-propertize
+             (format "[File Received: %s; Size: %s; Link: %s] "
+                     (cdr (assoc 'FileName
+                                 file-desc))
+                     (cdr (assoc 'FileSize
+                                 file-desc))
+                     file-link)
+             'face face))
+    (insert "\n")
+    (insert-button "View In Directory"
+                   :file-desc file-desc
+                   :file-link file-link
+                   :uid (or uid "")
+                   'action #'(lambda (button)
+                               (lexical-let* ((file-name (cdr (assoc 'FileName
+                                                                     (button-get button :file-desc))))
+                                              (file-path (format "%s/%s"
+                                                                 (jabber-qim-local-received-files-cache-dir)
+                                                                 file-name))
+                                              (file-md5 (cdr (assoc 'FILEMD5
+                                                                    (button-get button :file-desc))))
+                                              (url (button-get button :file-link)))
+                                 (if (and
+                                      (file-exists-p file-path)
+                                      (string= file-md5 (secure-hash-file file-path 'md5)))
+                                     (jabber-qim-view-file-in-directory file-path)
+                                   (web-http-get
+                                    #'(lambda (httpc header body)
+                                        (if (equal "200" (gethash 'status-code header))
+                                            (let ((coding-system-for-write 'binary))
+                                              (with-temp-file file-path
+                                                (insert body))
+                                              (message "File %s downloaded" file-name)
+                                              (jabber-qim-view-file-in-directory file-path))
+                                          (message "ERROR Downloading %s: %s %s"
+                                                   file-name
+                                                   (gethash 'status-code header)
+                                                   (gethash 'status-string header))))
+                                    :url url)))))
+    (insert "\t")
+    (insert-button "Forward File To..."
+                   :object-text body-text
+                   :msg-type jabber-qim-msg-type-file
+                   'action #'jabber-qim-forward-object-action)
+    (insert "\n")))
 
 
 (defconst jabber-qim-max-image-width 1024)
