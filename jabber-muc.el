@@ -1169,7 +1169,12 @@ Return nil if X-MUC is nil."
                             (car (jabber-xml-get-children
                                   xml-data 'body)))))
            (msg-type (jabber-qim-message-type xml-data))
+           (extend-info (jabber-xml-get-attribute
+                         (car (jabber-xml-get-children
+                               xml-data 'body))
+                         'extendInfo))
            (printers (append jabber-muc-printers jabber-chat-printers)))
+      ; (message "%s" extend-info)
       (if (or (assoc group *jabber-active-groupchats*)
               (jabber-muc-invite-message-p xml-data))
           (with-current-buffer (jabber-muc-create-buffer jc group)
@@ -1196,7 +1201,7 @@ Return nil if X-MUC is nil."
                   (unless (find msg-type `(,jabber-qim-msg-type-aa-info
                                            ,jabber-qim-msg-type-muc-notify
                                            ,jabber-qim-msg-type-redpack-info)
-                                :test #'equal)
+                                :test #'string-equal)
                     (dolist (hook '(jabber-muc-hooks jabber-alert-muc-hooks))
                       (run-hook-with-args hook
                                           nick group (current-buffer) body-text
