@@ -76,7 +76,7 @@
 
 **安装运行**：
 
-    git clone git@gitlab.corp.qunar.com:geng.li/qim-emacs.git
+    git clone http://gitlab.corp.qunar.com/geng.li/qim-emacs.git
     cd qim-emacs
     autoreconf -i
     ./configure
