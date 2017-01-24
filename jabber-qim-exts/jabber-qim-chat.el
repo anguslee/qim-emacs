@@ -434,11 +434,11 @@
 (defconst jabber-qim-msg-type-redpack (format "%s" (lsh 1 9))
   "Message is a red pack")
 
-(defconst jabber-qim-msg-type-redpack-info (format "%s" (1+ (lsh 1 9)))
-  "Message is a red pack info")
-
-(defconst jabber-qim-msg-type-aa (format "%s" (lsh 1 10))
+(defconst jabber-qim-msg-type-aa (format "%s" (1+ (lsh 1 9)))
   "Message is a aa")
+
+(defconst jabber-qim-msg-type-redpack-info (format "%s" (lsh 1 10))
+  "Message is a red pack info")
 
 (defconst jabber-qim-msg-type-aa-info (format "%s" (1+ (lsh 1 10)))
   "Message is a aa info")
