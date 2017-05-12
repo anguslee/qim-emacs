@@ -671,19 +671,27 @@
                          (list chat-with))
                        invited-members)
                *jabber-qim-muc-initial-members*))
-    (jabber-qim-api-request-post
-     (lambda (data conn headers)
-       (when (equal "200" (gethash 'status-code headers))
-         (puthash (jabber-jid-user muc-jid)
-                  `((SN . ,groupchat-name)
-                    (MN . ,(jabber-jid-user muc-jid)))
-                  *jabber-qim-muc-vcard-cache*)
-         (jabber-qim-muc-join jc muc-jid t)))
-     "setmucvcard"
-     (json-encode (vector `((:muc_name . ,(jabber-jid-user muc-jid))
-                            (:nick . ,groupchat-name))))
-     'application/json
-     (jabber-qim-api-connection-auth-info jc))))
+    (jabber-send-iq jc muc-jid
+                    "set"
+                    '(query ((xmlns . "http://jabber.org/protocol/create_muc")))
+                    (lambda (jc xml-data context)
+                      (jabber-qim-api-request-post
+                       (lambda (data conn headers)
+                         (when (equal "200" (gethash 'status-code headers))
+                           (puthash (jabber-jid-user muc-jid)
+                                    `((SN . ,groupchat-name)
+                                      (MN . ,(jabber-jid-user muc-jid)))
+                                    *jabber-qim-muc-vcard-cache*)
+                           (jabber-qim-muc-join jc muc-jid t)))
+                       "setmucvcard"
+                       (json-encode (vector `((:muc_name . ,(jabber-jid-user (cdr (assoc :muc-jid context))))
+                                              (:nick . ,(cdr (assoc :groupchat-name context))))))
+                       'application/json
+                       (jabber-qim-api-connection-auth-info jc)))
+                    `((:muc-jid . ,muc-jid)
+                      (:groupchat-name . ,groupchat-name))
+                    nil nil)
+    ))
 
 (define-key jabber-global-keymap "\C-g" 'jabber-qim-chat-start-groupchat)
 
