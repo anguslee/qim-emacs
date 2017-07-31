@@ -26,6 +26,7 @@
 (require 'jabber-muc-nick-coloring)
 (require 'jabber-util)
 (require 'jabber-qim-extension)
+(require 'json)
 
 ;; we need jabber-bookmarks for jabber-muc-autojoin (via
 ;; jabber-get-bookmarks and jabber-parse-conference-bookmark):
@@ -1169,12 +1170,7 @@ Return nil if X-MUC is nil."
                             (car (jabber-xml-get-children
                                   xml-data 'body)))))
            (msg-type (jabber-qim-message-type xml-data))
-           (extend-info (jabber-xml-get-attribute
-                         (car (jabber-xml-get-children
-                               xml-data 'body))
-                         'extendInfo))
            (printers (append jabber-muc-printers jabber-chat-printers)))
-      ; (message "%s" extend-info)
       (if (or (assoc group *jabber-active-groupchats*)
               (jabber-muc-invite-message-p xml-data))
           (with-current-buffer (jabber-muc-create-buffer jc group)
@@ -1257,49 +1253,50 @@ Return nil if X-MUC is nil."
      ((or (string= type "unavailable") (string= type "error"))
       ;; error from room itself? or are we leaving?
       (if (or (null nickname)
-              ; (member "110" status-codes)
+                                        ; (member "110" status-codes)
               (string= nickname our-nickname))
-	  ;; Assume that an error means that we were thrown out of the
-	  ;; room...
-	  (let* ((leavingp t)
-		 (message (cond
-			   ((string= type "error")
-			    (cond
-			     ;; ...except for certain cases.
-			     ((or (member "406" status-codes)
-				  (member "409" status-codes))
-			      (setq leavingp nil)
-			      (concat "Nickname change not allowed"
-				      (when error-node
-					(concat ": " (jabber-parse-error error-node)))))
-			     (t
-			      (concat "Error entering room"
-				      (when error-node
-					(concat ": " (jabber-parse-error error-node)))))))
-			   ((member "301" status-codes)
-			    (concat "You have been banned"
-				    (when actor (concat " by " actor))
-				    (when reason (concat " - '" reason "'"))))
-			   ((member "307" status-codes)
-			    (concat "You have been kicked"
-				    (when actor (concat " by " actor))
-				    (when reason (concat " - '" reason "'"))))
-			   (t
-			    "You have left the chatroom"))))
-	    (when leavingp
-	      (jabber-muc-remove-groupchat group))
-	    ;; If there is no buffer for this groupchat, don't bother
-	    ;; creating one just to tell that user left the room.
-	    (let ((buffer (get-buffer (jabber-muc-get-buffer group))))
-	      (if buffer
-		  (with-current-buffer buffer
-		    (jabber-maybe-print-rare-time
-		     (ewoc-enter-last jabber-chat-ewoc
-				      (list (if (string= type "error")
-						:muc-error
-					      :muc-notice)
-					    message
-					    :time (current-time))))))))
+          ;; Assume that an error means that we were thrown out of the
+          ;; room...
+          (let* ((leavingp t)
+                 (message (cond
+                           ((string= type "error")
+                            (cond
+                             ;; ...except for certain cases.
+                             ((or (member "406" status-codes)
+                                  (member "409" status-codes))
+                              (setq leavingp nil)
+                              (concat "Nickname change not allowed"
+                                      (when error-node
+                                        (concat ": " (jabber-parse-error error-node)))))
+                             (t
+                              (concat "Error entering room"
+                                      (when error-node
+                                        (concat ": " (jabber-parse-error error-node)))))))
+                           ((member "301" status-codes)
+                            (concat "You have been banned"
+                                    (when actor (concat " by " actor))
+                                    (when reason (concat " - '" reason "'"))))
+                           ((member "307" status-codes)
+                            (concat "You have been kicked"
+                                    (when actor (concat " by " actor))
+                                    (when reason (concat " - '" reason "'"))))
+                           (t
+                            (setq leavingp nil)
+                            "Server has closed the chatroom"))))
+            (when leavingp
+              (jabber-muc-remove-groupchat group))
+            ;; If there is no buffer for this groupchat, don't bother
+            ;; creating one just to tell that user left the room.
+            (let ((buffer (get-buffer (jabber-muc-get-buffer group))))
+              (if buffer
+                  (with-current-buffer buffer
+                    (jabber-maybe-print-rare-time
+                     (ewoc-enter-last jabber-chat-ewoc
+                                      (list (if (string= type "error")
+                                                :muc-error
+                                              :muc-notice)
+                                            message
+                                            :time (current-time))))))))
 	;; or someone else?
 	(let* ((plist (jabber-muc-participant-plist group nickname))
 	       (jid (plist-get plist 'jid))
