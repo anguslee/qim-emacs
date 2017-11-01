@@ -22,7 +22,7 @@
   '())
 
 (defun jabber-qim-users-preload (jc)
-  (jabber-qim-api-request-post
+  (jabber-qim-api-request-get
    #'(lambda (data conn headers)
        (mapcar #'(lambda (vcard)
                    (add-to-list '*jabber-qim-user-jid-cache*
@@ -35,8 +35,6 @@
                                                       (jabber-qim-user-vcard-position vcard)))
                                       (jabber-qim-user-vcard-jid vcard)))) data))
    "getusers"
-   "u="
-   'application/json
    (jabber-qim-api-connection-auth-info jc)))
 
 
@@ -449,6 +447,9 @@
 
 (defconst jabber-qim-msg-type-default "1"
   "Normal messages")
+
+(defconst jabber-qim-msg-type-common-trd-info "666"
+  "CommonTrdInfo")
 
 (defconst jabber-qim-max-send-file-size (* 10 1024 1024)
   "Max send file size set to 10MB")
