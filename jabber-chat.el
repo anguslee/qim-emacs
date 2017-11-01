@@ -590,7 +590,23 @@ If DONT-PRINT-NICK-P is true, don't include nickname."
                (jabber-xml-node-children
                 (car
                  (jabber-xml-get-children xml-data 'body)))))
-        (msg-type (jabber-qim-message-type xml-data)))
+        (msg-type (jabber-qim-message-type xml-data))
+        (extend-info
+         (let ((extend-info-node (jabber-xml-get-attribute
+                                  (car (jabber-xml-get-children
+                                        xml-data 'body))
+                                  'extendInfo)))
+           (when extend-info-node
+             (cl-remove-if-not
+              #'(lambda (x)
+                  (and
+                   (sequencep (cdr x))
+                   (> (length (cdr x))
+                      0)
+                   (find (car x)
+                         (list 'title 'desc 'linkurl))))
+              (json-read-from-string extend-info-node))))
+         ))
     (when body
       (when (eql mode :insert)
         (if (and (> (length body) 4)
@@ -621,13 +637,19 @@ If DONT-PRINT-NICK-P is true, don't include nickname."
             (if file-desc
                 (jabber-qim-insert-file file-desc body face
                                         uid)
-              (jabber-chat-print-message-body-segments
-               body
-               face
-               uid)))
+              (progn
+                (jabber-chat-print-message-body-segments
+                 body
+                 face
+                 uid)
+                (when extend-info
+                  (jabber-chat-print-message-body-segments
+                   (format "\n\n *******\n%s"
+                           extend-info)
+                   face
+                   uid)))))
           ))
       t)))
-
 
 (defun jabber-chat-print-message-body-segments (body face &optional uid)
   (let ((match-start
