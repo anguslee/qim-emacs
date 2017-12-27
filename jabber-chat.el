@@ -310,31 +310,49 @@ This function is idempotent."
                  (jabber-qim-control-message-p xml-data)))
     ;; Note that we handle private MUC messages here.
     (let ((from (jabber-xml-get-attribute xml-data 'from))
-	  (error-p (jabber-xml-get-children xml-data 'error))
-	  (body-text (car (jabber-xml-node-children
-			   (car (jabber-xml-get-children
-				 xml-data 'body))))))
+          (error-p (jabber-xml-get-children xml-data 'error))
+          (body-text (car (jabber-xml-node-children
+                           (car (jabber-xml-get-children
+                                 xml-data 'body))))))
       ;; First check if we would output anything for this stanza.
       (when (or error-p
-		(run-hook-with-args-until-success 'jabber-chat-printers xml-data :foreign :printp))
-	;; If so, create chat buffer, if necessary...
-	(with-current-buffer (if (jabber-muc-sender-p from)
-				 (jabber-muc-private-create-buffer
-				  jc
-				  (jabber-jid-user from)
-				  (jabber-jid-resource from))
-			       (jabber-chat-create-buffer jc from))
-	  ;; ...add the message to the ewoc...
-	  (let ((node
-		 (ewoc-enter-last jabber-chat-ewoc (list (if error-p :error :foreign) xml-data :time (current-time)))))
-	    (jabber-maybe-print-rare-time node))
+                (run-hook-with-args-until-success 'jabber-chat-printers xml-data :foreign :printp))
+        ;; If so, create chat buffer, if necessary...
+        (with-current-buffer (if (jabber-muc-sender-p from)
+                                 (jabber-muc-private-create-buffer
+                                  jc
+                                  (jabber-jid-user from)
+                                  (jabber-jid-resource from))
+                               (jabber-chat-create-buffer jc from))
+          ;; ...add the message to the ewoc...
+          (let ((node
+                 (ewoc-enter-last jabber-chat-ewoc (list (if error-p :error :foreign) xml-data :time (current-time)))))
+            (jabber-maybe-print-rare-time node))
 
-	  ;; ...and call alert hooks.
-	  (dolist (hook '(jabber-message-hooks jabber-alert-message-hooks))
-	    (run-hook-with-args hook
-				from (current-buffer) body-text
-				(funcall jabber-alert-message-function 
-					 from (current-buffer) body-text))))))))
+          ;; ...and call alert hooks.
+          (dolist (hook '(jabber-message-hooks jabber-alert-message-hooks))
+            (run-hook-with-args hook
+                                from (current-buffer) body-text
+                                (funcall jabber-alert-message-function 
+                                         from (current-buffer) body-text))))))))
+
+(add-to-list 'jabber-message-chain 'jabber-process-control-message)
+
+(defun jabber-process-control-message (jc xml-data)
+  (cond ((jabber-qim-revoke-message-p xml-data)
+         (let* ((sender (jabber-jid-user
+                         (jabber-xml-get-attribute xml-data 'from)))
+                (body-text (car (jabber-xml-node-children
+                                 (car (jabber-xml-get-children
+                                       xml-data 'body)))))
+                (from-id (ignore-errors
+                           (cdr (assoc 'fromId (json-read-from-string body-text))))))
+           (with-current-buffer (jabber-muc-create-buffer jc sender)
+             (jabber-maybe-print-rare-time
+              (ewoc-enter-last jabber-chat-ewoc
+                               (list :muc-notice
+                                     (format "%s revoked a message." (jabber-jid-displayname from-id))
+                                     :time (current-time)))))))))
 
 (defun jabber-chat-send (jc body &optional msg-type msg-id)
   "Send BODY through connection JC, and display it in chat buffer."
