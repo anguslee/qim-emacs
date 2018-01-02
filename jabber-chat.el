@@ -604,27 +604,31 @@ If DONT-PRINT-NICK-P is true, don't include nickname."
 
 (defun jabber-chat-normal-body (xml-data who mode)
   "Print body for received message in XML-DATA."
-  (let ((body (car
-               (jabber-xml-node-children
-                (car
-                 (jabber-xml-get-children xml-data 'body)))))
-        (msg-type (jabber-qim-message-type xml-data))
-        (extend-info
-         (let ((extend-info-node (jabber-xml-get-attribute
-                                  (car (jabber-xml-get-children
-                                        xml-data 'body))
-                                  'extendInfo)))
-           (when extend-info-node
-             (cl-remove-if-not
-              #'(lambda (x)
-                  (and
-                   (sequencep (cdr x))
-                   (> (length (cdr x))
-                      0)
-                   (find (car x)
-                         (list 'title 'desc 'linkurl))))
-              (json-read-from-string extend-info-node))))
-         ))
+  (let* ((msg-type (jabber-qim-message-type xml-data))
+         (extend-info
+          (let ((extend-info-node (jabber-xml-get-attribute
+                                   (car (jabber-xml-get-children
+                                         xml-data 'body))
+                                   'extendInfo)))
+            (when extend-info-node
+              (cl-remove-if-not
+               #'(lambda (x)
+                   (and
+                    (sequencep (cdr x))
+                    (> (length (cdr x))
+                       0)
+                    (find (car x)
+                          (list 'title 'desc 'linkurl))))
+               (json-read-from-string extend-info-node))))
+          )
+         (body (if (string-equal msg-type jabber-qim-msg-type-common-trd-info)
+                   (format "%s %s"
+                           (cdr (assoc 'title extend-info))
+                           (cdr (assoc 'linkurl extend-info)))
+                 (car
+                  (jabber-xml-node-children
+                   (car
+                    (jabber-xml-get-children xml-data 'body)))))))
     (when body
       (when (eql mode :insert)
         (if (and (> (length body) 4)
