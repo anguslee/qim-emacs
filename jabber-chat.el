@@ -311,9 +311,7 @@ This function is idempotent."
     ;; Note that we handle private MUC messages here.
     (let ((from (jabber-xml-get-attribute xml-data 'from))
           (error-p (jabber-xml-get-children xml-data 'error))
-          (body-text (car (jabber-xml-node-children
-                           (car (jabber-xml-get-children
-                                 xml-data 'body))))))
+          (body-text (jabber-qim-message-body-text xml-data)))
       ;; First check if we would output anything for this stanza.
       (when (or error-p
                 (run-hook-with-args-until-success 'jabber-chat-printers xml-data :foreign :printp))
@@ -605,30 +603,8 @@ If DONT-PRINT-NICK-P is true, don't include nickname."
 (defun jabber-chat-normal-body (xml-data who mode)
   "Print body for received message in XML-DATA."
   (let* ((msg-type (jabber-qim-message-type xml-data))
-         (extend-info
-          (let ((extend-info-node (jabber-xml-get-attribute
-                                   (car (jabber-xml-get-children
-                                         xml-data 'body))
-                                   'extendInfo)))
-            (when extend-info-node
-              (cl-remove-if-not
-               #'(lambda (x)
-                   (and
-                    (sequencep (cdr x))
-                    (> (length (cdr x))
-                       0)
-                    (find (car x)
-                          (list 'title 'desc 'linkurl))))
-               (json-read-from-string extend-info-node))))
-          )
-         (body (if (string-equal msg-type jabber-qim-msg-type-common-trd-info)
-                   (format "%s %s"
-                           (cdr (assoc 'title extend-info))
-                           (cdr (assoc 'linkurl extend-info)))
-                 (car
-                  (jabber-xml-node-children
-                   (car
-                    (jabber-xml-get-children xml-data 'body)))))))
+         (extend-info (jabber-qim-message-extend-info xml-data))
+         (body (jabber-qim-message-body-text xml-data)))
     (when body
       (when (eql mode :insert)
         (if (and (> (length body) 4)
@@ -664,13 +640,14 @@ If DONT-PRINT-NICK-P is true, don't include nickname."
                  body
                  face
                  uid)
-                (when extend-info
+                (when (and extend-info
+                           (not (string= msg-type
+                                         jabber-qim-msg-type-common-trd-info)))
                   (jabber-chat-print-message-body-segments
                    (format "\n\n *******\n%s"
                            extend-info)
                    face
-                   uid)))))
-          ))
+                   uid)))))))
       t)))
 
 (defun jabber-chat-print-message-body-segments (body face &optional uid)

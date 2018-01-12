@@ -1166,9 +1166,7 @@ Return nil if X-MUC is nil."
                   ((string= nick (cdr (assoc group *jabber-active-groupchats*)))
                    :muc-local)
                   (t :muc-foreign)))
-           (body-text (car (jabber-xml-node-children
-                            (car (jabber-xml-get-children
-                                  xml-data 'body)))))
+           (body-text (jabber-qim-message-body-text xml-data))
            (msg-type (jabber-qim-message-type xml-data))
            (printers (append jabber-muc-printers jabber-chat-printers)))
       (if (or (assoc group *jabber-active-groupchats*)

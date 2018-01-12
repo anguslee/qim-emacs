@@ -114,6 +114,39 @@
 (defun jabber-qim-revoke-message-p (message)
   (string= "revoke" (jabber-xml-get-attribute message 'type)))
 
+(defun jabber-qim-message-extend-info (xml-data)
+  (let ((extend-info-node (jabber-xml-get-attribute
+                           (car (jabber-xml-get-children
+                                 xml-data 'body))
+                           'extendInfo)))
+    (when extend-info-node
+      (cl-remove-if-not
+       #'(lambda (x)
+           (and
+            (sequencep (cdr x))
+            (> (length (cdr x))
+               0)
+            (find (car x)
+                  (list 'title 'desc 'linkurl))))
+       (json-read-from-string extend-info-node)))))
+
+(defun jabber-qim-message-body-text (xml-data)
+  (let ((msg-type (jabber-qim-message-type xml-data))
+        (extend-info (jabber-qim-message-extend-info xml-data)))
+    (if (string-equal msg-type jabber-qim-msg-type-common-trd-info)
+        (let ((desc (cdr (assoc 'desc extend-info)))
+              (title-and-link (format "%s %s"
+                                      (or (cdr (assoc 'title extend-info))
+                                          "Link:")
+                                      (cdr (assoc 'linkurl extend-info)))))
+          (if desc
+              (format "%s\n%s" title-and-link desc)
+            title-and-link))
+      (car
+       (jabber-xml-node-children
+        (car
+         (jabber-xml-get-children xml-data 'body)))))))
+
 
 (defun secure-hash-file (file algorithm)
   (when (file-exists-p file)
