@@ -93,7 +93,7 @@
     ./configure
     make jabber-autoloads.el
 
-## **参考配置**
+## **配置方法参考**
 
     (add-to-list 'load-path "~/Documents/sources/qim-emacs") ; 本工程目录
 
@@ -132,6 +132,11 @@
 
     (jabber-connect-all)
 
+## **开发标准参照**
+
+* [客户端 MessageType 值设定](http://wiki.corp.qunar.com/confluence/pages/viewpage.action?pageId=105916988)
+* [Message消息属性值详解](http://wiki.corp.qunar.com/confluence/pages/viewpage.action?pageId=159685687)
+* [QTalk&QChat文件和图片上传下载](http://wiki.corp.qunar.com/confluence/pages/viewpage.action?pageId=98573995)
 
 ## **引用资源**
 
@@ -139,6 +144,7 @@
 * [elisp-latch](https://github.com/skeeto/elisp-latch)
 * [s.el](https://github.com/magnars/s.el)
 * Emoji-One表情来自[Emoji One](http://emojione.com/ "Emoji art supplied by Emoji One")
+* qtalk自带表情包列表：(https://qt.qunar.com/s/qtalk/get_emotions.php)
 
 ## **分支说明**
 
