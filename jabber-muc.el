@@ -161,14 +161,15 @@ These fields are available:
   :type 'string
   :group 'jabber-chat)
 
-(defcustom jabber-muc-print-names-format "	%n	%a	%j\n"
+(defcustom jabber-muc-print-names-format "	%n(%j)	%a	%p\n"
   "The format specification for MUC list lines.
 
 Fields available:
 
 %n  Nickname in room
 %a  Affiliation status
-%j  Full JID (room@server/nick)"
+%j  Full JID (room@server/nick)
+%p  Additional descriptions."
   :type 'string
   :group 'jabber-chat)
 
@@ -722,17 +723,24 @@ groupchat buffer."
 
 (defun jabber-muc-format-names (participant)
   "Format one participant name"
-  (format-spec jabber-muc-print-names-format
-               (list
-                (cons ?n (jabber-jid-displayname (car participant)))
-                (cons ?a (or (plist-get (cdr participant) 'affiliation) ""))
-                (cons ?j (or (plist-get (cdr participant) 'jid)
-                             (when (and (plist-get (cdr participant) 'domain)
-                                        (plist-get (cdr participant) 'real_jid))
-                               (format "%s@%s"
-                                       (plist-get (cdr participant) 'real_jid)
-                                       (plist-get (cdr participant) 'domain)))
-                             "")))))
+  (let* ((jid (or (plist-get (cdr participant) 'jid)
+                  (when (and (plist-get (cdr participant) 'domain)
+                             (plist-get (cdr participant) 'real_jid))
+                    (format "%s@%s"
+                            (plist-get (cdr participant) 'real_jid)
+                            (plist-get (cdr participant) 'domain)))
+                  ""))
+         (user-position (or
+                         (jabber-qim-user-vcard-position
+                          (gethash jid
+                                   *jabber-qim-user-vcard-cache*))
+                         "")))
+    (format-spec jabber-muc-print-names-format
+                 (list
+                  (cons ?n (jabber-jid-displayname (car participant)))
+                  (cons ?a (or (plist-get (cdr participant) 'affiliation) ""))
+                  (cons ?j jid)
+                  (cons ?p user-position)))))
 
 (defun jabber-muc-print-names (participants)
   "Format and return data in PARTICIPANTS."
