@@ -2,13 +2,14 @@
 
 (require 'web)
 
-(defvar *jabber-qim-api-server*
-  "https://qtapi.corp.qunar.com")
+;;;###autoload
+(defvar *jabber-qim-api-server*)
 
-(defvar *jabber-qim-file-server*
-  "https://qtalk.corp.qunar.com")
+;;;###autoload
+(defvar *jabber-qim-file-server*)
 
-(defvar *jabber-qim-file-service-version* "v2")
+;;;###autoload
+(defvar *jabber-qim-file-service-version*)
 
 (add-to-list 'web-json-expected-mimetypes-list
              "text/json")

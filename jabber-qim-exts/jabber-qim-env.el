@@ -5,6 +5,7 @@
           (file-name-directory
            (or load-file-name buffer-file-name))))
 
+;;;###autoload
 (defvar *jabber-qim-hostname*
   "ejabhost1")
 
