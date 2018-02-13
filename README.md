@@ -24,6 +24,7 @@
     /configure
     make jabber-autoloads.el
     ```
+
 每次更新代码需要重新运行上面的：
     ```
     ./configure
@@ -33,12 +34,14 @@
   * emoticons 静态表情包目录
   * qim-auth-keys 登录验证加密用公钥目录
 3. 添加上述静态资源目录到本地.emacs初始化配置：
-   ```lisp
+
+    ```lisp
    (setq *jabber-qim-resource-dir*
    "<静态资源目录路径>")
    (setq *jabber-qim-pubkey-filename*
    "<用于客户端密码加密的公钥文件名，从静态资源目录的qim-auth-keys目录下选取>")
    ```
+   
 4. 根据服务端的导航服务，为本地.emacs添加以下初始化配置参数：
    ```lisp
    (setq *jabber-qim-api-server*
