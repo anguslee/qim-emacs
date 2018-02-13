@@ -19,13 +19,13 @@
 
 
 1. 编译运行
-```
+```bash
     autoreconf -i
     /configure
     make jabber-autoloads.el
 ```
 每次更新代码需要重新运行上面的：
-```
+```bash
     ./configure
     make jabber-autoloads.el
 ```
