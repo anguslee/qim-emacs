@@ -9,7 +9,8 @@
 (defvar *jabber-qim-file-server*)
 
 ;;;###autoload
-(defvar *jabber-qim-file-service-version*)
+(defvar *jabber-qim-file-service-version*
+  "v2")
 
 (add-to-list 'web-json-expected-mimetypes-list
              "text/json")

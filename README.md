@@ -1,15 +1,118 @@
 **基于jabber.el的emacs qim客户端**
 ===============================
 
-![界面效果图](http://wiki.corp.qunar.com/download/attachments/69142038/demo-screen.png "界面效果")
+
+## **安装方法**
+
+**依赖**：
+
+* Linux或者Mac OSX系统安装GNU Emacs v24.5+, 低于这个版本的emacs可能会因为找不到subr-x模块报错。其他组合没测试过；
+* [wget命令](https://www.gnu.org/software/wget/)，chat buffer里加载图片需要；
+* openssl
+* autoconf
+* automake
+* [emacs-uuid](http://www.emacswiki.org/emacs/uuid.el), 或者命令行能提供uuidgen命令；
+* [ImageMagick](http://www.emacswiki.org/emacs/ImageMagick), 截屏功能依赖此。
+* [dash.el](https://github.com/magnars/dash.el), 可以通过package-install安装
+
+**安装运行**：
 
 
-## **技术支持**
+1. 编译运行
 
-讨论组：Emacs版qtalk讨论组 (群id：5b241f5d37aefff23b8a8fd9b721f8fb@conference.ejabhost1)
+```
+autoreconf -i
+/configure
+make jabber-autoloads.el
+```
 
-已知问题列表: http://gitlab.corp.qunar.com/geng.li/qim-emacs/issues
+每次更新代码需要重新运行上面的：
+```
+./configure
+make jabber-autoloads.el
+```
 
+2. 初始化静态资源目录，目录下包含：
+  * emoticons 静态表情包目录
+  * qim-auth-keys 登录验证加密用公钥目录
+
+3. 添加上述静态资源目录到本地.emacs初始化配置：
+
+```lisp
+(setq *jabber-qim-resource-dir*
+    "<静态资源目录路径>")
+(setq *jabber-qim-pubkey-filename*
+    "<用于客户端密码加密的公钥文件名，从静态资源目录的qim-auth-keys目录下选取>")
+```
+
+4. 根据服务端的导航服务，为本地.emacs添加以下初始化配置参数：
+
+```lisp
+(setq *jabber-qim-api-server*
+    "<服务端接口API地址，取值baseaddress.apiurl>")
+
+(setq *jabber-qim-file-server*
+    "<服务端文件服务地址，取值baseaddress.fileurl>")
+
+(setq *jabber-qim-xmpp*
+    "<xmpp服务器地址，取值baseaddress.xmpp>")
+
+(setq *jabber-qim-xmpp-port*
+    "<xmpp服务端口号，取值baseaddress.xmppport>")
+
+(setq *jabber-qim-domain*
+    "<用户id所属域名，取值baseaddress.domain>")
+
+```
+
+5. 设置load-path变量并加载初始化文件：
+
+```lisp
+(add-to-list 'load-path "<本工程目录>")
+(load "jabber-autoloads")
+```
+
+## **配置方法示例**
+
+```lisp
+    (add-to-list 'load-path "~/Documents/sources/qim-emacs") ; 本工程目录
+
+    ; (setq jabber-qim-pubkey-file
+    ;    "~/Documents/sources/qim-emacs/resources/qtalk_pub_key.pem") ; 公钥文件路径，默认为本工程目录下的jabber-qim-exts/resources/qtalk_pub_key.pem文件
+
+    ; (setq jabber-qim-local-file-dir
+    ;    "~/qim-local-files") ; qim保存收到的文件的目录（默认为本工程目录下的jabber-qim-exts/.cache目录）
+
+    (load "jabber-autoloads")
+
+    ; (setq jabber-debug-log-xml t)
+
+    (setq jabber-invalid-certificate-servers '("qt.corp.qunar.com"))
+
+    (setq starttls-extra-arguments  '("--insecure"))
+    (setq jabber-history-enabled t)
+    (setq jabber-use-global-history nil)
+    (setq jabber-history-muc-enabled t)
+    (setq jabber-history-dir "~/qtalk-logs")
+    (setq jabber-muc-colorize-foreign t) ;; nick color
+
+
+    (setq jabber-alert-presence-message-function
+        (lambda (WHO OLDSTATUS NEWSTATUS STATUSTEXT)
+        nil))
+
+
+    ;; account list
+    (setq jabber-account-list
+    `(
+        ("域用户名@ejabhost1" ; 例如：geng.li@ejabhost1
+        (:network-server . "qt.corp.qunar.com")
+        (:port . "5222")
+        (:password . ,(jabber-qim-password "域用户名" "域密码")))))
+
+    (jabber-connect-all)
+```
+    
 ## **常用功能**
 
 1. 开启点对点聊天：
@@ -60,76 +163,6 @@
 * buffer里不能播放gif动图
 * 不支持点对点加密聊天
 
-## **安装方法**
-
-**依赖**：
-
-* Linux或者Mac OSX系统安装GNU Emacs v24.5+, 低于这个版本的emacs可能会因为找不到subr-x模块报错。其他组合没测试过；
-* [wget命令](https://www.gnu.org/software/wget/)，chat buffer里加载图片需要；
-* openssl
-* autoconf
-* automake
-* [emacs-uuid](http://www.emacswiki.org/emacs/uuid.el), 或者命令行能提供uuidgen命令；
-* [ImageMagick](http://www.emacswiki.org/emacs/ImageMagick), 截屏功能依赖此。
-* [dash.el](https://github.com/magnars/dash.el), 可以通过package-install安装
-
-**安装运行**：
-
-    git clone http://gitlab.corp.qunar.com/geng.li/qim-emacs.git
-    cd qim-emacs
-    autoreconf -i
-    ./configure
-    make jabber-autoloads.el
-
-然后，添加
-
-    (load "jabber-autoloads")
-
-到.emacs配置文件
-
-每次更新代码需要重新运行上面的：
-
-    ./configure
-    make jabber-autoloads.el
-
-## **配置方法参考**
-
-    (add-to-list 'load-path "~/Documents/sources/qim-emacs") ; 本工程目录
-
-    ; (setq jabber-qim-pubkey-file
-    ;    "~/Documents/sources/qim-emacs/resources/qtalk_pub_key.pem") ; 公钥文件路径，默认为本工程目录下的jabber-qim-exts/resources/qtalk_pub_key.pem文件
-
-    ; (setq jabber-qim-local-file-dir
-    ;    "~/qim-local-files") ; qim保存收到的文件的目录（默认为本工程目录下的jabber-qim-exts/.cache目录）
-
-    (load "jabber-autoloads")
-
-    ; (setq jabber-debug-log-xml t)
-
-    (setq jabber-invalid-certificate-servers '("qt.corp.qunar.com"))
-
-    (setq starttls-extra-arguments  '("--insecure"))
-    (setq jabber-history-enabled t)
-    (setq jabber-use-global-history nil)
-    (setq jabber-history-muc-enabled t)
-    (setq jabber-history-dir "~/qtalk-logs")
-    (setq jabber-muc-colorize-foreign t) ;; nick color
-
-
-    (setq jabber-alert-presence-message-function
-        (lambda (WHO OLDSTATUS NEWSTATUS STATUSTEXT)
-        nil))
-
-
-    ;; account list
-    (setq jabber-account-list
-    `(
-        ("域用户名@ejabhost1" ; 例如：geng.li@ejabhost1
-        (:network-server . "qt.corp.qunar.com")
-        (:port . "5222")
-        (:password . ,(jabber-qim-password "域用户名" "域密码")))))
-
-    (jabber-connect-all)
 
 ## **开发标准参照**
 
