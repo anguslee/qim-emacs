@@ -20,17 +20,19 @@
 
 1. 编译
 首次运行：
->
+
 > autoreconf -i
 >
 > ./configure
 >
 > make jabber-autoloads.el
+
 每次更新代码需要重新运行上面的：
->
+
 > ./configure
 >
 > make jabber-autoloads.el
+
 2. 初始化静态资源目录，目录下包含：
    * emoticons 静态表情包目录
    * qim-auth-keys 登录验证加密用公钥目录
