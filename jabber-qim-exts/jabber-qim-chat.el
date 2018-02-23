@@ -664,7 +664,7 @@
                                                     chat-with
                                                     (format-time-string "%s")))
                           *jabber-qim-muc-sub-hostname*
-                          *jabber-qim-hostname*)))
+                          *jabber-qim-domain*)))
     (when (or invited-members
               chat-with)
       (puthash muc-jid

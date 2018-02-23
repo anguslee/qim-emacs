@@ -5,15 +5,6 @@
           (file-name-directory
            (or load-file-name buffer-file-name))))
 
-;;;###autoload
-(defvar jabber-qim-ext-dir (format "%s%s"
-                                   (file-name-directory
-                                    (or load-file-name buffer-file-name))
-                                   "jabber-qim-exts/"))
-
-(add-to-list 'load-path
-             jabber-qim-ext-dir)
-
 (defvar *jabber-qim-resource-dir*
   (format "%sresources" jabber-qim-ext-dir))
    
@@ -38,7 +29,7 @@
 
 
 ;;;###autoload
-(defvar *jabber-qim-hostname*)
+(defvar *jabber-qim-domain*)
 
 (defvar *jabber-qim-muc-sub-hostname*
   "conference")

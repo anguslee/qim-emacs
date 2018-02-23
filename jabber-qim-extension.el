@@ -2,6 +2,16 @@
 
 (require 'jabber-core)
 
+;;;###autoload
+(defvar jabber-qim-ext-dir (format "%s%s"
+                                   (file-name-directory
+                                    (or load-file-name buffer-file-name))
+                                   "jabber-qim-exts/"))
+
+(add-to-list 'load-path
+             jabber-qim-ext-dir)
+
+
 (require 'jabber-qim-env)
 (require 'jabber-qim-webapi)
 (require 'jabber-qim-chat)

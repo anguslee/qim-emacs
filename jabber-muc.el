@@ -1091,7 +1091,7 @@ Return nil if X-MUC is nil."
   (let ((nick (or
                (jabber-qim-user-vcard-name (gethash (format "%s@%s"
                                                             (jabber-jid-resource (jabber-xml-get-attribute xml-data 'from))
-                                                            *jabber-qim-hostname*)
+                                                            *jabber-qim-domain*)
                                                     *jabber-qim-user-vcard-cache*))
                (jabber-jid-resource (jabber-xml-get-attribute xml-data 'from))))
 	(timestamp (jabber-message-timestamp xml-data)))
@@ -1165,7 +1165,7 @@ Return nil if X-MUC is nil."
            (nick (or
                   (jabber-qim-user-vcard-name (gethash (format "%s@%s"
                                                                (jabber-jid-resource from)
-                                                               *jabber-qim-hostname*)
+                                                               *jabber-qim-domain*)
                                                        *jabber-qim-user-vcard-cache*))
                   (jabber-jid-resource from)))
            (error-p (jabber-xml-get-children xml-data 'error))

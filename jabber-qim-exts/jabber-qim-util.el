@@ -3,7 +3,7 @@
 
 (defun jabber-qim-muc-jid-p (muc-jid)
   ;; (string= (format "%s.%s" *jabber-qim-muc-sub-hostname*
-  ;;                  *jabber-qim-hostname*)
+  ;;                  *jabber-qim-domain*)
   ;;          (jabber-jid-server muc-jid))
   (string-prefix-p (format "%s." *jabber-qim-muc-sub-hostname*)
                    (jabber-jid-server muc-jid)))
@@ -60,7 +60,7 @@
   (and (cdr (assoc 'U vcard))
        (format "%s@%s" (decode-coding-string (cdr (assoc 'U vcard))
                                              'utf-8-emacs-unix)
-               *jabber-qim-hostname*)))
+               *jabber-qim-domain*)))
 
 ;;;###autoload (autoload 'jabber-qim-user-vcard-name "jabber-qim-extension" "Return user name" t)
 (defun jabber-qim-user-vcard-name (vcard)

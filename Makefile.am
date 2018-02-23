@@ -46,7 +46,7 @@ EXTRA_DIST = jabber-pkg.el.in
 # size, so we touch it with ancient timestamp.
 jabber-autoloads.el: $(my_lisp_sources)
 	test -s $@ || cp -f $(srcdir)/jabber-autoloads.stub $@; touch -t 197001030000 $@
-	$(EMACS) --batch --eval "(setq generated-autoload-file \"$(abs_builddir)/$@\")" -f batch-update-autoloads $(srcdir)
+	$(EMACS) --batch --eval "(setq generated-autoload-file \"$(abs_builddir)/$@\")" -f batch-update-autoloads $(srcdir) $(srcdir)/jabber-qim-exts
 
 info_TEXINFOS=jabber.texi
 

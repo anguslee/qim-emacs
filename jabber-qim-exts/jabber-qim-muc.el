@@ -66,7 +66,7 @@
                                  `(presence
                                    ((to . ,(format "%s.%s"
                                                    *jabber-qim-muc-sub-hostname*
-                                                   *jabber-qim-hostname*)))
+                                                   *jabber-qim-domain*)))
                                    (x
                                     ((xmlns . "http://jabber.org/protocol/muc#presence_all"))))))
 
@@ -75,7 +75,7 @@
   (setq *jabber-qim-user-muc-room-jid-list* '())
   (jabber-send-iq jc (format "%s.%s"
                              *jabber-qim-muc-sub-hostname*
-                             *jabber-qim-hostname*)
+                             *jabber-qim-domain*)
                   "get"
                   '(query ((xmlns . "http://jabber.org/protocol/muc#user_mucs")))
                   #'(lambda (jc xml-data closure-data)
@@ -105,13 +105,13 @@
                              (jabber-qim-user-muc-join-all jc))
                          "getmucvcard"
                          (json-encode
-                          (mapcar #'(lambda (muc)
-                                      (let ((muc-jid (format "%s@%s"
-                                                             (cdr (assoc 'name muc))
-                                                             (cdr (assoc 'host muc)))))
-                                        `((:muc_name . ,(jabber-jid-user muc-jid))
-                                          (:version . 0))))
-                                  muc-rooms))
+			  (mapcar #'(lambda (muc)
+				      (let ((muc-jid (format "%s@%s"
+							     (cdr (assoc 'name muc))
+							     (cdr (assoc 'host muc)))))
+					`((:muc_name . ,(jabber-jid-user muc-jid))
+					  (:version . 0))))
+				  muc-rooms))
                          'application/json
                          (jabber-qim-api-connection-auth-info jc))
                         (mapcar #'(lambda (muc)
