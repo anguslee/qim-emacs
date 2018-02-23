@@ -78,6 +78,7 @@
         (:password . ,(jabber-qim-password "<用户ID>" "<登录密码>")))))
    ```
 7. 登录
+
     *M-x jabber-connect-all (C-x C-j C-c)*
    
 

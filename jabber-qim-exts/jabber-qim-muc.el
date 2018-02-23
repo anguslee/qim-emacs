@@ -105,13 +105,13 @@
                              (jabber-qim-user-muc-join-all jc))
                          "getmucvcard"
                          (json-encode
-			  (mapcar #'(lambda (muc)
-				      (let ((muc-jid (format "%s@%s"
-							     (cdr (assoc 'name muc))
-							     (cdr (assoc 'host muc)))))
-					`((:muc_name . ,(jabber-jid-user muc-jid))
-					  (:version . 0))))
-				  muc-rooms))
+                          (mapcar #'(lambda (muc)
+                                      (let ((muc-jid (format "%s@%s"
+                                                             (cdr (assoc 'name muc))
+                                                             (cdr (assoc 'host muc)))))
+                                        `((:muc_name . ,(jabber-jid-user muc-jid))
+                                          (:version . 0))))
+                                  muc-rooms))
                          'application/json
                          (jabber-qim-api-connection-auth-info jc))
                         (mapcar #'(lambda (muc)
