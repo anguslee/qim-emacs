@@ -24,7 +24,10 @@ jabber-vcard-avatars.el jabber-vcard.el jabber-version.el		\
 jabber-watch.el jabber-widget.el jabber-wmii.el jabber-xmessage.el	\
 jabber-muc-nick-coloring.el						\
 jabber-xml.el jabber.el srv.el jabber-tmux.el jabber-ourversion.el	\
-jabber-qim-extension.el web.el
+jabber-qim-extension.el web.el \
+jabber-qim-exts/jabber-qim-chat.el jabber-qim-exts/jabber-qim-util.el \
+jabber-qim-exts/jabber-qim-env.el jabber-qim-exts/jabber-qim-muc.el \
+jabber-qim-exts/jabber-qim-webapi.el
 
 compat_lisp_sources = jabber-fallback-lib/hexrgb.el
 

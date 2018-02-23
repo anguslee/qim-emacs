@@ -6,8 +6,39 @@
            (or load-file-name buffer-file-name))))
 
 ;;;###autoload
-(defvar *jabber-qim-hostname*
-  "ejabhost1")
+(defvar jabber-qim-ext-dir (format "%s%s"
+                                   (file-name-directory
+                                    (or load-file-name buffer-file-name))
+                                   "jabber-qim-exts/"))
+
+(add-to-list 'load-path
+             jabber-qim-ext-dir)
+
+(defvar *jabber-qim-resource-dir*
+  (format "%sresources" jabber-qim-ext-dir))
+   
+(defvar *jabber-qim-pubkey-filename*
+  "pub_key_chat_release")
+
+
+;;;###autoload (autoload 'jabber-qim-password "jabber-qim-extension" "create qim password" t)
+(defun jabber-qim-password (uid pwd)
+  (require 'json)
+  (shell-command-to-string
+   (format "echo -n `echo '%s' | openssl  rsautl  -encrypt  -inkey %s  -pubin  | base64`"
+           (json-encode `((:p . ,pwd)
+                          (:a . "testapp")
+                          (:u . ,uid)
+                          (:d . ,(shell-command-to-string "echo -n `date '+%F %T'`"))))
+           (format "%s/qim-auth-keys/%s"
+                   *jabber-qim-resource-dir*
+                   *jabber-qim-pubkey-filename*))))
+
+
+
+
+;;;###autoload
+(defvar *jabber-qim-hostname*)
 
 (defvar *jabber-qim-muc-sub-hostname*
   "conference")
