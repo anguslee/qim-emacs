@@ -9,7 +9,7 @@
 * Linux或者Mac OSX系统安装GNU Emacs v24.5+, 低于这个版本的emacs可能会因为找不到subr-x模块报错。其他组合没测试过；
 * [wget命令](https://www.gnu.org/software/wget/)，chat buffer里加载图片需要；
 * openssl
-* autoconf
+* autoconf, 推荐2.69版本。低版本可能在运行时报错。
 * automake
 * [emacs-uuid](http://www.emacswiki.org/emacs/uuid.el), 或者命令行能提供uuidgen命令；
 * [ImageMagick](http://www.emacswiki.org/emacs/ImageMagick), 截屏功能依赖此。
@@ -37,6 +37,7 @@
 2. 初始化静态资源目录，目录下包含：
    * emoticons 静态表情包目录
    * qim-auth-keys 登录验证加密用公钥目录
+目录下的资源内容请联系开发者获取，分别按照格式要求置入。
 3. 添加上述静态资源目录到本地.emacs初始化配置：
    ```lisp
    (setq *jabber-qim-resource-dir*
@@ -62,13 +63,15 @@
    (setq *jabber-qim-domain*
        "<用户id所属域名，取值baseaddress.domain>")
    ```
-5. 设置load-path变量并加载初始化文件：
+5. 设置load-path变量，本地文件保存目录，并加载初始化文件：
    ```lisp
    (add-to-list 'load-path "<本工程目录>")
+   (setq jabber-qim-local-file-dir
+        "~/qim-local-files") ; qim保存收到的文件的目录，若不设置，默认为"~/qim-local-files"
 
    (load "jabber-autoloads")
    ```
-6. 设置登录信息
+6. 设置登录认证信息
    ```lisp
    (setq jabber-account-list
     `(
@@ -86,9 +89,6 @@
 
 ```lisp
     (add-to-list 'load-path "~/Documents/sources/qim-emacs") ; 本工程目录
-
-    ; (setq jabber-qim-pubkey-file
-    ;    "~/Documents/sources/qim-emacs/resources/qtalk_pub_key.pem") ; 公钥文件路径，默认为本工程目录下的jabber-qim-exts/resources/qtalk_pub_key.pem文件
 
     ; (setq jabber-qim-local-file-dir
     ;    "~/qim-local-files") ; qim保存收到的文件的目录（默认为本工程目录下的jabber-qim-exts/.cache目录）

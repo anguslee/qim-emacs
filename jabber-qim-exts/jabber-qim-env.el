@@ -1,9 +1,7 @@
 ;; Qim local system environment
 
 (defvar jabber-qim-local-file-dir
-  (format "%s.cache"
-          (file-name-directory
-           (or load-file-name buffer-file-name))))
+  "~/qim-local-files")
 
 (defvar *jabber-qim-resource-dir*
   (format "%sresources" jabber-qim-ext-dir))
