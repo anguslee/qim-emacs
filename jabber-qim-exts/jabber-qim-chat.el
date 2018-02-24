@@ -204,7 +204,8 @@
                                         (if (equal "200" (gethash 'status-code header))
                                             (let ((coding-system-for-write 'binary))
                                               (with-temp-file file-path
-                                                (insert body))
+                                                (set-buffer-multibyte nil)
+                                                (encode-coding-string body 'utf-8 nil (current-buffer)))
                                               (message "File %s downloaded" file-name)
                                               (jabber-qim-view-file-in-directory file-path))
                                           (message "ERROR Downloading %s: %s %s"
@@ -466,7 +467,7 @@
            (jabber-qim-interactive-send-argument-list "To chat: ")))
   (if (<= (nth 7 (file-attributes filename))
           jabber-qim-max-send-file-size)
-      (let* ((file-buffer (find-file-noselect filename t))
+      (let* ((file-buffer (find-file-noselect filename t t))
              (file-hash-code (secure-hash 'md5 file-buffer))
              (image
               (ignore-errors
