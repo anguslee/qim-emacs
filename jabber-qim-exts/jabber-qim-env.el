@@ -44,7 +44,7 @@
 (defun jabber-qim-local-screenshots-dir ()
   (format "%s/screenshots" (expand-file-name jabber-qim-local-file-dir)))
 
-
+(require 'dired-aux)
 (ignore-errors
   (dired-create-directory jabber-qim-local-file-dir))
 
