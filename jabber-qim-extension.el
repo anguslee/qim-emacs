@@ -18,10 +18,6 @@
 (require 'jabber-qim-muc)
 
 
-(add-to-list 'jabber-post-connect-hooks 'jabber-qim-user-muc-preload)
-
-(add-to-list 'jabber-post-connect-hooks 'jabber-qim-users-preload)
-
 (add-to-list 'jabber-post-connect-hooks #'(lambda (jc)
                                             (jabber-send-iq jc
                                                             nil
@@ -34,7 +30,9 @@
                                                                               :state-data)
                                                                    :qim-auth-key (jabber-xml-get-attribute
                                                                                   key-node
-                                                                                  'value))))
+                                                                                  'value)))
+                                                                (jabber-qim-users-preload jc)
+                                                                (jabber-qim-user-muc-preload jc))
                                                             nil
                                                             'jabber-report-success "urn:xmpp:key")))
 
