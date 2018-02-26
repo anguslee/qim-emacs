@@ -35,7 +35,7 @@
     > make jabber-autoloads.el
 
 2. 初始化静态资源目录：
-   * 目录下的资源内容请联系管理员获取，分别按照格式要求置入。资源目录结构说明与示例见(jabber-qim-exts/resources)目录
+   * 目录下的资源内容请联系管理员获取，分别按照格式要求置入。资源目录结构说明与示例见: (jabber-qim-exts/resources/README.md)
 3. 添加上述静态资源目录到本地.emacs初始化配置：
    ```lisp
    (setq *jabber-qim-resource-dir*
