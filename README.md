@@ -9,7 +9,7 @@
 * Linux或者Mac OSX系统安装GNU Emacs v24.5+, 低于这个版本的emacs可能会因为找不到subr-x模块报错。其他组合没测试过；
 * [wget命令](https://www.gnu.org/software/wget/)，chat buffer里加载图片需要；
 * openssl
-* autoconf, 推荐2.69版本。低版本可能在运行时报错。
+* autoconf, 推荐更新到最新版本，低版本可能在运行时报错。
 * automake
 * [emacs-uuid](http://www.emacswiki.org/emacs/uuid.el), 或者命令行能提供uuidgen命令；
 * [ImageMagick](http://www.emacswiki.org/emacs/ImageMagick), 截屏功能依赖此。
@@ -34,10 +34,8 @@
     >
     > make jabber-autoloads.el
 
-2. 初始化静态资源目录，目录下包含：
-   * emoticons 静态表情包目录
-   * qim-auth-keys 登录验证加密用公钥目录
-目录下的资源内容请联系开发者获取，分别按照格式要求置入。
+2. 初始化静态资源目录：
+   * 目录下的资源内容请联系管理员获取，分别按照格式要求置入。资源目录结构说明与示例见(jabber-qim-exts/resources)目录
 3. 添加上述静态资源目录到本地.emacs初始化配置：
    ```lisp
    (setq *jabber-qim-resource-dir*
@@ -67,7 +65,7 @@
    ```lisp
    (add-to-list 'load-path "<本工程目录>")
    (setq jabber-qim-local-file-dir
-        "~/qim-local-files") ; qim保存收到的文件的目录，若不设置，默认为"~/qim-local-files"
+        "~/qim-local-files") ; qim保存本地文件的目录，若不设置，默认为"~/qim-local-files"
 
    (load "jabber-autoloads")
    ```
@@ -161,7 +159,8 @@
 
 9. 切换到含未读消息的会话
 
-    *M-x jabber-qim-chat-switch-to-unread (C-x C-j C-u)*
+    *M-x jabber-qim-chat-switch-to-unread (C-x C-j C-u)* （可通过补全方式选择含未读消息的会话）
+    *M-x jabber-activity-switch-to (C-x C-j C-l)* （不经选择直接跳到最近未读消息的会话）
 
 需要输入群组ID或者用户ID的时候，都可以用TAB在minibuffer里做补全。用户ID可以用域用户名或者姓名的方式做前缀检索。
 
@@ -170,23 +169,17 @@
 
 * 不能发送表情
 * 发送文件和图片的大小不能超过10MB
+* 接收到大尺寸的图片时，emacs进程会卡顿
 * buffer里不能播放gif动图
 * 不支持点对点加密聊天
 
 
-## **开发标准参照**
-
-* [客户端 MessageType 值设定](http://wiki.corp.qunar.com/confluence/pages/viewpage.action?pageId=105916988)
-* [Message消息属性值详解](http://wiki.corp.qunar.com/confluence/pages/viewpage.action?pageId=159685687)
-* [QTalk&QChat文件和图片上传下载](http://wiki.corp.qunar.com/confluence/pages/viewpage.action?pageId=98573995)
-* QTalk导航服务: (https://qt.qunar.com/package/static/qtalk/nav)
-
 ## **引用资源**
 
-* [emacs-web](https://github.com/nicferrier/emacs-web)
+* [emacs-web](https://github.com/nicferrier/emacs-web) 用于与后端api服务做交互，为易用性做了小的修改。
 * [s.el](https://github.com/magnars/s.el)
 
 ## **分支说明**
 
 * 开发分支：qim-emacs
-
+* RELEASE分支：master
