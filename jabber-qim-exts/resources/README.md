@@ -7,6 +7,6 @@ QIM资源目录格式规范
 
 ## **emotions目录结构规范**
 1. 每组表情包独占一个目录，目录名随意
-2. 每个表情包目录下，须包含一个emotions.xml文件和若干表情图片文件。示例见：（emoticons/EmoticonsOne/）
+2. 每个表情包目录下，须包含一个emotions.xml文件和若干表情图片文件。示例见：[emoticons/EmoticonsOne](emoticons/EmoticonsOne)
 
 表情包文件需要联系im管理员获取。解压缩之后，将包内文件按照上述规则组织。
