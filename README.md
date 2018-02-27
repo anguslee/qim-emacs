@@ -83,44 +83,6 @@
     *M-x jabber-connect-all (C-x C-j C-c)*
    
 
-## **配置方法示例**
-
-```lisp
-    (add-to-list 'load-path "~/Documents/sources/qim-emacs") ; 本工程目录
-
-    ; (setq jabber-qim-local-file-dir
-    ;    "~/qim-local-files") ; qim保存收到的文件的目录（默认为本工程目录下的jabber-qim-exts/.cache目录）
-
-    (load "jabber-autoloads")
-
-    ; (setq jabber-debug-log-xml t)
-
-    (setq jabber-invalid-certificate-servers '("qt.corp.qunar.com"))
-
-    (setq starttls-extra-arguments  '("--insecure"))
-    (setq jabber-history-enabled t)
-    (setq jabber-use-global-history nil)
-    (setq jabber-history-muc-enabled t)
-    (setq jabber-history-dir "~/qtalk-logs")
-    (setq jabber-muc-colorize-foreign t) ;; nick color
-
-
-    (setq jabber-alert-presence-message-function
-        (lambda (WHO OLDSTATUS NEWSTATUS STATUSTEXT)
-        nil))
-
-
-    ;; account list
-    (setq jabber-account-list
-    `(
-        ("域用户名@ejabhost1" ; 例如：geng.li@ejabhost1
-        (:network-server . "qt.corp.qunar.com")
-        (:port . "5222")
-        (:password . ,(jabber-qim-password "域用户名" "域密码")))))
-
-    (jabber-connect-all)
-```
-    
 ## **常用功能**
 
 1. 开启点对点聊天：
@@ -160,6 +122,7 @@
 9. 切换到含未读消息的会话
 
     *M-x jabber-qim-chat-switch-to-unread (C-x C-j C-u)* （可通过补全方式选择含未读消息的会话）
+
     *M-x jabber-activity-switch-to (C-x C-j C-l)* （不经选择直接跳到最近未读消息的会话）
 
 需要输入群组ID或者用户ID的时候，都可以用TAB在minibuffer里做补全。用户ID可以用域用户名或者姓名的方式做前缀检索。
