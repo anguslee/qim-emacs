@@ -59,10 +59,9 @@
 
 
 (defvar jabber-qim-local-emotions-directory
-  (format "%s%s"
-          (file-name-directory
-           (or load-file-name buffer-file-name))
-          "resources/Emotions"))
+  (format "%s/%s"
+          *jabber-qim-resource-dir*
+          "emotions"))
 
 ;;;###autoload
 (defvar *jabber-qim-image-file-cache*
