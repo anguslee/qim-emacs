@@ -1,12 +1,12 @@
-**基于jabber.el的emacs qim客户端**
-===============================
+**QTalk For Emacs 扩展自[jabber.el](https://github.com/legoscia/emacs-jabber)**
+===============================================================================
 
 
 ## **安装方法**
 
 **依赖**：
 
-* Linux或者Mac OSX系统安装GNU Emacs v24.5+, 低于这个版本的emacs可能会因为找不到subr-x模块报错。其他组合没测试过；
+* Linux或者Mac OSX系统安装GNU Emacs v24.5+, 低于这个版本的emacs可能会因为找不到subr-x模块报错。
 * [wget命令](https://www.gnu.org/software/wget/)，chat buffer里加载图片需要；
 * openssl
 * autoconf, 推荐更新到最新版本，低版本可能在运行时报错。
