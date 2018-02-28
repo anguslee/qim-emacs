@@ -1,4 +1,4 @@
-**QTalk For Emacs 扩展自[jabber.el](https://github.com/legoscia/emacs-jabber)**
+**QTalk For Emacs, 扩展自[jabber.el](https://github.com/legoscia/emacs-jabber)**
 ===============================================================================
 
 
