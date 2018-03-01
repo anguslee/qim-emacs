@@ -332,7 +332,7 @@
                 (format "[Image]<%s/%s> " *jabber-qim-file-server* value)
                 'face face))
              (insert-button "View Image"
-                      :image-url (format "%s/%s" *jabber-qim-file-server* value)
+                      :image-url value
                       :image-ext (jabber-qim-parse-image-type value)
                       :uid (or uid "")
                       'action #'(lambda (button)
