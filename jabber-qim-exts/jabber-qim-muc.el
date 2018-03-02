@@ -165,19 +165,30 @@
 (defun jabber-qim-muc-set-topic (jc muc-jid topic)
   (interactive
    (jabber-muc-argument-list
-    (list (jabber-read-with-input-method "New title: " jabber-muc-topic))))
+    (list (jabber-read-with-input-method "New topic: " jabber-muc-topic))))
   (jabber-qim-api-request-post
    (lambda (data conn headers)
      (unless (equal "200" (gethash 'status-code headers))
-       (message "Set topic failed. Response: %s" data)
-       ;; (puthash (jabber-jid-user muc-jid)
-       ;;          `((SN . ,groupchat-name)
-       ;;            (MN . ,(jabber-jid-user muc-jid)))
-       ;;          *jabber-qim-muc-vcard-cache*)
-       ))
+       (message "Set muc topic failed. Response: %s" data)))
    "setmucvcard"
    (json-encode (vector `((:muc_name . ,(jabber-jid-user muc-jid))
                           (:title . ,topic))))
+   'application/json
+   (jabber-qim-api-connection-auth-info jc)))
+
+(defun jabber-qim-muc-set-name (jc muc-jid name)
+  (interactive
+   (jabber-muc-argument-list
+    (list (jabber-read-with-input-method "New group name: "
+                                         (jabber-qim-muc-vcard-group-display-name
+                                          (jabber-qim-get-muc-vcard jabber-group))))))
+  (jabber-qim-api-request-post
+   (lambda (data conn headers)
+     (unless (equal "200" (gethash 'status-code headers))
+       (message "Set muc name failed. Response: %s" data)))
+   "setmucvcard"
+   (json-encode (vector `((:muc_name . ,(jabber-jid-user muc-jid))
+                          (:nick . ,name))))
    'application/json
    (jabber-qim-api-connection-auth-info jc)))
 

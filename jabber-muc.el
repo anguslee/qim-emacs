@@ -774,6 +774,9 @@ groupchat buffer."
 (add-to-list 'jabber-jid-muc-menu
 	     (cons "Set topic" 'jabber-qim-muc-set-topic))
 
+(add-to-list 'jabber-jid-muc-menu
+	     (cons "Set name" 'jabber-qim-muc-set-name))
+
 (defun jabber-muc-set-topic (jc group topic)
   "Set topic of GROUP to TOPIC."
   (interactive
