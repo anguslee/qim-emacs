@@ -185,12 +185,16 @@
    "Forward to: "
    (button-get button :msg-type)))
 
+(defun jabber-qim-object-url (object-value)
+  (let ((url-obj (url-generic-parse-url object-value)))
+    (if (url-host url-obj)
+        object-value
+      (format "%s/%s" *jabber-qim-file-server* object-value))))
+
+
 (defun jabber-qim-insert-file (file-desc body-text face &optional uid)
   "Insert file into chat buffer."
-  (let ((file-link (let ((url-obj (url-generic-parse-url (cdr (assoc 'HttpUrl file-desc)))))
-                     (if (url-host url-obj)
-                         (cdr (assoc 'HttpUrl file-desc))
-                       (format "%s/%s" *jabber-qim-file-server* (cdr (assoc 'HttpUrl file-desc)))))))
+  (let ((file-link (jabber-qim-object-url (cdr (assoc 'HttpUrl file-desc)))))
     (insert "\n\n")
     (insert (jabber-propertize
              (format "[File Received: %s; Size: %s; Link: %s] "
@@ -312,7 +316,8 @@
                                                         (cdr (assoc-string 'width object-attributes)))
                                                        (string-to-number
                                                         (cdr (assoc-string 'height object-attributes)))))
-              (image-ret (jabber-qim-wget-image value image-size uid))
+              (image-url (jabber-qim-object-url value))
+              (image-ret (jabber-qim-wget-image image-url image-size uid))
               (image (cadr image-ret)))
          (if image
              (progn
@@ -329,10 +334,10 @@
                                               (read-only-mode))))))
            (progn
              (insert (jabber-propertize
-                (format "[Image]<%s/%s> " *jabber-qim-file-server* value)
+                (format "[Image]<%s> " image-url)
                 'face face))
              (insert-button "View Image"
-                      :image-url value
+                      :image-url image-url
                       :image-ext (jabber-qim-parse-image-type value)
                       :uid (or uid "")
                       'action #'(lambda (button)
