@@ -34,6 +34,13 @@
 
 (require 'jabber-xml)
 
+;;;###autoload
+(defcustom jabber-sasl-allow-plaintext-logins nil
+  "Whether to allow plaintext logins over unencrypted connections. Setting this variable to t would skip interactive prompt."
+  :group 'password
+  :type 'boolean)
+
+
 (defun jabber-sasl-start-auth (jc stream-features)
   ;; Find a suitable common mechanism.
   (let* ((mechanism-elements (car (jabber-xml-get-children stream-features 'mechanisms)))
@@ -73,7 +80,9 @@
       (if (and (not (plist-get (fsm-get-state-data jc) :encrypted))
 	       (member (sasl-mechanism-name mechanism)
 		       '("PLAIN" "LOGIN"))
-	       (not (yes-or-no-p "Jabber server only allows cleartext password transmission!  Continue? ")))
+	       (not (or
+                 jabber-sasl-allow-plaintext-logins
+                 (yes-or-no-p "Jabber server only allows cleartext password transmission!  Continue? "))))
 	  (fsm-send jc :authentication-failure)
 
 	;; Start authentication.
