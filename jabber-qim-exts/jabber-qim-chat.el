@@ -312,10 +312,11 @@
                     'face face)))))
       ('image
        (insert "\n\n")
-       (let* ((image-size (jabber-qim-scale-image-size (string-to-number
-                                                        (cdr (assoc-string 'width object-attributes)))
-                                                       (string-to-number
-                                                        (cdr (assoc-string 'height object-attributes)))))
+       (let* ((image-size (ignore-errors
+                            (jabber-qim-scale-image-size (string-to-number
+                                                          (cdr (assoc-string 'width object-attributes)))
+                                                         (string-to-number
+                                                          (cdr (assoc-string 'height object-attributes))))))
               (image-url (jabber-qim-object-url value))
               (image-ret (jabber-qim-wget-image image-url image-size uid))
               (image (cadr image-ret)))
