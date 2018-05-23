@@ -133,20 +133,21 @@
   (string= "revoke" (jabber-xml-get-attribute message 'type)))
 
 (defun jabber-qim-message-extend-info (xml-data)
-  (let ((extend-info-node (jabber-xml-get-attribute
-                           (car (jabber-xml-get-children
-                                 xml-data 'body))
-                           'extendInfo)))
-    (when extend-info-node
-      (cl-remove-if-not
-       #'(lambda (x)
-           (and
-            (sequencep (cdr x))
-            (> (length (cdr x))
-               0)
-            (find (car x)
-                  (list 'title 'desc 'linkurl))))
-       (json-read-from-string extend-info-node)))))
+  (ignore-errors
+    (let ((extend-info-node (jabber-xml-get-attribute
+                             (car (jabber-xml-get-children
+                                   xml-data 'body))
+                             'extendInfo)))
+      (when extend-info-node
+        (cl-remove-if-not
+         #'(lambda (x)
+             (and
+              (sequencep (cdr x))
+              (> (length (cdr x))
+                 0)
+              (find (car x)
+                    (list 'title 'desc 'linkurl))))
+         (json-read-from-string extend-info-node))))))
 
 (defun jabber-qim-message-body-text (xml-data)
   (let ((msg-type (jabber-qim-message-type xml-data))
