@@ -219,16 +219,17 @@ AVATAR may be one of:
   "Create image, scaled down to jabber-avatar-max-width/height,
 if width/height exceeds either of those, and ImageMagick is
 available."
-  (let* ((image (create-image file-or-data type data-p))
-         (size (image-size image t))
-         (spec (cdr image)))
-    (when (and (functionp 'imagemagick-types)
-               (or (> (car size) jabber-avatar-max-width)
-                   (> (cdr size) jabber-avatar-max-height)))
-      (plist-put spec :type 'imagemagick)
-      (plist-put spec :width jabber-avatar-max-width)
-      (plist-put spec :height jabber-avatar-max-height))
-    image))
+  (ignore-errors
+    (let* ((image (create-image file-or-data type data-p))
+           (size (image-size image t))
+           (spec (cdr image)))
+      (when (and (functionp 'imagemagick-types)
+                 (or (> (car size) jabber-avatar-max-width)
+                     (> (cdr size) jabber-avatar-max-height)))
+        (plist-put spec :type 'imagemagick)
+        (plist-put spec :width jabber-avatar-max-width)
+        (plist-put spec :height jabber-avatar-max-height))
+      image)))
 
 (provide 'jabber-avatar)
 ;; arch-tag: 2405c3f8-8eaa-11da-826c-000a95c2fcd0
