@@ -36,6 +36,8 @@
 (require 'jabber-qim-chat)
 (require 'jabber-qim-muc)
 
+(defvar *jabber-qim-timers*
+  '())
 
 (add-to-list 'jabber-post-connect-hooks #'(lambda (jc)
                                             (jabber-send-iq jc
@@ -50,10 +52,19 @@
                                                                    :qim-auth-key (jabber-xml-get-attribute
                                                                                   key-node
                                                                                   'value)))
-                                                                (jabber-qim-users-preload jc)
+                                                                (add-to-list '*jabber-qim-timers*
+                                                                             (run-with-timer 0 jabber-qim-user-vcard-reload-cycle 'jabber-qim-users-preload jc))
                                                                 (jabber-qim-user-muc-preload jc))
                                                             nil
                                                             'jabber-report-success "urn:xmpp:key")))
 
+(defun jabber-qim-cancel-timers ()
+  (mapcar #'cancel-timer
+          *jabber-qim-timers*)
+  (setq *jabber-qim-timers* nil)
+  t)
+
+(add-hook 'jabber-post-disconnect-hook
+          'jabber-qim-cancel-timers)
 
 (provide 'jabber-qim-extension)

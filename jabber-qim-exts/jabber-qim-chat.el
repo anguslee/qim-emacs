@@ -40,21 +40,31 @@
 (defvar *jabber-qim-username-to-jid-cache*
   '())
 
+(defconst jabber-qim-user-vcard-reload-cycle
+  86400)
+
 (defun jabber-qim-users-preload (jc)
-  (jabber-qim-api-request-get
-   #'(lambda (data conn headers)
-       (mapcar #'(lambda (vcard)
-                   (add-to-list '*jabber-qim-user-jid-cache*
-                                (jabber-jid-symbol (jabber-qim-user-vcard-jid vcard)))
-                   (puthash (jabber-qim-user-vcard-jid vcard)
-                            vcard *jabber-qim-user-vcard-cache*)
-                   (add-to-list '*jabber-qim-username-to-jid-cache*
-                                (cons (intern (format "%s - %s"
-                                                      (jabber-qim-user-vcard-name vcard)
-                                                      (jabber-qim-user-vcard-position vcard)))
-                                      (jabber-qim-user-vcard-jid vcard)))) data))
-   "getusers"
-   (jabber-qim-api-connection-auth-info jc)))
+  (message "Reloading user vcards...")
+  (jabber-connect-all)
+  (when (jabber-connection-original-jid jc)
+    (jabber-qim-api-request-get
+     #'(lambda (data conn headers)
+         (setq *jabber-qim-user-jid-cache* '())
+         (setq *jabber-qim-username-to-jid-cache* '())
+         (clrhash *jabber-qim-user-vcard-cache*)
+         (mapcar #'(lambda (vcard)
+                     (add-to-list '*jabber-qim-user-jid-cache*
+                                  (jabber-jid-symbol (jabber-qim-user-vcard-jid vcard)))
+                     (puthash (jabber-qim-user-vcard-jid vcard)
+                              vcard *jabber-qim-user-vcard-cache*)
+                     (add-to-list '*jabber-qim-username-to-jid-cache*
+                                  (cons (intern (format "%s - %s"
+                                                        (jabber-qim-user-vcard-name vcard)
+                                                        (jabber-qim-user-vcard-position vcard)))
+                                        (jabber-qim-user-vcard-jid vcard))))
+                 data))
+     "getusers"
+     (jabber-qim-api-connection-auth-info jc))))
 
 
 ;; extension functions
