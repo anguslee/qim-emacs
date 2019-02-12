@@ -490,7 +490,6 @@
 (defconst jabber-qim-max-send-file-size (* 10 1024 1024)
   "Max send file size set to 10MB")
 
-
 (cl-defun jabber-qim-send-file (filename jc jid send-function &optional chat-buffer)
   (interactive
    (append (list (read-file-name (let ((current-jid (or jabber-group
@@ -625,6 +624,15 @@
       (message "Screen capture exec not available."))))
 
 (define-key jabber-global-keymap "\C-s" 'jabber-qim-send-screenshot)
+
+(defun jabber-qim-send-link (link-text jc jid send-function &optional chat-buffer)
+  (interactive
+   (append (list (read-string "Send link: "))
+           (jabber-qim-interactive-send-argument-list "To chat: ")))
+  (funcall send-function jc
+           (format "[obj type=\"url\" value=\"%s\"]" link-text)))
+
+(define-key jabber-global-keymap "\C-i" 'jabber-qim-send-link)
 
 
 (defun jabber-qim-chat-send-screenshot (jc chat-with &optional chat-buffer)
