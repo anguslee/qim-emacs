@@ -40,21 +40,31 @@
 (defvar *jabber-qim-username-to-jid-cache*
   '())
 
+(defconst jabber-qim-user-vcard-reload-cycle
+  86400)
+
 (defun jabber-qim-users-preload (jc)
-  (jabber-qim-api-request-get
-   #'(lambda (data conn headers)
-       (mapcar #'(lambda (vcard)
-                   (add-to-list '*jabber-qim-user-jid-cache*
-                                (jabber-jid-symbol (jabber-qim-user-vcard-jid vcard)))
-                   (puthash (jabber-qim-user-vcard-jid vcard)
-                            vcard *jabber-qim-user-vcard-cache*)
-                   (add-to-list '*jabber-qim-username-to-jid-cache*
-                                (cons (intern (format "%s - %s"
-                                                      (jabber-qim-user-vcard-name vcard)
-                                                      (jabber-qim-user-vcard-position vcard)))
-                                      (jabber-qim-user-vcard-jid vcard)))) data))
-   "getusers"
-   (jabber-qim-api-connection-auth-info jc)))
+  (message "Reloading user vcards...")
+  (jabber-connect-all)
+  (when (jabber-connection-original-jid jc)
+    (jabber-qim-api-request-get
+     #'(lambda (data conn headers)
+         (setq *jabber-qim-user-jid-cache* '())
+         (setq *jabber-qim-username-to-jid-cache* '())
+         (clrhash *jabber-qim-user-vcard-cache*)
+         (mapcar #'(lambda (vcard)
+                     (add-to-list '*jabber-qim-user-jid-cache*
+                                  (jabber-jid-symbol (jabber-qim-user-vcard-jid vcard)))
+                     (puthash (jabber-qim-user-vcard-jid vcard)
+                              vcard *jabber-qim-user-vcard-cache*)
+                     (add-to-list '*jabber-qim-username-to-jid-cache*
+                                  (cons (intern (format "%s - %s"
+                                                        (jabber-qim-user-vcard-name vcard)
+                                                        (jabber-qim-user-vcard-position vcard)))
+                                        (jabber-qim-user-vcard-jid vcard))))
+                 data))
+     "getusers"
+     (jabber-qim-api-connection-auth-info jc))))
 
 
 ;; extension functions
@@ -480,7 +490,6 @@
 (defconst jabber-qim-max-send-file-size (* 10 1024 1024)
   "Max send file size set to 10MB")
 
-
 (cl-defun jabber-qim-send-file (filename jc jid send-function &optional chat-buffer)
   (interactive
    (append (list (read-file-name (let ((current-jid (or jabber-group
@@ -615,6 +624,15 @@
       (message "Screen capture exec not available."))))
 
 (define-key jabber-global-keymap "\C-s" 'jabber-qim-send-screenshot)
+
+(defun jabber-qim-send-link (link-text jc jid send-function &optional chat-buffer)
+  (interactive
+   (append (list (read-string "Send link: "))
+           (jabber-qim-interactive-send-argument-list "To chat: ")))
+  (funcall send-function jc
+           (format "[obj type=\"url\" value=\"%s\"]" link-text)))
+
+(define-key jabber-global-keymap "\C-i" 'jabber-qim-send-link)
 
 
 (defun jabber-qim-chat-send-screenshot (jc chat-with &optional chat-buffer)

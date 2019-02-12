@@ -105,21 +105,26 @@
 
     *M-x jabber-qim-send-screenshot (C-x C-j C-s)*
 
-6. 邀请入群组：
+6. 以其他客户端可以直接点击打开的格式发送链接：
+
+    *M-x jabber-qim-send-link (C-x C-j C-i)*
+
+
+7. 邀请入群组：
 
     *M-x jabber-muc-invite (C-x C-j C-v)*
 
-7. 聊天状态下打开功能菜单：
+8. 聊天状态下打开功能菜单：
 
     *C-c C-c* （点对点聊天菜单）
 
     *C-c [return]* （群聊菜单）
 
-8. 开启/关闭群组消息提示（重启后仍生效）
+9. 开启/关闭群组消息提示（重启后仍生效）
 
     *M-x jabber-muc-toggle-message-alert*
 
-9. 切换到含未读消息的会话
+10. 切换到含未读消息的会话
 
     *M-x jabber-qim-chat-switch-to-unread (C-x C-j C-u)* （可通过补全方式选择含未读消息的会话）
 
