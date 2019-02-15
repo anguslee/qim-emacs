@@ -17,6 +17,8 @@
 ;; Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 
+(defvar *jabber-qim-version* "11001010")
+
 (defvar jabber-qim-local-file-dir
   "~/qim-local-files")
 
