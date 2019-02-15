@@ -39,24 +39,27 @@
 (defvar *jabber-qim-timers*
   '())
 
-(add-to-list 'jabber-post-connect-hooks #'(lambda (jc)
-                                            (jabber-send-iq jc
-                                                            nil
-                                                            "get"
-                                                            `(key ((xmlns . "urn:xmpp:key")))
-                                                            #'(lambda (jc xml-data context)
-                                                                (let ((key-node (jabber-xml-path xml-data '(("urn:xmpp:key" . "key")))))
-                                                                  (plist-put
-                                                                   (plist-get jc
-                                                                              :state-data)
-                                                                   :qim-auth-key (jabber-xml-get-attribute
-                                                                                  key-node
-                                                                                  'value)))
-                                                                (add-to-list '*jabber-qim-timers*
-                                                                             (run-with-timer 0 jabber-qim-user-vcard-reload-cycle 'jabber-qim-users-preload jc))
-                                                                (jabber-qim-user-muc-preload jc))
-                                                            nil
-                                                            'jabber-report-success "urn:xmpp:key")))
+(defun jabber-qim-post-connect (jc)
+  (jabber-send-iq jc
+                  nil
+                  "get"
+                  `(key ((xmlns . "urn:xmpp:key")))
+                  #'(lambda (jc xml-data context)
+                      (let ((key-node (jabber-xml-path xml-data '(("urn:xmpp:key" . "key")))))
+                        (plist-put
+                         (plist-get jc
+                                    :state-data)
+                         :qim-auth-key (jabber-xml-get-attribute
+                                        key-node
+                                        'value)))
+                      (add-to-list '*jabber-qim-timers*
+                                   (run-with-timer 0 jabber-qim-user-vcard-reload-cycle 'jabber-qim-users-preload jc))
+                      (jabber-qim-user-muc-preload jc)
+                      )
+                  nil
+                  'jabber-report-success "urn:xmpp:key"))
+
+(add-to-list 'jabber-post-connect-hooks #'jabber-qim-post-connect)
 
 (defun jabber-qim-cancel-timers ()
   (mapcar #'cancel-timer
