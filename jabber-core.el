@@ -639,19 +639,35 @@ With double prefix argument, specify more connection details."
 	 (setq state-data (plist-put state-data :stream-features stanza))
 	 (if (jabber-xml-get-children stanza 'bind)
 	     (let ((handle-bind
-		    (lambda (jc xml-data success)
-		      (fsm-send jc (list
-				    (if success :bind-success :bind-failure)
-				    xml-data))))
-		   ;; So let's bind a resource.  We can either pick a resource ourselves,
-		   ;; or have the server pick one for us.
-               (resource (plist-get state-data :resource)))
+                (lambda (jc xml-data success)
+                  (fsm-send jc (list
+                                (if success :bind-success :bind-failure)
+                                xml-data))))
+               ;; So let's bind a resource.  We can either pick a resource ourselves,
+               ;; or have the server pick one for us.
+               (resource (or
+                          (plist-get state-data :resource)
+                          (format "V[%s]_P[%s]_D[%s]_S[%s]_ID[%s]_XMPP"
+                                  *jabber-qim-version*
+                                  (format "%s_%s"
+                                          (cond
+                                           ((string-equal system-type "windows-nt") ; Microsoft Windows
+                                            "Microsoft Windows")
+                                           ((string-equal system-type "darwin") ; Mac OS X
+                                            "Mac")
+                                           ((string-equal system-type "gnu/linux") ; linux
+                                            "Linux"))
+                                          system-configuration)
+                                  (replace-regexp-in-string " " "_"
+                                                            (string-trim (car (split-string (emacs-version) emacs-version))))
+                                  emacs-version
+                                  (abs (random))))))
 	       (jabber-send-iq fsm nil "set"
-			       `(bind ((xmlns . "urn:ietf:params:xml:ns:xmpp-bind"))
-                          ,@(when resource
-                              `((resource () ,resource))))
-			       handle-bind t
-			       handle-bind nil)
+                           `(bind ((xmlns . "urn:ietf:params:xml:ns:xmpp-bind"))
+                                  ,@(when resource
+                                      `((resource () ,resource))))
+                           handle-bind t
+                           handle-bind nil)
 	       (list :bind state-data))
 	   (message "Server doesn't permit resource binding")
 	   (list nil state-data)))
