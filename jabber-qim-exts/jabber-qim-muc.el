@@ -89,7 +89,6 @@
                                    (x
                                     ((xmlns . "http://jabber.org/protocol/muc#presence_all"))))))
 
-
 (defun jabber-qim-user-muc-preload (jc)
   (setq *jabber-qim-user-muc-room-jid-list* '())
   (jabber-send-iq jc (format "%s.%s"
@@ -103,7 +102,10 @@
                          #'(lambda (data conn headers)
                              (when (equal "200" (gethash 'status-code headers))
                                (let ((muc-vcards (ignore-errors
-                                                   (cdr (assoc 'data data)))))
+                                                   (cdr
+                                                    (assoc
+                                                     'mucs
+                                                     (cdr (assoc 'data data)))))))
                                  (mapcar #'(lambda (muc-vcard)
                                              (add-to-list '*jabber-qim-user-muc-room-jid-list*
                                                           (cons (intern (jabber-qim-muc-vcard-group-display-name muc-vcard))
@@ -122,17 +124,18 @@
                                                                 muc-jid)))))
                                          muc-vcards)))
                              (jabber-qim-user-muc-join-all jc))
-                         "getmucvcard"
+                         "/package/newapi/muc/get_muc_vcard.qunar"
                          (json-encode
-                          (mapcar #'(lambda (muc)
-                                      (let ((muc-jid (format "%s@%s"
-                                                             (cdr (assoc 'name muc))
-                                                             (cdr (assoc 'host muc)))))
-                                        `((:muc_name . ,(jabber-jid-user muc-jid))
-                                          (:version . 0))))
-                                  muc-rooms))
+                          `(:mucs . ,(mapcar #'(lambda (muc)
+                                                 (let ((muc-jid (format "%s@%s"
+                                                                        (cdr (assoc 'name muc))
+                                                                        (cdr (assoc 'host muc)))))
+                                                   `((:muc_name . ,muc-jid)
+                                                     (:version . 0))))
+                                             muc-rooms)))
                          'application/json
-                         (jabber-qim-api-connection-auth-info jc))
+                         (jabber-qim-api-connection-auth-info jc)
+                         "https://qim.qunar.com")
                         (mapcar #'(lambda (muc)
                                     (jabber-send-iq jc
                                                     (format "%s@%s"
@@ -161,6 +164,7 @@
                   #'(lambda (jc xml-data closure-data)
                       (message "%s" closure-data))
                   "MUC preload failed"))
+
 
 (defun jabber-qim-muc-set-topic (jc muc-jid topic)
   (interactive

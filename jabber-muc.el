@@ -263,7 +263,7 @@ This function is idempotent."
   "Remember participating in GROUP under NICKNAME."
   (let ((whichgroup (assoc group *jabber-active-groupchats*)))
     (if whichgroup
-	(setcdr whichgroup nickname)
+        (setcdr whichgroup nickname)
       (add-to-list '*jabber-active-groupchats* (cons group nickname)))))
 
 (defun jabber-muc-remove-groupchat (group)

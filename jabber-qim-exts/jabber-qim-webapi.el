@@ -91,10 +91,11 @@ affecting the resulting lisp structure."
       :logging logging)))
 
 
-(defun jabber-qim-api-request-post (callback command data mime-type &optional auth-info)
+(defun jabber-qim-api-request-post (callback command data mime-type &optional auth-info api-server)
   (web-json-post 
       callback
-      :url (format "%s/%s?u=%s&k=%s" *jabber-qim-api-server*
+      :url (format "%s/%s?u=%s&k=%s" (or api-server
+                                         *jabber-qim-api-server*)
                    command
                    (or (cdr (assoc :u auth-info)) "")
                    (or (cdr (assoc :k auth-info)) ""))
@@ -104,10 +105,11 @@ affecting the resulting lisp structure."
       :json-array-type 'list))
 
 
-(defun jabber-qim-api-request-get (callback command &optional auth-info)
+(defun jabber-qim-api-request-get (callback command &optional auth-info api-server)
   (web-json-get 
       callback
-      :url (format "%s/%s?u=%s&k=%s" *jabber-qim-api-server*
+      :url (format "%s/%s?u=%s&k=%s" (or api-server
+                                         *jabber-qim-api-server*)
                    command
                    (or (cdr (assoc :u auth-info)) "")
                    (or (cdr (assoc :k auth-info)) ""))
