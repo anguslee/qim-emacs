@@ -600,55 +600,16 @@ If DONT-PRINT-NICK-P is true, don't include nickname."
 (defun jabber-chat-print-body (xml-data who mode)
   (run-hook-with-args-until-success 'jabber-body-printers xml-data who mode))
 
+
 (defun jabber-chat-normal-body (xml-data who mode)
   "Print body for received message in XML-DATA."
   (let* ((msg-type (jabber-qim-message-type xml-data))
          (extend-info (jabber-qim-message-extend-info xml-data))
-         (body (jabber-qim-message-body-text xml-data)))
-    (when body
-      (when (eql mode :insert)
-        (if (and (> (length body) 4)
-                 (string= (substring body 0 4) "/me "))
-            (let ((action (substring body 4))
-                  (nick (cond
-                         ((eq who :local)
-                          (plist-get (fsm-get-state-data jabber-buffer-connection) :username))
-                         ((or (jabber-muc-message-p xml-data)
-                              (jabber-muc-private-message-p xml-data))
-                          (jabber-jid-resource (jabber-xml-get-attribute xml-data 'from)))
-                         (t
-                          (jabber-jid-displayname (jabber-xml-get-attribute xml-data 'from))))))
-              (insert (jabber-propertize
-                       (concat nick
-                               " "
-                               action)
-                       'face 'jabber-chat-prompt-system)))
-          (let ((file-desc
-                 (and
-                  (equal msg-type jabber-qim-msg-type-file)
-                  (jabber-qim-body-parse-file body)))
-                (face (case who
-                        ((:foreign :muc-foreign) 'jabber-chat-text-foreign)
-                        ((:local :muc-local) 'jabber-chat-text-local)))
-                (uid (plist-get (fsm-get-state-data jabber-buffer-connection)
-                                :original-jid)))
-            (if file-desc
-                (jabber-qim-insert-file file-desc body face
-                                        uid)
-              (progn
-                (jabber-chat-print-message-body-segments
-                 body
-                 face
-                 uid)
-                (when (and extend-info
-                           (not (string= msg-type
-                                         jabber-qim-msg-type-common-trd-info)))
-                  (jabber-chat-print-message-body-segments
-                   (format "\n\n *******\n%s"
-                           extend-info)
-                   face
-                   uid)))))))
-      t)))
+         (body (jabber-qim-message-body-text xml-data))
+         (muc-message-p (jabber-muc-message-p xml-data))
+         (private-message-p (jabber-muc-private-message-p xml-data))
+         (message-from (jabber-xml-get-attribute xml-data 'from)))
+    (jabber-qim-chat-insert-body msg-type body extend-info muc-message-p private-message-p message-from who mode)))
 
 (defun jabber-chat-print-message-body-segments (body face &optional uid)
   (let ((match-start

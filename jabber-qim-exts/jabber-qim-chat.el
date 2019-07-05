@@ -462,6 +462,52 @@
       (:md5 . ,(cdr (assoc 'FILEMD5 file-desc))))
     ))
 
+(defun jabber-qim-chat-insert-body (msg-type body extend-info muc-message-p private-message-p message-from who mode)
+  (when body
+    (when (eql mode :insert)
+      (if (and (> (length body) 4)
+               (string= (substring body 0 4) "/me "))
+          (let ((action (substring body 4))
+                (nick (cond
+                       ((eq who :local)
+                        (plist-get (fsm-get-state-data jabber-buffer-connection) :username))
+                       ((or muc-message-p
+                            private-message-p)
+                        (jabber-jid-resource message-from))
+                       (t
+                        (jabber-jid-displayname message-from)))))
+            (insert (jabber-propertize
+                     (concat nick
+                             " "
+                             action)
+                     'face 'jabber-chat-prompt-system)))
+        (let ((file-desc
+               (and
+                (equal msg-type jabber-qim-msg-type-file)
+                (jabber-qim-body-parse-file body)))
+              (face (case who
+                      ((:foreign :muc-foreign) 'jabber-chat-text-foreign)
+                      ((:local :muc-local) 'jabber-chat-text-local)))
+              (uid (plist-get (fsm-get-state-data jabber-buffer-connection)
+                              :original-jid)))
+          (if file-desc
+              (jabber-qim-insert-file file-desc body face
+                                      uid)
+            (progn
+              (jabber-chat-print-message-body-segments
+               body
+               face
+               uid)
+              (when (and extend-info
+                         (not (string= msg-type
+                                       jabber-qim-msg-type-common-trd-info)))
+                (jabber-chat-print-message-body-segments
+                 (format "\n\n *******\n%s"
+                         extend-info)
+                 face
+                 uid)))))))
+    t))
+
 (defconst jabber-qim-msg-type-muc-notify "15"
   "Message is a groupchat notify")
 

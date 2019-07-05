@@ -180,6 +180,9 @@
     `((:u . ,(plist-get connection-state
                         :username))
       (:k . ,(plist-get connection-state
-                        :qim-auth-key)))))
+                        :qim-auth-key))
+      (:d . ,(plist-get connection-state
+                        :server))
+      (:t . ,(truncate (float-time))))))
 
 (provide 'jabber-qim-util)

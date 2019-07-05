@@ -92,17 +92,26 @@ affecting the resulting lisp structure."
 
 
 (defun jabber-qim-api-request-post (callback command data mime-type &optional auth-info api-server)
-  (web-json-post 
-      callback
-      :url (format "%s/%s?u=%s&k=%s" (or api-server
-                                         *jabber-qim-api-server*)
-                   command
-                   (or (cdr (assoc :u auth-info)) "")
-                   (or (cdr (assoc :k auth-info)) ""))
-      :data data
-      :mime-type mime-type
-      :json-object-type 'alist
-      :json-array-type 'list))
+  (let ((u (or (cdr (assoc :u auth-info)) ""))
+        (k (or (cdr (assoc :k auth-info)) ""))
+        (ts (or (cdr (assoc :t auth-info)) ""))
+        (d (or (cdr (assoc :d auth-info)) "")))
+    (web-json-post
+     callback
+     :url (format "%s/%s?u=%s&k=%s" (or api-server
+                                        *jabber-qim-api-server*)
+                  command
+                  u
+                  k)
+     :data data
+     :headers `(("Cookie" . ,(format "q_ckey=%s"
+                                    (base64-encode-string
+                                     (format "u=%s&t=%s&sk=%s&d=%s&k=%s"
+                                             u ts k d (secure-hash 'md5 (format "%s%s" k ts)))
+                                     t))))
+     :mime-type mime-type
+     :json-object-type 'alist
+     :json-array-type 'list)))
 
 
 (defun jabber-qim-api-request-get (callback command &optional auth-info api-server)

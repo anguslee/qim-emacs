@@ -165,6 +165,52 @@
                       (message "%s" closure-data))
                   "MUC preload failed"))
 
+(defun jabber-muc-recent-history (jc muc-jid length timestamp)
+  (interactive
+   (jabber-muc-argument-list
+    (list (string-to-int (jabber-read-with-input-method "Load message num: " "10"))
+          (truncate (* 1000 (float-time))))))
+  (jabber-qim-api-request-post
+   (lambda (response conn headers)
+     ; (message "Response: %s" response)
+     (when (and
+            (equal "200" (gethash 'status-code headers))
+            (cdr (assoc 'ret response)))
+       (let ((data (cdr (assoc 'data response))))
+         (with-current-buffer (jabber-muc-create-buffer jc muc-jid)
+           (ewoc-enter-last jabber-chat-ewoc (list :notice
+                                                   (apply 'concat "\n\nRecent messages:\n"
+                                                          (mapcar #'(lambda (msg)
+                                                                      (let* ((body (cdr (assoc 'body msg)))
+                                                                             (msg-meta (cdr (assoc 'message msg)))
+                                                                             (msg-type (cdr (assoc 'msgType body)))
+                                                                             (content (decode-coding-string (cdr (assoc 'content body))
+                                                                                                            'utf-8-emacs-unix))
+                                                                             (sender-jid (cdr (assoc 'senderjid msg-meta)))
+                                                                             (sender-nick (decode-coding-string (cdr (assoc 'nick msg))
+                                                                                                                'utf-8-emacs-unix))
+                                                                             (timestamp (seconds-to-time (cdr (assoc 't msg)))))
+                                                                        (format "%s%s\n"
+                                                                                (format-spec jabber-chat-foreign-prompt-format
+                                                                                             (list
+                                                                                              (cons ?t (format-time-string 
+                                                                                                        jabber-chat-time-format
+                                                                                                        timestamp))
+                                                                                              (cons ?n sender-nick)
+                                                                                              ))
+                                                                                content)))
+                                                                  data))
+                                                   :time (current-time))))
+         )))
+   "/package/qtapi/getmucmsgs.qunar"
+   (json-encode `((:muc . ,(jabber-jid-username muc-jid))
+                  (:direction . 0)
+                  (:num . ,length)
+                  (:domain . ,(jabber-qim-jid-domain muc-jid))
+                  (:time . ,timestamp)))
+   'application/json
+   (jabber-qim-api-connection-auth-info jc)
+   "https://qim.qunar.com"))
 
 (defun jabber-qim-muc-set-topic (jc muc-jid topic)
   (interactive
