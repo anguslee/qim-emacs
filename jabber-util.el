@@ -533,15 +533,17 @@ CONTEXT is a string describing the action.
 \"CONTEXT succeeded\" or \"CONTEXT failed: REASON\" is displayed in
 the echo area."
   (let ((type (jabber-xml-get-attribute xml-data 'type)))
-    (message (concat context
-		     (if (string= type "result")
-			 " succeeded"
-		       (concat
-			" failed: "
-			(let ((the-error (jabber-iq-error xml-data)))
-			  (if the-error
-			      (jabber-parse-error the-error)
-			    "No error message given"))))))))
+    (unless (string= type "result")
+      (message (concat context
+                       (concat
+                          " failed: "
+                          (let ((the-error (jabber-iq-error xml-data)))
+                            (if the-error
+                                (jabber-parse-error the-error)
+                              "No error message given")))(if (string= type "result")
+                           " succeeded"
+                         ))))
+    ))
 
 (defconst jabber-error-messages
   (list
