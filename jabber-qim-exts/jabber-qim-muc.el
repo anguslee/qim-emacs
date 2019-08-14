@@ -144,7 +144,7 @@
                                            ))))
                                      'application/json
                                      (jabber-qim-api-connection-auth-info jc)
-                                     "http://qim.qunar.com")
+                                     *jabber-qim-api-server-v2*)
                                     (mapcar #'(lambda (muc)
                                                 (jabber-send-iq jc
                                                                 (format "%s@%s"
