@@ -533,7 +533,7 @@
 (defconst jabber-qim-msg-type-common-trd-info "666"
   "CommonTrdInfo")
 
-(defconst jabber-qim-max-send-file-size (* 10 1024 1024)
+(defconst jabber-qim-max-send-file-size (* 100 1024 1024)
   "Max send file size set to 10MB")
 
 (cl-defun jabber-qim-send-file (filename jc jid send-function &optional chat-buffer)
