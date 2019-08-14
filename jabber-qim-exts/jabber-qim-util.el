@@ -32,7 +32,7 @@
   "Return group jid"
   (ignore-errors
     (decode-coding-string (cdr (assoc 'MN vcard))
-                         'utf-8-emacs-unix)))
+                          'utf-8-emacs-unix)))
 
 ;;;###autoload (autoload 'jabber-qim-muc-vcard-group-display-name "jabber-qim-extension" "Return group display name" t)
 (defun jabber-qim-muc-vcard-group-display-name (vcard)

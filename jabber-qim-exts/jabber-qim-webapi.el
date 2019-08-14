@@ -25,6 +25,10 @@
 (defvar *jabber-qim-api-server*)
 
 ;;;###autoload
+(defvar *jabber-qim-api-server-v2*)
+
+
+;;;###autoload
 (defvar *jabber-qim-file-server*)
 
 ;;;###autoload
