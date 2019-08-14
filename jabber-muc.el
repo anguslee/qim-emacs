@@ -1181,6 +1181,9 @@ Return nil if X-MUC is nil."
            (body-text (jabber-qim-message-body-text xml-data))
            (msg-type (jabber-qim-message-type xml-data))
            (printers (append jabber-muc-printers jabber-chat-printers)))
+      (when (not (assoc group
+                        *jabber-active-groupchats*))
+        (jabber-qim-muc-join jc group))
       (if (or (assoc group *jabber-active-groupchats*)
               (jabber-muc-invite-message-p xml-data))
           (with-current-buffer (jabber-muc-create-buffer jc group)
