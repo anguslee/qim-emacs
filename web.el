@@ -490,7 +490,7 @@ set on the Content-Type header."
          http-hdrs)))
     (when (and to-send (> (length to-send) 0))
       (push
-       (format "Content-length: %d\r\n" (length to-send))
+       (format "Content-length: %d\r\n" (string-bytes to-send))
        http-hdrs))
     (cl-loop for hdr in http-hdrs if hdr concat hdr)))
 
