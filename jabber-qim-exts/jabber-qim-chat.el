@@ -66,6 +66,54 @@
      "getusers"
      (jabber-qim-api-connection-auth-info jc))))
 
+(defvar
+  *jabber-qim-user-vcards-current-version*
+  0)
+
+(defun jabber-qim-users-incremental-preload (jc)
+  (when (jabber-connection-original-jid jc)
+    (jabber-qim-api-request-post
+     #'(lambda (response-data conn headers)
+         (when (and
+                (equal "200" (gethash 'status-code headers))
+                (cdr (assoc 'ret response-data)))
+           (let* ((data (cdr (assoc 'data response-data)))
+                  (updated-users (cdr (assoc 'update data)))
+                  (deleted-users (cdr (assoc 'delete data)))
+                  (new-version (cdr (assoc 'version data))))
+             (when (> new-version *jabber-qim-user-vcards-current-version*)
+               (message "Reloading user vcards incrementally. Previous version: %d; New version: %d"
+                        *jabber-qim-user-vcards-current-version* new-version)
+               (mapcar #'(lambda (vcard)
+                           (puthash (jabber-qim-user-vcard-jid vcard)
+                                    vcard *jabber-qim-user-vcard-cache*))
+                       updated-users)
+               (mapcar #'(lambda (vcard)
+                           (remhash (jabber-qim-user-vcard-jid vcard)
+                                    *jabber-qim-user-vcard-cache*))
+                       deleted-users)
+               ; Reload JID caches:
+               (setq *jabber-qim-user-jid-cache* '())
+               (setq *jabber-qim-username-to-jid-cache* '())
+               (maphash #'(lambda (key vcard)
+                            (add-to-list '*jabber-qim-user-jid-cache*
+                                         (jabber-jid-symbol (jabber-qim-user-vcard-jid vcard)))
+                            (add-to-list '*jabber-qim-username-to-jid-cache*
+                                         (cons (intern (format "%s - %s"
+                                                               (jabber-qim-user-vcard-name vcard)
+                                                               (jabber-qim-user-vcard-position vcard)))
+                                               (jabber-qim-user-vcard-jid vcard))))
+                        *jabber-qim-user-vcard-cache*)
+               (message "User mucs reload complete. Previous version: %d; New version: %d"
+                        *jabber-qim-user-vcards-current-version* new-version)
+               (setq *jabber-qim-user-vcards-current-version*
+                     new-version)))))
+     "/newapi/update/getUpdateUsers.qunar"
+     (json-encode
+      `((version . ,*jabber-qim-user-vcards-current-version*)))
+     'application/json
+     (jabber-qim-api-connection-auth-info jc)
+     *jabber-qim-api-server-v2*)))
 
 ;; extension functions
 (defun jabber-qim-object-attributes (object-text)
@@ -767,18 +815,24 @@
                     '(query ((xmlns . "http://jabber.org/protocol/create_muc")))
                     (lambda (jc xml-data context)
                       (jabber-qim-api-request-post
-                       (lambda (data conn headers)
-                         (when (equal "200" (gethash 'status-code headers))
-                           (puthash (jabber-jid-user muc-jid)
-                                    `((SN . ,groupchat-name)
-                                      (MN . ,(jabber-jid-user muc-jid)))
-                                    *jabber-qim-muc-vcard-cache*)
+                       (lambda (response conn headers)
+                         (when (and
+                                (equal "200" (gethash 'status-code headers))
+                                (cdr (assoc 'ret response)))
+                           (let ((vcard (cadr (assoc 'data response))))
+                             (puthash (jabber-jid-user muc-jid)
+                                      `((MN . ,(cdr (assoc 'muc_name vcard)))
+                                        (SN . ,(decode-coding-string
+                                                (cdr (assoc 'show_name vcard))
+                                                'utf-8-emacs-unix)))
+                                      *jabber-qim-muc-vcard-cache*))                           
                            (jabber-qim-muc-join jc muc-jid t)))
-                       "setmucvcard"
+                       "/newapi/muc/set_muc_vcard.qunar"
                        (json-encode (vector `((:muc_name . ,(jabber-jid-user (cdr (assoc :muc-jid context))))
                                               (:nick . ,(cdr (assoc :groupchat-name context))))))
                        'application/json
-                       (jabber-qim-api-connection-auth-info jc)))
+                       (jabber-qim-api-connection-auth-info jc)
+                       *jabber-qim-api-server-v2*))
                     `((:muc-jid . ,muc-jid)
                       (:groupchat-name . ,groupchat-name))
                     nil nil)

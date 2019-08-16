@@ -128,7 +128,7 @@
                                                                             muc-jid)))))
                                                      muc-vcards))
                                            ))
-                                     "/package/newapi/muc/get_muc_vcard.qunar"
+                                     "/newapi/muc/get_muc_vcard.qunar"
                                      (let ((muc-domain (format "%s.%s"
                                                                *jabber-qim-muc-sub-hostname*
                                                                *jabber-qim-domain*)))
@@ -229,14 +229,17 @@
    (jabber-muc-argument-list
     (list (jabber-read-with-input-method "New topic: " jabber-muc-topic))))
   (jabber-qim-api-request-post
-   (lambda (data conn headers)
-     (unless (equal "200" (gethash 'status-code headers))
-       (message "Set muc topic failed. Response: %s" data)))
-   "setmucvcard"
+   (lambda (response-data conn headers)
+     (unless (and
+              (equal "200" (gethash 'status-code headers))
+              (cdr (assoc 'ret response-data)))
+       (message "Set muc topic failed. Response: %s" response-data)))
+   "/newapi/muc/set_muc_vcard.qunar"
    (json-encode (vector `((:muc_name . ,(jabber-jid-user muc-jid))
                           (:title . ,topic))))
    'application/json
-   (jabber-qim-api-connection-auth-info jc)))
+   (jabber-qim-api-connection-auth-info jc)
+   *jabber-qim-api-server-v2*))
 
 (defun jabber-qim-muc-set-name (jc muc-jid name)
   (interactive
@@ -245,14 +248,17 @@
                                          (jabber-qim-muc-vcard-group-display-name
                                           (jabber-qim-get-muc-vcard jabber-group))))))
   (jabber-qim-api-request-post
-   (lambda (data conn headers)
-     (unless (equal "200" (gethash 'status-code headers))
-       (message "Set muc name failed. Response: %s" data)))
-   "setmucvcard"
+   (lambda (response-data conn headers)
+     (unless (and
+              (equal "200" (gethash 'status-code headers))
+              (cdr (assoc 'ret response-data)))
+       (message "Set muc name failed. Response: %s" response-data)))
+   "/newapi/muc/set_muc_vcard.qunar"
    (json-encode (vector `((:muc_name . ,(jabber-jid-user muc-jid))
                           (:nick . ,name))))
    'application/json
-   (jabber-qim-api-connection-auth-info jc)))
+   (jabber-qim-api-connection-auth-info jc)
+   *jabber-qim-api-server-v2*))
 
 
 ;;;###autoload (autoload 'jabber-qim-muc-join "jabber-qim-extension" "Join a qim MUC chatroom" t)
@@ -299,7 +305,7 @@
              (setq jabber-muc-topic (jabber-qim-muc-vcard-group-topic
                                      (gethash (jabber-jid-user muc-jid)
                                               *jabber-qim-muc-vcard-cache*)))))
-       "/package/newapi/muc/get_muc_vcard.qunar"
+       "/newapi/muc/get_muc_vcard.qunar"
        (json-encode
         `(((:mucs . (((:muc_name . ,(jabber-jid-user muc-jid))
                       (:version . 0))))

@@ -53,7 +53,7 @@
                                         key-node
                                         'value)))
                       (add-to-list '*jabber-qim-timers*
-                                   (run-with-timer 0 jabber-qim-user-vcard-reload-cycle 'jabber-qim-users-preload jc))
+                                   (run-with-timer 0 jabber-qim-user-vcard-reload-cycle 'jabber-qim-users-incremental-preload jc))
                       (jabber-qim-user-muc-preload jc)
                       )
                   nil
