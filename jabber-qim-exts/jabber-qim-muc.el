@@ -103,10 +103,13 @@
                                      #'(lambda (data conn headers)
                                          (when (equal "200" (gethash 'status-code headers))
                                            (let ((muc-vcards (ignore-errors
-                                                               (cdr
-                                                                (assoc
-                                                                 'mucs
-                                                                 (cdr (assoc 'data data)))))))
+                                                               (apply #'append
+                                                                      (mapcar #'(lambda (domain-mucs)
+                                                                                  (cdr
+                                                                                   (assoc
+                                                                                    'mucs
+                                                                                    domain-mucs)))
+                                                                              (cdr (assoc 'data data)))))))
                                              (mapcar #'(lambda (muc-vcard)
                                                          (add-to-list '*jabber-qim-user-muc-room-jid-list*
                                                                       (cons (intern (jabber-qim-muc-vcard-group-display-name muc-vcard))
