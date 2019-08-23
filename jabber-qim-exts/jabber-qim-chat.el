@@ -108,12 +108,11 @@
                         *jabber-qim-user-vcards-current-version* new-version)
                (setq *jabber-qim-user-vcards-current-version*
                      new-version)))))
-     "/newapi/update/getUpdateUsers.qunar"
+     *jabber-qim-webapi-command-update-users*
      (json-encode
       `((version . ,*jabber-qim-user-vcards-current-version*)))
      'application/json
-     (jabber-qim-api-connection-auth-info jc)
-     *jabber-qim-api-server-v2*)))
+     (jabber-qim-api-connection-auth-info jc))))
 
 ;; extension functions
 (defun jabber-qim-object-attributes (object-text)
@@ -827,12 +826,11 @@
                                                 'utf-8-emacs-unix)))
                                       *jabber-qim-muc-vcard-cache*))                           
                            (jabber-qim-muc-join jc muc-jid t)))
-                       "/newapi/muc/set_muc_vcard.qunar"
+                       *jabber-qim-webapi-command-set-muc-vcard*
                        (json-encode (vector `((:muc_name . ,(jabber-jid-user (cdr (assoc :muc-jid context))))
                                               (:nick . ,(cdr (assoc :groupchat-name context))))))
                        'application/json
-                       (jabber-qim-api-connection-auth-info jc)
-                       *jabber-qim-api-server-v2*))
+                       (jabber-qim-api-connection-auth-info jc)))
                     `((:muc-jid . ,muc-jid)
                       (:groupchat-name . ,groupchat-name))
                     nil nil)

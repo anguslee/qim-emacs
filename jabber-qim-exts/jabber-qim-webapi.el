@@ -22,11 +22,10 @@
 (require 'web)
 
 ;;;###autoload
-(defvar *jabber-qim-api-server*)
+(defvar *jabber-qim-http-url*)
 
 ;;;###autoload
-(defvar *jabber-qim-api-server-v2*)
-
+(defvar *jabber-qim-message-history-url*)
 
 ;;;###autoload
 (defvar *jabber-qim-file-server*)
@@ -34,6 +33,18 @@
 ;;;###autoload
 (defvar *jabber-qim-file-service-version*
   "v2")
+
+(defconst *jabber-qim-webapi-command-set-muc-vcard*
+  "/muc/set_muc_vcard.qunar")
+
+(defconst *jabber-qim-webapi-command-get-muc-vcard*
+  "/muc/get_muc_vcard.qunar")
+
+(defconst *jabber-qim-webapi-command-update-users*
+  "/update/getUpdateUsers.qunar")
+
+(defconst *jabber-qim-webapi-command-get-muc-messages*
+  "/qtapi/getmucmsgs.qunar")
 
 (add-to-list 'web-json-expected-mimetypes-list
              "text/json")
@@ -95,15 +106,15 @@ affecting the resulting lisp structure."
       :logging logging)))
 
 
-(defun jabber-qim-api-request-post (callback command data mime-type &optional auth-info api-server)
+(defun jabber-qim-api-request-post (callback command data mime-type &optional auth-info alt-api-url)
   (let ((u (or (cdr (assoc :u auth-info)) ""))
         (k (or (cdr (assoc :k auth-info)) ""))
         (ts (or (cdr (assoc :t auth-info)) ""))
         (d (or (cdr (assoc :d auth-info)) "")))
     (web-json-post
      callback
-     :url (format "%s/%s?u=%s&k=%s" (or api-server
-                                        *jabber-qim-api-server*)
+     :url (format "%s/%s?u=%s&k=%s" (or alt-api-url
+                                        *jabber-qim-http-url*)
                   command
                   u
                   k)
@@ -118,11 +129,11 @@ affecting the resulting lisp structure."
      :json-array-type 'list)))
 
 
-(defun jabber-qim-api-request-get (callback command &optional auth-info api-server)
+(defun jabber-qim-api-request-get (callback command &optional auth-info alt-api-url)
   (web-json-get 
       callback
-      :url (format "%s/%s?u=%s&k=%s" (or api-server
-                                         *jabber-qim-api-server*)
+      :url (format "%s/%s?u=%s&k=%s" (or alt-api-url
+                                         *jabber-qim-http-url*)
                    command
                    (or (cdr (assoc :u auth-info)) "")
                    (or (cdr (assoc :k auth-info)) ""))

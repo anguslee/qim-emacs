@@ -46,8 +46,11 @@
    ```
 4. 根据服务端的导航服务，为本地.emacs添加以下初始化配置参数：
    ```lisp
-   (setq *jabber-qim-api-server*
-       "<服务端接口API地址，取值baseaddress.apiurl>")
+   (setq *jabber-qim-http-url*
+       "<服务端通用http接口url地址，取值baseaddress.httpurl>")
+
+   (setq *jabber-qim-message-history-url*
+       "<服务端历史消息接口url地址，取值baseaddress.javaurl>")")
 
    (setq *jabber-qim-file-server*
        "<服务端文件服务地址，取值baseaddress.fileurl>")

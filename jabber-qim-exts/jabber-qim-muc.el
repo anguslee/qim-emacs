@@ -128,7 +128,7 @@
                                                                             muc-jid)))))
                                                      muc-vcards))
                                            ))
-                                     "/newapi/muc/get_muc_vcard.qunar"
+                                     *jabber-qim-webapi-command-get-muc-vcard*
                                      (let ((muc-domain (format "%s.%s"
                                                                *jabber-qim-muc-sub-hostname*
                                                                *jabber-qim-domain*)))
@@ -146,8 +146,7 @@
                                            (:domain . ,muc-domain)
                                            ))))
                                      'application/json
-                                     (jabber-qim-api-connection-auth-info jc)
-                                     *jabber-qim-api-server-v2*)
+                                     (jabber-qim-api-connection-auth-info jc))
                                     (mapcar #'(lambda (muc)
                                                 (jabber-send-iq jc
                                                                 (format "%s@%s"
@@ -214,7 +213,7 @@
                                                                   data))
                                                    :time (current-time))))
          )))
-   "/package/qtapi/getmucmsgs.qunar"
+   *jabber-qim-webapi-command-get-muc-messages*
    (json-encode `((:muc . ,(jabber-jid-username muc-jid))
                   (:direction . 0)
                   (:num . ,length)
@@ -222,7 +221,7 @@
                   (:time . ,timestamp)))
    'application/json
    (jabber-qim-api-connection-auth-info jc)
-   *jabber-qim-api-server-v2*))
+   *jabber-qim-message-history-url*))
 
 (defun jabber-qim-muc-set-topic (jc muc-jid topic)
   (interactive
@@ -234,12 +233,11 @@
               (equal "200" (gethash 'status-code headers))
               (cdr (assoc 'ret response-data)))
        (message "Set muc topic failed. Response: %s" response-data)))
-   "/newapi/muc/set_muc_vcard.qunar"
+   *jabber-qim-webapi-command-set-muc-vcard*
    (json-encode (vector `((:muc_name . ,(jabber-jid-user muc-jid))
                           (:title . ,topic))))
    'application/json
-   (jabber-qim-api-connection-auth-info jc)
-   *jabber-qim-api-server-v2*))
+   (jabber-qim-api-connection-auth-info jc)))
 
 (defun jabber-qim-muc-set-name (jc muc-jid name)
   (interactive
@@ -253,12 +251,11 @@
               (equal "200" (gethash 'status-code headers))
               (cdr (assoc 'ret response-data)))
        (message "Set muc name failed. Response: %s" response-data)))
-   "/newapi/muc/set_muc_vcard.qunar"
+   *jabber-qim-webapi-command-set-muc-vcard*
    (json-encode (vector `((:muc_name . ,(jabber-jid-user muc-jid))
                           (:nick . ,name))))
    'application/json
-   (jabber-qim-api-connection-auth-info jc)
-   *jabber-qim-api-server-v2*))
+   (jabber-qim-api-connection-auth-info jc)))
 
 
 ;;;###autoload (autoload 'jabber-qim-muc-join "jabber-qim-extension" "Join a qim MUC chatroom" t)
@@ -305,7 +302,7 @@
              (setq jabber-muc-topic (jabber-qim-muc-vcard-group-topic
                                      (gethash (jabber-jid-user muc-jid)
                                               *jabber-qim-muc-vcard-cache*)))))
-       "/newapi/muc/get_muc_vcard.qunar"
+       *jabber-qim-webapi-command-get-muc-vcard*
        (json-encode
         `(((:mucs . (((:muc_name . ,(jabber-jid-user muc-jid))
                       (:version . 0))))
@@ -316,8 +313,7 @@
        ;;                        ,(vector `((:muc_name . ,(jabber-jid-user muc-jid))
        ;;                                   (:version . 0)))))))
        'application/json
-       (jabber-qim-api-connection-auth-info jc)
-       *jabber-qim-api-server-v2*)
+       (jabber-qim-api-connection-auth-info jc))
     ;; Fallback
     (jabber-muc-join jc muc-jid
                      (jabber-muc-read-my-nickname jc muc-jid)
